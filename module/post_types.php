@@ -375,7 +375,7 @@ class WPCAModule_post_types extends WPCAModule_Base {
 	 */
 	public function post_ancestry_check($new_status, $old_status, $post) {
 		
-		if($post->post_type != ContentAwareSidebars::TYPE_SIDEBAR && $post->post_type != ContentAwareSidebars::TYPE_CONDITION_GROUP) {
+		if(!WPCACore::post_types()->has($post->post_type) && $post->post_type != WPCACore::TYPE_CONDITION_GROUP) {
 			
 			$status = array('publish','private','future');
 			// Only new posts are relevant
@@ -386,16 +386,16 @@ class WPCAModule_post_types extends WPCAModule_Base {
 				
 					// Get sidebars with post ancestor wanting to auto-select post
 					$query = new WP_Query(array(
-						'post_type'				=> ContentAwareSidebars::TYPE_CONDITION_GROUP,
+						'post_type'				=> WPCACore::TYPE_CONDITION_GROUP,
 						'meta_query'			=> array(
 							'relation'			=> 'AND',
 							array(
-								'key'			=> ContentAwareSidebars::PREFIX . $this->id,
-								'value'			=> ContentAwareSidebars::PREFIX.'sub_' . $post->post_type,
+								'key'			=> WPCACore::PREFIX . $this->id,
+								'value'			=> WPCACore::PREFIX.'sub_' . $post->post_type,
 								'compare'		=> '='
 							),
 							array(
-								'key'			=> ContentAwareSidebars::PREFIX . $this->id,
+								'key'			=> WPCACore::PREFIX . $this->id,
 								'value'			=> get_ancestors($post->ID,$post->post_type),
 								'type'			=> 'numeric',
 								'compare'		=> 'IN'
@@ -404,7 +404,7 @@ class WPCAModule_post_types extends WPCAModule_Base {
 					));
 					if($query && $query->found_posts) {
 						foreach($query->posts as $sidebar) {
-							add_post_meta($sidebar->ID, ContentAwareSidebars::PREFIX.$this->id, $post->ID);
+							add_post_meta($sidebar->ID, WPCACore::PREFIX.$this->id, $post->ID);
 						}
 					}
 				}

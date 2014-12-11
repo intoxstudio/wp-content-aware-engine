@@ -452,11 +452,11 @@ class WPCAModule_taxonomies extends WPCAModule_Base {
 			if($term->parent != '0') {	
 				// Get sidebars with term ancestor wanting to auto-select term
 				$query = new WP_Query(array(
-					'post_type'  => ContentAwareSidebars::TYPE_CONDITION_GROUP,
+					'post_type'  => WPCACore::TYPE_CONDITION_GROUP,
 					'meta_query' => array(
 						array(
-							'key'     => ContentAwareSidebars::PREFIX . $this->id,
-							'value'   => ContentAwareSidebars::PREFIX.'sub_' . $taxonomy,
+							'key'     => WPCACore::PREFIX . $this->id,
+							'value'   => WPCACore::PREFIX.'sub_' . $taxonomy,
 							'compare' => '='
 						)
 					),
