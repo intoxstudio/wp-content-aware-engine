@@ -278,7 +278,7 @@
 				this.groups.setCurrent(new_current_group);
 			}
 
-			$('.cas-groups-body').on('change', 'input:checkbox', function(e) {
+			$('.cas-groups-body .cas-content').on('change', 'input:checkbox', function(e) {
 				var $this = $(this);
 				console.log("change");
 				if(!$this.is('checked')) {
@@ -445,9 +445,9 @@
 
 						cas_alert.set(data.message,'updated');
 
-						var content = $("input:checkbox",cas_admin.groups.getCurrent()).closest('li');
+						var content = $(".cas-content input:checkbox",cas_admin.groups.getCurrent()).closest('li');
 						if(content.length > 0) {
-							$("input:checkbox:not(:checked)",cas_admin.groups.getCurrent()).closest('li').remove();
+							$(".cas-content input:checkbox:not(:checked)",cas_admin.groups.getCurrent()).closest('li').remove();
 							content.removeClass('cas-new');
 						}
 

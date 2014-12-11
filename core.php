@@ -42,6 +42,11 @@ if(!class_exists("WPCACore")) {
 		const TYPE_CONDITION_GROUP = 'sidebar_group';
 
 		/**
+		 * Post Status for negated condition groups
+		 */
+		const STATUS_NEGATED       = 'negated';
+
+		/**
 		 * Language domain
 		 */
 		const DOMAIN               = 'wp-content-aware-engine';
@@ -82,10 +87,14 @@ if(!class_exists("WPCACore")) {
 					array(__CLASS__,'enqueue_scripts_styles'));
 				add_action('delete_post',
 					array(__CLASS__,'sync_group_deletion'));
+				add_action('trashed_post',
+					array(__CLASS__,'sync_group_trashed'));
+				add_action('untrashed_post',
+					array(__CLASS__,'sync_group_untrashed'));
 				add_action('add_meta_boxes',
 					array(__CLASS__,'add_group_meta_box'),10,3);
-				add_action('transition_post_status',
-					array(__CLASS__,'sync_group_status'),10,3);
+				//add_action('transition_post_status',
+				//	array(__CLASS__,'sync_group_status'),10,3);
 			
 				add_action('wp_ajax_cas_add_rule',
 					array(__CLASS__,'ajax_update_group'));
@@ -211,10 +220,19 @@ if(!class_exists("WPCACore")) {
 				'rewrite'      => false,
 				'supports'     => array('author'), //prevents fallback
 			));
+
+			register_post_status( 'negated', array(
+				'label'                     => _x( 'Negated', 'post' ),
+				'public'                    => false,
+				'exclude_from_search'       => true,
+				'show_in_admin_all_list'    => false,
+				'show_in_admin_status_list' => false,
+			));
 		}
 
 		/**
-		 * Delete group from database when its parent is deleted
+		 * Delete groups from database when their parent is deleted
+		 * 
 		 * @author Joachim Jensen <jv@intox.dk>
 		 * @since  1.0
 		 * @param  int    $post_id
@@ -225,7 +243,7 @@ if(!class_exists("WPCACore")) {
 			$post_type = get_post_type($post_id);
 
 			// Authorize and only continue if post type is added to engine
-			if (!current_user_can(self::CAPABILITY) || !self::post_types()->has($post_type->name))
+			if (!current_user_can(self::CAPABILITY) || !self::post_types()->has($post_type))
 				return;
 
 			global $wpdb;
@@ -233,6 +251,50 @@ if(!class_exists("WPCACore")) {
 			foreach($groups as $group_id) {
 				//Takes care of metadata and terms too
 				wp_delete_post($group_id,true);
+			}
+		}
+
+		/**
+		 * Trash groups when their parent is trashed
+		 * 
+		 * @author  Joachim Jensen <jv@intox.dk>
+		 * @version 1.0
+		 * @param   int    $post_id
+		 * @return  void
+		 */
+		public static function sync_group_trashed($post_id) {
+			$post_type = get_post_type($post_id);
+
+			// Only continue if post type is added to engine
+			if (!self::post_types()->has($post_type))
+				return;
+
+			global $wpdb;
+			$groups = (array)$wpdb->get_col($wpdb->prepare("SELECT ID FROM $wpdb->posts WHERE post_parent = '%d'", $post_id));
+			foreach($groups as $group_id) {
+				wp_trash_post($group_id);
+			}
+		}
+
+		/**
+		 * Untrash groups when their parent is untrashed
+		 * 
+		 * @author  Joachim Jensen <jv@intox.dk>
+		 * @version 1.0
+		 * @param   int    $post_id
+		 * @return  void
+		 */
+		public static function sync_group_untrashed($post_id) {
+			$post_type = get_post_type($post_id);
+
+			// Only continue if post type is added to engine
+			if (!self::post_types()->has($post_type))
+				return;
+
+			global $wpdb;
+			$groups = (array)$wpdb->get_col($wpdb->prepare("SELECT ID FROM $wpdb->posts WHERE post_parent = '%d'", $post_id));
+			foreach($groups as $group_id) {
+				wp_untrash_post($group_id);
 			}
 		}
 
@@ -264,8 +326,15 @@ if(!class_exists("WPCACore")) {
 				return false;
 
 			$context_data['WHERE'][] = "posts.post_type = '".self::TYPE_CONDITION_GROUP."'";
-			$context_data['WHERE'][] = "posts.post_status ".(current_user_can('read_private_posts') ? "IN('publish','private')" : "= 'publish'")."";
+			//$context_data['WHERE'][] = "posts.post_status != '".self::STATUS_NEGATED."'";
+			
+			$post_status = array('public',self::STATUS_NEGATED);
+			if(current_user_can('read_private_posts')) {
+				$post_status[] = 'private';
+			}
 
+$context_data['WHERE'][] = "posts.post_status IN ('".implode("','", $post_status)."')";
+				
 			//Syntax changed in MySQL 5.6
 			$wpdb->query('SET'.(version_compare($wpdb->db_version(), '5.6', '>=') ? '' : ' OPTION').' SQL_BIG_SELECTS = 1');
 
@@ -283,6 +352,12 @@ if(!class_exists("WPCACore")) {
 			//Force update of meta cache to prevent lazy loading
 			update_meta_cache('post',array_keys($sidebars_in_context));
 
+			$negated = get_posts(array(
+				'post_type' => self::TYPE_CONDITION_GROUP,
+				'post_status' => self::STATUS_NEGATED,
+				'posts_per_page' => -1
+			));
+
 			//Exclude sidebars that have unrelated content in same group
 			foreach($sidebars_in_context as $key => $sidebar) {
 				$valid[$sidebar->ID] = $sidebar->post_parent;
@@ -299,6 +374,14 @@ if(!class_exists("WPCACore")) {
 						unset($valid[$sidebar->ID]);
 						break;
 					}
+				}
+			}
+
+			foreach($negated as $sidebar) {
+				if(isset($valid[$sidebar->ID])) {
+					unset($valid[$sidebar->ID]);
+				} else {
+					$valid[$sidebar->ID] = $sidebar->post_parent;
 				}
 				
 			}
@@ -395,6 +478,7 @@ if(!class_exists("WPCACore")) {
 				<div class="cas-content">';
 				do_action('cas-module-print-data',$group->ID);
 				echo '</div>
+				<input type="checkbox" name="'.self::PREFIX.'status" value="1" style="display:block!important;">
 				<input type="hidden" class="cas_group_id" name="cas_group_id" value="'.$group->ID.'" />';
 
 				echo '</div>';
@@ -427,18 +511,16 @@ if(!class_exists("WPCACore")) {
 		private static function _add_condition_group($post_id = null) {
 			$post = get_post($post_id);
 
-			$status = $post->post_status;
 			//Make sure to go from auto-draft to draft
-			if($status == 'auto-draft') {
-				$status = 'draft';
+			if($post->post_status == 'auto-draft') {
 				wp_update_post( array(
 					'ID'          => $post->ID,
-					'post_status' => $status
+					'post_status' => 'draft'
 				));
 			}
 
 			return wp_insert_post(array(
-				'post_status' => $status, 
+				'post_status' => 'publish', 
 				'post_type'   => self::TYPE_CONDITION_GROUP,
 				'post_author' => $post->post_author,
 				'post_parent' => $post->ID,
@@ -463,7 +545,7 @@ if(!class_exists("WPCACore")) {
 				'posts_per_page'   => -1,
 				'post_type'        => self::TYPE_CONDITION_GROUP,
 				'post_parent'      => $post->ID,
-				'post_status'      => 'any',
+				'post_status'      => 'publish,'.self::STATUS_NEGATED,
 				'order'            => 'ASC'
 			));
 			if($groups == null && $create_first) {
@@ -506,6 +588,11 @@ if(!class_exists("WPCACore")) {
 				} else {
 					$post_id = intval($_POST['cas_group_id']);
 				}
+
+				wp_update_post(array(
+					'ID' => $post_id,
+					'post_status' => isset($_POST[self::PREFIX.'status']) ? self::STATUS_NEGATED : 'publish'
+				));
 
 				do_action('cas-module-save-data',$post_id);
 
