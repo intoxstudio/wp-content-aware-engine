@@ -25,6 +25,8 @@
 		 */
 		this._currentGroup = null;
 
+		this._oldOptionNegate = null;
+
 		/**
 		 * CSS class for current group
 		 * @type {string}
@@ -85,6 +87,7 @@
 			}
 			if(retval) {
 				this._currentGroup = obj;
+				this._oldOptionNegate = obj.find('.cas-switch input').is(':checked');
 				this._setActive(true);
 			}
 			return retval;
@@ -114,6 +117,7 @@
 						this._setActive(false);
 						this.remove(this.getCurrent());
 						this._currentGroup = null;
+						this._oldOptionNegate = null;
 					} else {
 						retval = false;
 					}
@@ -134,10 +138,12 @@
 								$(this).remove();
 							}
 						});
+						this.getCurrent().find('.cas-switch input').attr('checked',this._oldOptionNegate);
 						//Show all again
 						$('li').fadeIn('slow');
 						this._setActive(false);
 						this._currentGroup = null;
+						this._oldOptionNegate = null;
 					} else {
 						retval = false;
 					}
@@ -177,7 +183,8 @@
 		 * @return {Boolean}
 		 */
 		this.hasUnsavedRules = function() {
-			return this.getCurrent().find('li.cas-new').length > 0;
+			return this.getCurrent().find('li.cas-new').length > 0 ||
+			(this.getCurrent().find('.cas-switch input').is(':checked') != this._oldOptionNegate);
 		};
 
 		/**
@@ -201,7 +208,7 @@
 			$('.js-cas-condition-add, .accordion-section-content input:checkbox').attr('disabled',!active);
 			$('.accordion-container').toggleClass('accordion-disabled',!active);
 			this.getCurrent().toggleClass(this._activeClass,active);
-			var checkboxes = $("input:checkbox",this.getCurrent());
+			var checkboxes = $(".cas-content input:checkbox",this.getCurrent());
 			checkboxes.attr('disabled',!active);
 			if(active) {
 				checkboxes.attr('checked',true);
@@ -456,6 +463,8 @@
 								$(this).remove();
 							}
 						});
+
+						cas_admin.groups._oldOptionNegate = cas_admin.groups.getCurrent().find('.cas-switch input').is(':checked');
 
 						if(data.new_post_id) {
 							cas_admin.groups.getCurrent().append('<input type="hidden" class="cas_group_id" name="cas_group_id" value="'+data.new_post_id+'" />');

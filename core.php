@@ -324,40 +324,37 @@ if(!class_exists("WPCACore")) {
 				return false;
 
 			$context_data['WHERE'][] = "posts.post_type = '".self::TYPE_CONDITION_GROUP."'";
-			//$context_data['WHERE'][] = "posts.post_status != '".self::STATUS_NEGATED."'";
 			
 			$post_status = array('public',self::STATUS_NEGATED);
-			if(current_user_can('read_private_posts')) {
-				$post_status[] = 'private';
-			}
-
-$context_data['WHERE'][] = "posts.post_status IN ('".implode("','", $post_status)."')";
+			$context_data['WHERE'][] = "posts.post_status IN ('".implode("','", $post_status)."')";
 				
 			//Syntax changed in MySQL 5.6
 			$wpdb->query('SET'.(version_compare($wpdb->db_version(), '5.6', '>=') ? '' : ' OPTION').' SQL_BIG_SELECTS = 1');
 
-			$sidebars_in_context = $wpdb->get_results("
-				SELECT
-					posts.ID, posts.post_parent
-				FROM $wpdb->posts posts
-				".implode(' ',$context_data['JOIN'])."
+			$groups_in_context = $wpdb->get_results(
+				"SELECT posts.ID, posts.post_parent ".
+				"FROM $wpdb->posts posts ".
+				implode(' ',$context_data['JOIN'])."
 				WHERE
 				".implode(' AND ',$context_data['WHERE'])."
 			",OBJECT_K);
 
+			$groups_negated = $wpdb->get_results($wpdb->prepare(
+				"SELECT p.ID, p.post_parent ".
+				"FROM $wpdb->posts p ".
+				"WHERE p.post_type = '%s' ".
+				"AND p.post_status = '%s' ",
+				self::TYPE_CONDITION_GROUP,
+				self::STATUS_NEGATED
+			),OBJECT_K);
+
 			$valid = array();
 
 			//Force update of meta cache to prevent lazy loading
-			update_meta_cache('post',array_keys($sidebars_in_context));
-
-			$negated = get_posts(array(
-				'post_type' => self::TYPE_CONDITION_GROUP,
-				'post_status' => self::STATUS_NEGATED,
-				'posts_per_page' => -1
-			));
+			update_meta_cache('post',array_keys($groups_in_context+$groups_negated));
 
 			//Exclude sidebars that have unrelated content in same group
-			foreach($sidebars_in_context as $key => $sidebar) {
+			foreach($groups_in_context as $key => $sidebar) {
 				$valid[$sidebar->ID] = $sidebar->post_parent;
 				//TODO: move to modules
 				foreach($context_data['EXCLUDE'] as $exclude) {
@@ -375,7 +372,7 @@ $context_data['WHERE'][] = "posts.post_status IN ('".implode("','", $post_status
 				}
 			}
 
-			foreach($negated as $sidebar) {
+			foreach($groups_negated as $sidebar) {
 				if(isset($valid[$sidebar->ID])) {
 					unset($valid[$sidebar->ID]);
 				} else {
@@ -473,10 +470,13 @@ $context_data['WHERE'][] = "posts.post_status IN ('".implode("','", $post_status
 				<span class="cas-group-control">
 				<a class="js-cas-group-edit" href="#">'._x('Edit','group',self::DOMAIN).'</a> | <a class="submitdelete js-cas-group-remove" href="#">'.__('Remove',self::DOMAIN).'</a>
 				</span>
+				<div class="cas-switch">
+				<input type="checkbox" id="test" name="'.self::PREFIX.'status" value="1">
+				<label for="test" data-on="'.__('All but this content',self::DOMAIN).':" data-off="'.__('This content',self::DOMAIN).':"></label>
+				</div>
 				<div class="cas-content">';
 				do_action('cas-module-print-data',$group->ID);
 				echo '</div>
-				<input type="checkbox" name="'.self::PREFIX.'status" value="1" style="display:block!important;">
 				<input type="hidden" class="cas_group_id" name="cas_group_id" value="'.$group->ID.'" />';
 
 				echo '</div>';
