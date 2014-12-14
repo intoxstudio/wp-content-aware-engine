@@ -310,7 +310,7 @@ if(!class_exists("WPCACore")) {
 			
 			// Return cache if present
 			if(!empty(self::$post_cache)) {
-				if(self::$post_cache[0] == false)
+				if(isset(self::$post_cache[0]) && self::$post_cache[0] == false)
 					return false;
 				else
 					return self::$post_cache;
@@ -325,7 +325,7 @@ if(!class_exists("WPCACore")) {
 
 			$context_data['WHERE'][] = "posts.post_type = '".self::TYPE_CONDITION_GROUP."'";
 			
-			$post_status = array('public',self::STATUS_NEGATED);
+			$post_status = array('publish',self::STATUS_NEGATED);
 			$context_data['WHERE'][] = "posts.post_status IN ('".implode("','", $post_status)."')";
 				
 			//Syntax changed in MySQL 5.6
@@ -372,12 +372,18 @@ if(!class_exists("WPCACore")) {
 				}
 			}
 
+			$handled_already = array_flip($valid);
 			foreach($groups_negated as $sidebar) {
 				if(isset($valid[$sidebar->ID])) {
 					unset($valid[$sidebar->ID]);
 				} else {
 					$valid[$sidebar->ID] = $sidebar->post_parent;
 				}
+
+				if($handled_already[$sidebar->post_parent]) {
+					unset($valid[$sidebar->ID]);
+				}
+				$handled_already[$sidebar->post_parent] = 1;
 				
 			}
 
@@ -400,7 +406,7 @@ if(!class_exists("WPCACore")) {
 					WHERE
 					".implode(' AND ',$context_data['WHERE'])."
 					ORDER BY posts.menu_order ASC, handle.meta_value DESC, posts.post_date DESC
-				");
+				",OBJECT_K);
 				
 			}
 			
