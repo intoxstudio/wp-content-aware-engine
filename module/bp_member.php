@@ -104,7 +104,9 @@ class WPCAModule_bp_member extends WPCAModule_Base {
 			return;
 		}
 
-		$hidden_columns  = get_hidden_columns( ContentAwareSidebars::TYPE_SIDEBAR );
+		$screen = get_current_screen();
+
+		$hidden_columns  = get_hidden_columns( $screen->id );
 		$id = 'box-'.$this->id;
 		$hidden = in_array($id, $hidden_columns) ? ' hide-if-js' : '';
 

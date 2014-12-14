@@ -154,18 +154,18 @@ class WPCAModule_post_types extends WPCAModule_Base {
 	 * @return  void
 	 */
 	public function print_group_data($post_id) {
-		$ids = get_post_custom_values(ContentAwareSidebars::PREFIX . $this->id, $post_id);
+		$ids = get_post_custom_values(WPCACore::PREFIX . $this->id, $post_id);
 		
 		if($ids) {
 			$lookup = array_flip((array)$ids);
 			foreach($this->_get_post_types() as $post_type) {
 				$posts =$this->_get_content(array('include' => $ids, 'posts_per_page' => -1, 'post_type' => $post_type->name, 'orderby' => 'title', 'order' => 'ASC'));
-				if($posts || isset($lookup[$post_type->name]) || isset($lookup[ContentAwareSidebars::PREFIX.'sub_' . $post_type->name])) {
+				if($posts || isset($lookup[$post_type->name]) || isset($lookup[WPCACore::PREFIX.'sub_' . $post_type->name])) {
 					echo '<div class="cas-condition cas-condition-'.$this->id.'-'.$post_type->name.'">';
 					echo '<h4>'.$post_type->label.'</h4>';
 					echo '<ul>';
-					if(isset($lookup[ContentAwareSidebars::PREFIX.'sub_' . $post_type->name])) {
-						echo '<li><label><input type="checkbox" name="cas_condition['.$this->id.'][]" value="'.ContentAwareSidebars::PREFIX.'sub_' . $post_type->name . '" checked="checked" /> ' . __('Automatically select new children of a selected ancestor', WPCACore::DOMAIN) . '</label></li>' . "\n";
+					if(isset($lookup[WPCACore::PREFIX.'sub_' . $post_type->name])) {
+						echo '<li><label><input type="checkbox" name="cas_condition['.$this->id.'][]" value="'.WPCACore::PREFIX.'sub_' . $post_type->name . '" checked="checked" /> ' . __('Automatically select new children of a selected ancestor', WPCACore::DOMAIN) . '</label></li>' . "\n";
 					}
 					if(isset($lookup[$post_type->name])) {
 						echo '<li><label><input type="checkbox" name="cas_condition['.$this->id.'][]" value="'.$post_type->name.'" checked="checked" /> '.$post_type->labels->all_items.'</label></li>' . "\n";
@@ -219,7 +219,9 @@ class WPCAModule_post_types extends WPCAModule_Base {
 	public function meta_box_content() {
 		global $post;
 
-		$hidden_columns  = get_hidden_columns( ContentAwareSidebars::TYPE_SIDEBAR );
+		$screen = get_current_screen();
+
+		$hidden_columns  = get_hidden_columns( $screen->id );
 
 		foreach ($this->_get_post_types() as $post_type) {
 
@@ -235,7 +237,7 @@ class WPCAModule_post_types extends WPCAModule_Base {
 
 			if($post_type->hierarchical) {
 				echo '<ul><li>' . "\n";
-				echo '<label><input type="checkbox" name="cas_condition['.$this->id.'][]" value="'.ContentAwareSidebars::PREFIX.'sub_' . $post_type->name . '" /> ' . __('Automatically select new children of a selected ancestor', WPCACore::DOMAIN) . '</label>' . "\n";
+				echo '<label><input type="checkbox" name="cas_condition['.$this->id.'][]" value="'.WPCACore::PREFIX.'sub_' . $post_type->name . '" /> ' . __('Automatically select new children of a selected ancestor', WPCACore::DOMAIN) . '</label>' . "\n";
 				echo '</li></ul>' . "\n";
 			}
 			

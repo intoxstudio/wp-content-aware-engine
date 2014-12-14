@@ -76,8 +76,11 @@ abstract class WPCAModule_Base {
 			add_action('cas-module-save-data',				array(&$this,'save_data'));
 
 			add_filter('cas-module-print-data',				array(&$this,'print_group_data'),10,2);
-			add_filter('manage_'.ContentAwareSidebars::TYPE_SIDEBAR.'_columns', array(&$this,'metabox_preferences'));
 
+			foreach(WPCACore::post_types()->get_all() as $post_type) {
+				add_filter('manage_'.$post_type->name.'_columns', array(&$this,'metabox_preferences'));
+			}
+			
 			if($this->ajax) {
 				add_action('wp_ajax_cas-module-'.$this->id,	array(&$this,'ajax_print_content'));
 			}
@@ -112,7 +115,9 @@ abstract class WPCAModule_Base {
 		if(!$data && !$this->type_display)
 			return;
 
-		$hidden_columns  = get_hidden_columns( ContentAwareSidebars::TYPE_SIDEBAR );
+		$screen = get_current_screen();
+
+		$hidden_columns  = get_hidden_columns( $screen->id );
 		$id = 'box-'.$this->id;
 		$hidden = in_array($id, $hidden_columns) ? ' hide-if-js' : '';
 
@@ -165,7 +170,7 @@ abstract class WPCAModule_Base {
 	 */
 	public function db_join() {
 		global $wpdb;
-		return "LEFT JOIN $wpdb->postmeta {$this->id} ON {$this->id}.post_id = posts.ID AND {$this->id}.meta_key = '".ContentAwareSidebars::PREFIX.$this->id."' ";
+		return "LEFT JOIN $wpdb->postmeta {$this->id} ON {$this->id}.post_id = posts.ID AND {$this->id}.meta_key = '".WPCACore::PREFIX.$this->id."' ";
 	}
 	
 	/**
@@ -182,7 +187,7 @@ abstract class WPCAModule_Base {
 	 * @return void
 	 */
 	public function save_data($post_id) {
-		$meta_key = ContentAwareSidebars::PREFIX . $this->id;
+		$meta_key = WPCACore::PREFIX . $this->id;
 		$new = isset($_POST['cas_condition'][$this->id]) ? $_POST['cas_condition'][$this->id] : '';
 		$old = array_flip(get_post_meta($post_id, $meta_key, false));
 
@@ -214,7 +219,7 @@ abstract class WPCAModule_Base {
 	 * @return void
 	 */
 	public function print_group_data($post_id) {
-		$data = get_post_custom_values(ContentAwareSidebars::PREFIX . $this->id, $post_id);
+		$data = get_post_custom_values(WPCACore::PREFIX . $this->id, $post_id);
 		if($data) {
 			echo '<div class="cas-condition cas-condition-'.$this->id.'">';
 
@@ -361,7 +366,7 @@ abstract class WPCAModule_Base {
 	final public function ajax_print_content() {
 
 		if(!isset($_POST['sidebar_id']) || 
-			!check_ajax_referer(ContentAwareSidebars::SIDEBAR_PREFIX.$_POST['sidebar_id'],'nonce',false)) {
+			!check_ajax_referer(WPCACore::PREFIX.$_POST['sidebar_id'],'nonce',false)) {
 			die();
 		}
 

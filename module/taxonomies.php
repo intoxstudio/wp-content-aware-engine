@@ -95,7 +95,7 @@ class WPCAModule_taxonomies extends WPCAModule_Base {
 		$joins  = "LEFT JOIN $wpdb->term_relationships term ON term.object_id = posts.ID ";
 		$joins .= "LEFT JOIN $wpdb->term_taxonomy taxonomy ON taxonomy.term_taxonomy_id = term.term_taxonomy_id ";
 		$joins .= "LEFT JOIN $wpdb->terms terms ON terms.term_id = taxonomy.term_id ";
-		$joins .= "LEFT JOIN $wpdb->postmeta taxonomies ON taxonomies.post_id = posts.ID AND taxonomies.meta_key = '".ContentAwareSidebars::PREFIX."taxonomies'";
+		$joins .= "LEFT JOIN $wpdb->postmeta taxonomies ON taxonomies.post_id = posts.ID AND taxonomies.meta_key = '".WPCACore::PREFIX."taxonomies'";
 		
 		return $joins;
 	
@@ -121,7 +121,7 @@ class WPCAModule_taxonomies extends WPCAModule_Base {
 			foreach($terms as $taxonomy => $term_arr) {  
 				$termrules[] = "(taxonomy.taxonomy = '".$taxonomy."' AND terms.term_id IN('".implode("','",$term_arr)."'))";
 				$taxrules[] = $taxonomy;
-				$taxrules[] = ContentAwareSidebars::PREFIX."sub_".$taxonomy;
+				$taxrules[] = WPCACore::PREFIX."sub_".$taxonomy;
 			}
 
 			return "(terms.slug IS NULL OR ".implode(" OR ",$termrules).") AND (taxonomies.meta_value IS NULL OR taxonomies.meta_value IN('".implode("','",$taxrules)."'))";
@@ -130,7 +130,7 @@ class WPCAModule_taxonomies extends WPCAModule_Base {
 		}
 		$term = get_queried_object();
 
-		return "(terms.slug IS NULL OR (taxonomy.taxonomy = '".$term->taxonomy."' AND terms.slug = '".$term->slug."')) AND (taxonomies.meta_value IS NULL OR taxonomies.meta_value IN ('".$term->taxonomy."','".ContentAwareSidebars::PREFIX."sub_".$term->taxonomy."'))";
+		return "(terms.slug IS NULL OR (taxonomy.taxonomy = '".$term->taxonomy."' AND terms.slug = '".$term->slug."')) AND (taxonomies.meta_value IS NULL OR taxonomies.meta_value IN ('".$term->taxonomy."','".WPCACore::PREFIX."sub_".$term->taxonomy."'))";
 	}
 	
 	/**
@@ -206,7 +206,7 @@ class WPCAModule_taxonomies extends WPCAModule_Base {
 	 * @return  void
 	 */
 	public function print_group_data($post_id) {
-		$ids = array_flip((array)get_post_custom_values(ContentAwareSidebars::PREFIX . $this->id, $post_id));
+		$ids = array_flip((array)get_post_custom_values(WPCACore::PREFIX . $this->id, $post_id));
 
 		//Fetch all terms and group by tax to prevent lazy loading
 		$terms = wp_get_object_terms( $post_id, array_keys($this->_get_taxonomies()));
@@ -220,12 +220,12 @@ class WPCAModule_taxonomies extends WPCAModule_Base {
 			$posts = isset($terms_by_tax[$taxonomy->name]) ? $terms_by_tax[$taxonomy->name] : 0;
 
 			//$posts = wp_get_object_terms( $post_id, $taxonomy->name);
-			if($posts || isset($ids[$taxonomy->name]) || isset($ids[ContentAwareSidebars::PREFIX.'sub_' . $taxonomy->name])) {
+			if($posts || isset($ids[$taxonomy->name]) || isset($ids[WPCACore::PREFIX.'sub_' . $taxonomy->name])) {
 				echo '<div class="cas-condition cas-condition-'.$this->id.'-'.$taxonomy->name.'">';
 				echo '<h4>'.$taxonomy->label.'</h4>';
 				echo '<ul>';
-				if(isset($ids[ContentAwareSidebars::PREFIX.'sub_' . $taxonomy->name])) {
-					echo '<li class=""><label><input type="checkbox" name="cas_condition['.$this->id.'][]" value="'.ContentAwareSidebars::PREFIX.'sub_' . $taxonomy->name . '" checked="checked" /> ' . __('Automatically select new children of a selected ancestor', WPCACore::DOMAIN) . '</label></li>' . "\n";
+				if(isset($ids[WPCACore::PREFIX.'sub_' . $taxonomy->name])) {
+					echo '<li class=""><label><input type="checkbox" name="cas_condition['.$this->id.'][]" value="'.WPCACore::PREFIX.'sub_' . $taxonomy->name . '" checked="checked" /> ' . __('Automatically select new children of a selected ancestor', WPCACore::DOMAIN) . '</label></li>' . "\n";
 				}
 				if(isset($ids[$taxonomy->name])) {
 					echo '<li class=""><label><input type="checkbox" name="cas_condition['.$this->id.'][]" value="'.$taxonomy->name.'" checked="checked" /> '.$taxonomy->labels->all_items.'</label></li>' . "\n";
@@ -248,7 +248,9 @@ class WPCAModule_taxonomies extends WPCAModule_Base {
 	public function meta_box_content() {
 		global $post;
 
-		$hidden_columns  = get_hidden_columns( ContentAwareSidebars::TYPE_SIDEBAR );
+		$screen = get_current_screen();
+
+		$hidden_columns  = get_hidden_columns( $screen->id );
 
 		foreach ($this->_get_taxonomies() as $taxonomy) {
 
@@ -264,7 +266,7 @@ class WPCAModule_taxonomies extends WPCAModule_Base {
 
 			if($taxonomy->hierarchical) {
 				echo '<ul><li>' . "\n";
-				echo '<label><input type="checkbox" name="cas_condition['.$this->id.'][]" value="'.ContentAwareSidebars::PREFIX.'sub_' . $taxonomy->name . '" /> ' . __('Automatically select new children of a selected ancestor', WPCACore::DOMAIN) . '</label>' . "\n";
+				echo '<label><input type="checkbox" name="cas_condition['.$this->id.'][]" value="'.WPCACore::PREFIX.'sub_' . $taxonomy->name . '" /> ' . __('Automatically select new children of a selected ancestor', WPCACore::DOMAIN) . '</label>' . "\n";
 				echo '</li></ul>' . "\n";
 			}
 			echo '<ul><li>' . "\n";
@@ -433,7 +435,9 @@ class WPCAModule_taxonomies extends WPCAModule_Base {
 	 */
 	public function add_taxonomies_to_sidebar() {
 		foreach($this->_get_taxonomies() as $tax) {
-			register_taxonomy_for_object_type( $tax->name, ContentAwareSidebars::TYPE_SIDEBAR );
+			foreach (WPCACore::post_types()->get_all() as $post_type) {
+				register_taxonomy_for_object_type( $tax->name, $post_type->name );
+			}
 		}
 	}
 	
