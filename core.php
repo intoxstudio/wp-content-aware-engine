@@ -93,8 +93,6 @@ if(!class_exists("WPCACore")) {
 					array(__CLASS__,'sync_group_untrashed'));
 				add_action('add_meta_boxes',
 					array(__CLASS__,'add_group_meta_box'),10,3);
-				//add_action('transition_post_status',
-				//	array(__CLASS__,'sync_group_status'),10,3);
 			
 				add_action('wp_ajax_cas_add_rule',
 					array(__CLASS__,'ajax_update_group'));
@@ -643,27 +641,6 @@ $context_data['WHERE'][] = "posts.post_status IN ('".implode("','", $post_status
 				echo $response;
 			}
 			die();
-		}
-
-		/**
-		 * Change group status when its parent post does
-		 * 
-		 * @author Joachim Jensen <jv@intox.dk>
-		 * @since  1.0
-		 * @param  string    $new_status
-		 * @param  string    $old_status
-		 * @param  WP_Post   $post
-		 * @return void
-		 */
-		public static function sync_group_status($new_status, $old_status, $post) {
-			if(self::post_types()->has($post->post_type) && $old_status != $new_status) {
-				global $wpdb;
-				$wpdb->query("
-					UPDATE $wpdb->posts
-					SET post_status = '".$new_status."' 
-					WHERE post_parent = '".$post->ID."' AND post_type = '".self::TYPE_CONDITION_GROUP."'
-				");
-			}	
 		}
 
 		/**
