@@ -328,8 +328,8 @@ if(!class_exists("WPCACore")) {
 			$post_status = array('publish',self::STATUS_NEGATED);
 			$context_data['WHERE'][] = "posts.post_status IN ('".implode("','", $post_status)."')";
 				
-			//Syntax changed in MySQL 5.6
-			$wpdb->query('SET'.(version_compare($wpdb->db_version(), '5.6', '>=') ? '' : ' OPTION').' SQL_BIG_SELECTS = 1');
+			//Syntax changed in MySQL 5.5 and MariaDB 10.0 (reports as version 5.5)
+			$wpdb->query('SET'.(version_compare($wpdb->db_version(), '5.5', '>=') ? '' : ' OPTION').' SQL_BIG_SELECTS = 1');
 
 			$groups_in_context = $wpdb->get_results(
 				"SELECT posts.ID, posts.post_parent ".
