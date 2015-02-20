@@ -227,70 +227,73 @@ if(!class_exists("WPCACore")) {
 		}
 
 		/**
-		 * Delete groups from database when their parent is deleted
+		 * Get group IDs by their parent ID
 		 * 
-		 * @author Joachim Jensen <jv@intox.dk>
+		 * @since 1.0
+		 * @param   int    $parent_id
+		 * @return  array
+		 */
+		private static function get_group_ids_by_parent($parent_id) {
+			if (!self::post_types()->has(get_post_type($parent_id)))
+				return array();
+
+			global $wpdb;
+			return (array)$wpdb->get_col($wpdb->prepare("SELECT ID FROM $wpdb->posts WHERE post_parent = '%d'", $parent_id));
+
+		}
+
+		/**
+		 * Delete groups from database when their parent is deleted 
+		 *
 		 * @since  1.0
 		 * @param  int    $post_id
 		 * @return void
 		 */
 		public static function sync_group_deletion($post_id) {
 
-			$post_type = get_post_type($post_id);
-
-			// Authorize and only continue if post type is added to engine
-			if (!current_user_can(self::CAPABILITY) || !self::post_types()->has($post_type))
+			if (!current_user_can(self::CAPABILITY))
 				return;
 
-			global $wpdb;
-			$groups = (array)$wpdb->get_col($wpdb->prepare("SELECT ID FROM $wpdb->posts WHERE post_parent = '%d'", $post_id));
-			foreach($groups as $group_id) {
-				//Takes care of metadata and terms too
-				wp_delete_post($group_id,true);
+			$groups = self::get_group_ids_by_parent($post_id);
+			if($groups) {
+				foreach($groups as $group_id) {
+					//Takes care of metadata and terms too
+					wp_delete_post($group_id,true);
+				}
 			}
 		}
 
 		/**
 		 * Trash groups when their parent is trashed
-		 * 
-		 * @author  Joachim Jensen <jv@intox.dk>
-		 * @version 1.0
+		 *
+		 * @since 1.0
 		 * @param   int    $post_id
 		 * @return  void
 		 */
 		public static function sync_group_trashed($post_id) {
-			$post_type = get_post_type($post_id);
 
-			// Only continue if post type is added to engine
-			if (!self::post_types()->has($post_type))
-				return;
-
-			global $wpdb;
-			$groups = (array)$wpdb->get_col($wpdb->prepare("SELECT ID FROM $wpdb->posts WHERE post_parent = '%d'", $post_id));
-			foreach($groups as $group_id) {
-				wp_trash_post($group_id);
+			$groups = self::get_group_ids_by_parent($post_id);
+			if($groups) {
+				foreach($groups as $group_id) {
+					wp_trash_post($group_id);
+				}
 			}
 		}
 
 		/**
 		 * Untrash groups when their parent is untrashed
-		 * 
-		 * @author  Joachim Jensen <jv@intox.dk>
-		 * @version 1.0
+		 *
+		 * @since 1.0
 		 * @param   int    $post_id
 		 * @return  void
 		 */
 		public static function sync_group_untrashed($post_id) {
-			$post_type = get_post_type($post_id);
 
-			// Only continue if post type is added to engine
-			if (!self::post_types()->has($post_type))
-				return;
-
-			global $wpdb;
-			$groups = (array)$wpdb->get_col($wpdb->prepare("SELECT ID FROM $wpdb->posts WHERE post_parent = '%d'", $post_id));
-			foreach($groups as $group_id) {
-				wp_untrash_post($group_id);
+			$groups = self::get_group_ids_by_parent($post_id);
+			if($groups) {
+				foreach($groups as $group_id) {
+					wp_untrash_post($group_id);
+				}
 			}
 		}
 
@@ -303,15 +306,12 @@ if(!class_exists("WPCACore")) {
 		public static function get_posts($post_type) {
 			global $wpdb, $post;
 			
-			if(!$post || is_admin() || post_password_required())
-				return false;
+			if(!self::post_types()->has($post_type) || !$post || is_admin() || post_password_required())
+				return array();
 			
 			// Return cache if present
-			if(!empty(self::$post_cache)) {
-				if(isset(self::$post_cache[0]) && self::$post_cache[0] == false)
-					return false;
-				else
-					return self::$post_cache;
+			if(isset(self::$post_cache[$post_type])) {
+				return self::$post_cache[$post_type];
 			}
 
 			$context_data['WHERE'] = $context_data['JOIN'] = $context_data['EXCLUDE'] = array();
@@ -319,7 +319,7 @@ if(!class_exists("WPCACore")) {
 
 			// Check if there are any rules for this type of content
 			if(empty($context_data['WHERE']))
-				return false;
+				return array();
 
 			$context_data['WHERE'][] = "posts.post_type = '".self::TYPE_CONDITION_GROUP."'";
 			
@@ -379,47 +379,51 @@ if(!class_exists("WPCACore")) {
 				} else {
 					$valid[$sidebar->ID] = $sidebar->post_parent;
 				}
-
-				if($handled_already[$sidebar->post_parent]) {
+				if(isset($handled_already[$sidebar->post_parent])) {
 					unset($valid[$sidebar->ID]);
 				}
 				$handled_already[$sidebar->post_parent] = 1;
-				
 			}
 
-			if(!empty($valid)) {
+			$post_types = array_keys(self::post_types()->get_all());
+			foreach ($post_types as $post_type) {
+				self::$post_cache[$post_type] = array();
+			}
+
+			if($valid) {
 
 				$context_data = array();
 				$context_data['JOIN'][] = "INNER JOIN $wpdb->postmeta handle ON handle.post_id = posts.ID AND handle.meta_key = '".self::PREFIX."handle'";
 				$context_data['JOIN'][] = "INNER JOIN $wpdb->postmeta exposure ON exposure.post_id = posts.ID AND exposure.meta_key = '".self::PREFIX."exposure'";
-				$context_data['WHERE'][] = "posts.post_type = '".$post_type."'";
+				$context_data['WHERE'][] = "posts.post_type IN ('".implode("','", $post_types)."')";
 				$context_data['WHERE'][] = "exposure.meta_value ".(is_archive() || is_home() ? '>' : '<')."= '1'";
 				$context_data['WHERE'][] = "posts.post_status ".(current_user_can('read_private_posts') ? "IN('publish','private')" : "= 'publish'")."";
 				$context_data['WHERE'][] = "posts.ID IN(".implode(',',$valid).")";
 
-				self::$post_cache = $wpdb->get_results("
+				$results = $wpdb->get_results("
 					SELECT
 						posts.ID,
+						posts.post_type,
 						handle.meta_value handle
 					FROM $wpdb->posts posts
 					".implode(' ',$context_data['JOIN'])."
 					WHERE
 					".implode(' AND ',$context_data['WHERE'])."
 					ORDER BY posts.menu_order ASC, handle.meta_value DESC, posts.post_date DESC
-				",OBJECT_K);
-				
+				");
+
+				foreach($results as $result) {
+					self::$post_cache[$result->post_type][$result->ID] = $result;
+				}
 			}
 			
-			// Return proper cache. If query was empty, tell the cache.
-			return (empty(self::$post_cache) ? self::$post_cache[0] = false : self::$post_cache);
-			
+			return self::$post_cache[$post_type];
 		}
 		
 		/**
 		 * Add meta box to manage condition groups
 		 * 
-		 * @author  Joachim Jensen <jv@intox.dk>
-		 * @version 1.0
+		 * @since 1.0
 		 * @param   string    $post_type
 		 * @param   WP_Post   $post
 		 */
