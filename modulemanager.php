@@ -26,11 +26,11 @@ if(!class_exists("WPCAModuleManager")) {
 		}
 
 		/**
-		 * Add post type to use the engine
-		 * @author  Joachim Jensen <jv@intox.dk>
-		 * @version 1.0
-		 * @param   int|WP_Post    $post_type
-		 * @param   array          $module_whitelist
+		 * Add module to manager
+		 *
+		 * @since 1.0
+		 * @param object  $class
+		 * @param string  $name
 		 */
 		public function add($class,$name) {
 			if(($class && class_exists($class))) {
@@ -41,8 +41,7 @@ if(!class_exists("WPCAModuleManager")) {
 		/**
 		 * Deploy modules
 		 * 
-		 * @author  Joachim Jensen <jv@intox.dk>
-		 * @version 1.0
+		 * @since   1.0
 		 * @return  void
 		 */
 		public function deploy() {

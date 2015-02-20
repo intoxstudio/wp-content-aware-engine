@@ -41,7 +41,7 @@ class WPCAView {
 	/**
 	 * Constructor
 	 *
-	 * @version 1.0
+	 * @since 1.0
 	 * @param   string    $path
 	 * @param   array     $params
 	 */
@@ -53,7 +53,7 @@ class WPCAView {
 	/**
 	 * Create instance of view
 	 *
-	 * @version 1.0
+	 * @since 1.0
 	 * @param   string    $name
 	 * @param   array     $params
 	 * @return  WPCAView
@@ -65,7 +65,7 @@ class WPCAView {
 	/**
 	 * Add possibility to set params dynamically
 	 *
-	 * @version 1.0
+	 * @since 1.0
 	 * @param   string    $method
 	 * @param   array     $args
 	 * @return  mixed
@@ -81,7 +81,7 @@ class WPCAView {
 	/**
 	 * Get path to file
 	 *
-	 * @version 1.0
+	 * @since 1.0
 	 * @return  string
 	 */
 	private function resolve_path() {
@@ -91,7 +91,7 @@ class WPCAView {
 	/**
 	 * Get content
 	 *
-	 * @version 1.0
+	 * @since 1.0
 	 * @return  string
 	 */
 	private function get_content() {
@@ -109,7 +109,7 @@ class WPCAView {
 	/**
 	 * Render content
 	 *
-	 * @version 1.0
+	 * @since 1.0
 	 * @return  void
 	 */
 	public function render() {

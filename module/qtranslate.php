@@ -31,6 +31,8 @@ class WPCAModule_qtranslate extends WPCAModule_Base {
 	
 	/**
 	 * Determine if content is relevant
+	 *
+	 * @since  1.0
 	 * @return boolean 
 	 */
 	public function in_context() {
@@ -39,8 +41,8 @@ class WPCAModule_qtranslate extends WPCAModule_Base {
 
 	/**
 	 * Get data from context
-	 * @author Joachim Jensen <jv@intox.dk>
-	 * @since  2.0
+	 * 
+	 * @since  1.0
 	 * @return array
 	 */
 	public function get_context_data() {
@@ -53,8 +55,9 @@ class WPCAModule_qtranslate extends WPCAModule_Base {
 
 	/**
 	 * Get content for sidebar edit screen
-	 * @author  Joachim Jensen <jv@intox.dk>
+	 * 
 	 * @global  array     $q_config
+	 * @since   1.0
 	 * @param   array     $args
 	 * @return  array
 	 */

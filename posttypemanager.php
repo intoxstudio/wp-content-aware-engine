@@ -21,8 +21,7 @@ if(!class_exists("WPCAPostTypeManager")) {
 		/**
 		 * Add post type to the manager
 		 * 
-		 * @author  Joachim Jensen <jv@intox.dk>
-		 * @version 1.0
+		 * @since   1.0
 		 * @param   int|WP_Post    $post_type
 		 */
 		public function add($post_type,$name="") {

@@ -14,24 +14,44 @@ if (!defined('WPCACore::VERSION')) {
 
 /**
  *
- * Walker for module content
+ * Walker to render input checkboxes
+ * for module content
  *
  */
 class WPCAWalker extends Walker {
 
+	/**
+	 * Label property for objects.
+	 * Used for reflection
+	 * 
+	 * @var string
+	 */
 	private $label_arg;
+
+	/**
+	 * Value property for objects.
+	 * Used for reflection
+	 * 
+	 * @var string
+	 */
 	private $value_arg;
+
+	/**
+	 * Name for input field
+	 * 
+	 * @var string
+	 */
 	private $name;
 
 	/**
 	 * Constructor
 	 *
-	 * @version 1.0
-	 * @param   array|string    $key
-	 * @param   string          $parent_col
-	 * @param   string          $id_col
-	 * @param   string          $label_arg
-	 * @param   string          $value_arg
+	 * @since 1.0
+	 * @param string  $key
+	 * @param string  $parent_col
+	 * @param string  $id_col
+	 * @param string  $label_arg
+	 * @param string  $value_arg
 	 */
 	private function __construct($key, $parent_col, $id_col, $label_arg, $value_arg = null) {
 		
@@ -42,15 +62,28 @@ class WPCAWalker extends Walker {
 		
 	}
 
+	/**
+	 * Factory
+	 *
+	 * @since  1.0
+	 * @param  string  $key
+	 * @param  string  $parent_col
+	 * @param  string  $id_col
+	 * @param  string  $label_arg
+	 * @param  string  $value_arg
+	 * @return WPCAWalker
+	 */
 	public static function make($key, $parent_col, $id_col, $label_arg, $value_arg = null) {
 		return new self($key, $parent_col, $id_col, $label_arg, $value_arg);
 	}
 	
 	/**
 	 * Start outputting level
-	 * @param string $output
-	 * @param int    $depth
-	 * @param array  $args 
+	 *
+	 * @since  1.0
+	 * @param  string $output
+	 * @param  int    $depth
+	 * @param  array  $args 
 	 * @return void 
 	 */
 	public function start_lvl(&$output, $depth = 0, $args = array()) {
@@ -60,9 +93,11 @@ class WPCAWalker extends Walker {
 	
 	/**
 	 * End outputting level
-	 * @param string $output
-	 * @param int    $depth
-	 * @param array  $args 
+	 *
+	 * @since  1.0
+	 * @param  string $output
+	 * @param  int    $depth
+	 * @param  array  $args 
 	 * @return void 
 	 */
 	public function end_lvl(&$output, $depth = 0, $args = array()) {
@@ -72,6 +107,8 @@ class WPCAWalker extends Walker {
 	
 	/**
 	 * Start outputting element
+	 *
+	 * @since  1.0
 	 * @param  string $output 
 	 * @param  object $object   
 	 * @param  int    $depth  
@@ -91,6 +128,8 @@ class WPCAWalker extends Walker {
 
 	/**
 	 * End outputting element
+	 *
+	 * @since  1.0
 	 * @param  string $output 
 	 * @param  object $object   
 	 * @param  int    $depth  
@@ -104,7 +143,7 @@ class WPCAWalker extends Walker {
 	/**
 	 * Output if input is checked or not
 	 *
-	 * @version 2.4
+	 * @since   1.0
 	 * @param   string         $current
 	 * @param   array|boolean  $selected
 	 * @return  string

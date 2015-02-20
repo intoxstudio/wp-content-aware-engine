@@ -115,7 +115,7 @@ class WPCAModule_authors extends WPCAModule_Base {
 	 * Filter to definitely add display_name to search_columns
 	 * WP3.6+
 	 *
-	 * @version 1.0
+	 * @since 1.0
 	 * @param   array      $search_columns
 	 * @param   string     $search
 	 * @param   WP_User    $user
