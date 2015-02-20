@@ -429,10 +429,20 @@ if(!class_exists("WPCACore")) {
 		 */
 		public static function add_group_meta_box($post_type,$post) {
 			if(self::post_types()->has($post_type)) {
+
+				$post_type_obj = self::post_types()->get($post_type);
+
+				$view = WPCAView::make("meta_box",array(
+					'title'    => isset($post_type_obj->labels->ca_title) ? $post_type_obj->labels->ca_title : "",
+					'no_groups'=> isset($post_type_obj->labels->ca_not_found) ? $post_type_obj->labels->ca_not_found : __('No Groups found.',self::DOMAIN),
+					'groups'   => self::_get_condition_groups(null,false),
+					'nonce'    => wp_nonce_field(self::PREFIX.get_the_ID(), '_ca-sidebar-nonce', true, false)
+				));
+
 				add_meta_box(
 					'cas-rules',
 					__('Content', self::DOMAIN),
-					array(__CLASS__, 'meta_box_rules'),
+					array($view,'render'),
 					$post_type,
 					'normal',
 					'high'
@@ -441,77 +451,9 @@ if(!class_exists("WPCACore")) {
 		}
 
 		/**
-		 * Render meta box content to manage condition groups
-		 * 
-		 * @author  Joachim Jensen <jv@intox.dk>
-		 * @version 1.0
-		 * @param   WP_Post    $post
-		 * @return  void
-		 */
-		public static function meta_box_rules($post) {
-
-			// Use nonce for verification. Unique per post
-			wp_nonce_field(self::PREFIX.get_the_ID(), '_ca-sidebar-nonce');
-			echo '<input type="hidden" id="current_sidebar" value="'.get_the_ID().'" />';
-
-			$groups = self::_get_condition_groups(null,false);
-
-			echo '<div id="cas-container">'."\n";
-			echo '<div id="cas-accordion" class="accordion-container postbox'.(empty($groups) ? ' accordion-disabled' : '').'">'."\n";
-			echo '<ul class="outer-border">';
-			do_action('cas-module-admin-box');
-			echo '</ul>';
-			echo '</div>'."\n";
-			echo '<div id="cas-groups" class="postbox'.(empty($groups) ? '' : ' cas-has-groups').'">'."\n";
-			echo '<div class="cas-groups-header"><h3>'.__('Condition Groups',self::DOMAIN).'</h3><input type="button" class="button button-primary js-cas-group-new" value="'.__('Add New Group',self::DOMAIN).'" /></div>';
-			echo '<div class="cas-groups-body"><p>'.__('Click to edit a group or create a new one. Select content on the left to add it. In each group, you can combine different types of associated content.',self::DOMAIN).'</p>';
-			echo '<strong>'.__('Display sidebar with',self::DOMAIN).':</strong>';
-
-			$i = 0;
-
-			echo '<ul>';
-			echo '<li class="cas-no-groups">'.__('No content. Please add at least one condition group to make the sidebar content aware.',self::DOMAIN).'</li>';
-			foreach($groups as $group) {
-
-				echo '<li class="cas-group-single'.($i == 0 ? ' cas-group-active' : '').'"><div class="cas-group-body">
-				<span class="cas-group-control cas-group-control-active">
-				<input type="button" class="button js-cas-group-save" value="'.__('Save',self::DOMAIN).'" /> | <a class="js-cas-group-cancel" href="#">'.__('Cancel',self::DOMAIN).'</a>
-				</span>
-				<span class="cas-group-control">
-				<a class="js-cas-group-edit" href="#">'._x('Edit','group',self::DOMAIN).'</a> | <a class="submitdelete js-cas-group-remove" href="#">'.__('Remove',self::DOMAIN).'</a>
-				</span>
-				<div class="cas-switch">
-				<input type="checkbox" id="test" name="'.self::PREFIX.'status" value="1">
-				<label for="test" data-on="'.__('All but this content',self::DOMAIN).':" data-off="'.__('This content',self::DOMAIN).':"></label>
-				</div>
-				<div class="cas-content">';
-				do_action('cas-module-print-data',$group->ID);
-				echo '</div>
-				<input type="hidden" class="cas_group_id" name="cas_group_id" value="'.$group->ID.'" />';
-
-				echo '</div>';
-
-				echo '<div class="cas-group-sep">'.__('Or',self::DOMAIN).'</div>';
-
-				echo '</li>';	
-				$i++;
-			}
-			echo '</ul>';
-			
-			echo '</div>';
-			echo '<div class="cas-groups-footer">';
-			echo '<input type="button" class="button button-primary js-cas-group-new" value="'.__('Add New Group',self::DOMAIN).'" />';
-			echo '</div>';
-			echo '</div>'."\n";
-			echo '</div>'."\n";
-			
-		}
-
-		/**
 		 * Insert new condition group for a post type
-		 * 
 		 * Uses current post per default
-		 * @author Joachim Jensen <jv@intox.dk>
+		 *
 		 * @since  1.0
 		 * @param  WP_Post|int    $post
 		 * @return int
