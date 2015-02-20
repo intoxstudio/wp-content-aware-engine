@@ -34,8 +34,9 @@ class WPCAModule_bp_member extends WPCAModule_Base {
 
 	/**
 	 * Get content for sidebar editor
-	 * @author  Joachim Jensen <jv@intox.dk>
+	 * 
 	 * @global  object    $bp
+	 * @since   1.0
 	 * @param   array     $args
 	 * @return  array
 	 */
@@ -64,19 +65,21 @@ class WPCAModule_bp_member extends WPCAModule_Base {
 	
 	/**
 	 * Determine if content is relevant
+	 * 
 	 * @global object  $bp
+	 * @since  1.0
 	 * @return boolean 
 	 */
 	public function in_context() {
 		global $bp;
-		return isset($bp->displayed_user->domain) ? $bp->displayed_user->domain : false;
+		return isset($bp->displayed_user->domain) && $bp->displayed_user->domain;
 	}
 
 	/**
 	 * Get data from context
-	 * @author Joachim Jensen <jv@intox.dk>
+	 *
 	 * @global object $bp
-	 * @since  2.0
+	 * @since  1.0
 	 * @return array
 	 */
 	public function get_context_data() {
@@ -93,8 +96,10 @@ class WPCAModule_bp_member extends WPCAModule_Base {
 	
 	/**
 	 * Meta box content
+	 * 
 	 * @global WP_Post $post
 	 * @global object  $bp
+	 * @since  1.0
 	 * @return void 
 	 */
 	public function meta_box_content() {
@@ -151,6 +156,8 @@ class WPCAModule_bp_member extends WPCAModule_Base {
 	/**
 	 * Avoid collision with content of static module
 	 * Somehow buddypress pages pass is_404()
+	 *
+	 * @since  1.0
 	 * @param  boolean $content 
 	 * @return boolean          
 	 */
