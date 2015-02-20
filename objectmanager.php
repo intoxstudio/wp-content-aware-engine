@@ -20,14 +20,14 @@ if(!class_exists("WPCAObjectManager")) {
 
 		/**
 		 * List of objects
+		 * 
 		 * @var array
 		 */
 		private $objects = array();
 
 		/**
 		 * Constructor
-		 * 
-		 * @author  Joachim Jensen <jv@intox.dk>
+		 *
 		 * @version 1.0
 		 */
 		public function __construct() {
@@ -36,8 +36,7 @@ if(!class_exists("WPCAObjectManager")) {
 		/**
 		 * Add object to the manager if key is
 		 * not already added
-		 * 
-		 * @author  Joachim Jensen <jv@intox.dk>
+		 *
 		 * @version 1.0
 		 * @param   mixed    $object
 		 * @param   string   $name
@@ -50,7 +49,7 @@ if(!class_exists("WPCAObjectManager")) {
 
 		/**
 		 * Remove object with key from manager
-		 * @author  Joachim Jensen <jv@intox.dk>
+		 *
 		 * @version 1.0
 		 * @param   string    $name
 		 * @return  void
@@ -62,7 +61,6 @@ if(!class_exists("WPCAObjectManager")) {
 		/**
 		 * Check if manager has key
 		 * 
-		 * @author  Joachim Jensen <jv@intox.dk>
 		 * @version 1.0
 		 * @param   string    $name
 		 * @return  boolean
@@ -74,8 +72,7 @@ if(!class_exists("WPCAObjectManager")) {
 		/**
 		 * Get object with key
 		 * Returns null if not found
-		 * 
-		 * @author  Joachim Jensen <jv@intox.dk>
+		 *
 		 * @version 1.0
 		 * @param   string     $name
 		 * @return  mixed|null
@@ -87,8 +84,7 @@ if(!class_exists("WPCAObjectManager")) {
 		/**
 		 * Add object to manager regardless if
 		 * key exists already
-		 * 
-		 * @author  Joachim Jensen <jv@intox.dk>
+		 *
 		 * @version 1.0
 		 * @param   mixed    $object
 		 * @param   string   $name
@@ -99,13 +95,32 @@ if(!class_exists("WPCAObjectManager")) {
 
 		/**
 		 * Get all objects in manager
-		 * 
-		 * @author  Joachim Jensen <jv@intox.dk>
+		 *
 		 * @version 1.0
 		 * @return  array
 		 */
 		public function get_all() {
 			return $this->objects;
+		}
+
+		/**
+		 * Set all objects in manager
+		 *
+		 * @version 1.0
+		 * @param   array    $objects
+		 */
+		public function set_all($objects) {
+			$this->objects = (array)$objects;
+		}
+
+		/**
+		 * Count objects
+		 *
+		 * @version 1.0
+		 * @return  int
+		 */
+		public function count() {
+			return count($this->objects);
 		}
 	}
 }
