@@ -20,7 +20,7 @@ if (!defined('WPCACore::VERSION')) {
  * a) any or specific bbpress user profile
  *
  */
-class WPCAModule_bbpress extends WPCAModule_author {
+class WPCAModule_bbpress extends WPCAModule_authors {
 	
 	/**
 	 * Constructor
@@ -31,25 +31,22 @@ class WPCAModule_bbpress extends WPCAModule_author {
 		$this->name = __('bbPress User Profiles',WPCACore::DOMAIN);
 		
 		add_filter('cas-db-where-post_types', array(&$this,'add_forum_dependency'));
-
-		if(is_admin()) {
-			add_action('wp_ajax_cas-autocomplete-'.$this->id, array(&$this,'ajax_content_search'));
-		}
-		
 	}
 	
 	/**
 	 * Determine if content is relevant
+	 *
+	 * @since  1.0
 	 * @return boolean 
 	 */
 	public function in_context() {
-		return function_exists('bbp_is_single_user') ? bbp_is_single_user() : false;
+		return function_exists('bbp_is_single_user') && bbp_is_single_user();
 	}
 
 	/**
 	 * Get data from context
-	 * @author Joachim Jensen <jv@intox.dk>
-	 * @since  2.0
+	 * 
+	 * @since  1.0
 	 * @return array
 	 */
 	public function get_context_data() {
@@ -63,6 +60,8 @@ class WPCAModule_bbpress extends WPCAModule_author {
 	/**
 	 * Sidebars to be displayed with forums will also 
 	 * be dislpayed with respective topics and replies
+	 *
+	 * @since  1.0
 	 * @param  string $where 
 	 * @return string 
 	 */
