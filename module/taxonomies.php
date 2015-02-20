@@ -25,12 +25,14 @@ class WPCAModule_taxonomies extends WPCAModule_Base {
 	
 	/**
 	 * Registered public taxonomies
+	 * 
 	 * @var array
 	 */
 	private $taxonomy_objects = array();
 
 	/**
 	 * Terms of a given singular
+	 * 
 	 * @var array
 	 */
 	private $post_terms;
@@ -49,8 +51,8 @@ class WPCAModule_taxonomies extends WPCAModule_Base {
 
 	/**
 	 * Display module in Screen Settings
-	 * @author  Joachim Jensen <jv@intox.dk>
-	 * @version 2.3
+	 *
+	 * @since   1.0
 	 * @param   array    $columns
 	 * @return  array
 	 */
@@ -63,6 +65,8 @@ class WPCAModule_taxonomies extends WPCAModule_Base {
 	
 	/**
 	 * Determine if content is relevant
+	 *
+	 * @since  1.0
 	 * @return boolean 
 	 */
 	public function in_context() {
@@ -87,6 +91,8 @@ class WPCAModule_taxonomies extends WPCAModule_Base {
 	
 	/**
 	 * Query join
+	 *
+	 * @since  1.0
 	 * @return string 
 	 */
 	public function db_join() {
@@ -103,11 +109,11 @@ class WPCAModule_taxonomies extends WPCAModule_Base {
 
 	/**
 	 * Get data from context
-	 * @author Joachim Jensen <jv@intox.dk>
-	 * @since  2.0
+	 *
+	 * @since  1.0
 	 * @return array
 	 */
-	public function get_context_data() {	
+	public function get_context_data() {
 
 		if(is_singular()) {
 			$terms = array();
@@ -132,17 +138,11 @@ class WPCAModule_taxonomies extends WPCAModule_Base {
 
 		return "(terms.slug IS NULL OR (taxonomy.taxonomy = '".$term->taxonomy."' AND terms.slug = '".$term->slug."')) AND (taxonomies.meta_value IS NULL OR taxonomies.meta_value IN ('".$term->taxonomy."','".WPCACore::PREFIX."sub_".$term->taxonomy."'))";
 	}
-	
-	/**
-	 * Query where2
-	 * @return string 
-	 */
-	public function db_where2() {
-		return "terms.slug IS NOT NULL OR taxonomies.meta_value IS NOT NULL";
-	}
 
 	/**
 	 * Get content for sidebar editor
+	 *
+	 * @since  1.0
 	 * @param  array $args
 	 * @return array 
 	 */
@@ -186,7 +186,8 @@ class WPCAModule_taxonomies extends WPCAModule_Base {
 
 	/**
 	 * Get registered public taxonomies
-	 * @author  Joachim Jensen <jv@intox.dk>
+	 *
+	 * @since   1.0
 	 * @return  array
 	 */
 	protected function _get_taxonomies() {
@@ -201,7 +202,8 @@ class WPCAModule_taxonomies extends WPCAModule_Base {
 
 	/**
 	 * Print condition data for a group
-	 * @author  Joachim Jensen <jv@intox.dk>
+	 *
+	 * @since   1.0
 	 * @param   int    $post_id
 	 * @return  void
 	 */
@@ -242,7 +244,9 @@ class WPCAModule_taxonomies extends WPCAModule_Base {
 
 	/**
 	 * Meta box content
-	 * @global object $post
+	 * 
+	 * @global WP_Post $post
+	 * @since  1.0
 	 * @return void 
 	 */
 	public function meta_box_content() {
@@ -322,6 +326,8 @@ class WPCAModule_taxonomies extends WPCAModule_Base {
 
 	/**
 	 * Show terms from a specific taxonomy
+	 *
+	 * @since  1.0
 	 * @param  int     $post_id      
 	 * @param  object  $taxonomy     
 	 * @param  array   $terms        
@@ -330,14 +336,16 @@ class WPCAModule_taxonomies extends WPCAModule_Base {
 	 */
 	private function term_checklist($taxonomy, $terms, $selected_terms = false, $pagination = false) {
 
-		$walker = new CAS_Walker_Checklist('category',array('parent' => 'parent', 'id' => 'term_id'));
-
+		//Hierarchical taxonomies use ids instead of slugs
+		//see http://codex.wordpress.org/Function_Reference/wp_set_post_objects
+		$value_var = ($taxonomy->hierarchical ? 'term_id' : 'slug');
 		$args = array(
 			'taxonomy'       => $taxonomy,
 			'selected_terms' => $selected_terms
 		);
-
-		$return = call_user_func_array(array(&$walker, 'walk'), array($terms, 0, $args));
+		
+		$return = WPCAWalker::make(array("tax_input",$taxonomy->name),'parent','term_id','name',$value_var)
+		->walk($terms, 0, $args);
 
 		if($pagination) {
 			$paginate = paginate_links(array(
@@ -361,8 +369,8 @@ class WPCAModule_taxonomies extends WPCAModule_Base {
 
 	/**
 	 * Get content in HTML
-	 * @author  Joachim Jensen <jv@intox.dk>
-	 * @version 2.5
+	 *
+	 * @since   1.0
 	 * @param   array    $args
 	 * @return  string
 	 */
@@ -394,7 +402,8 @@ class WPCAModule_taxonomies extends WPCAModule_Base {
 
 	/**
 	 * Save data on POST
-	 * @author  Joachim Jensen <jv@intox.dk>
+	 *
+	 * @since   1.0
 	 * @param   int    $post_id
 	 * @return  void
 	 */
@@ -422,7 +431,7 @@ class WPCAModule_taxonomies extends WPCAModule_Base {
 					}						
 				}
 
-				wp_set_object_terms( $post_id, $terms, $taxonomy->name );					
+				wp_set_object_terms( $post_id, $terms, $taxonomy->name );
 			}			
 
 		}
@@ -431,6 +440,8 @@ class WPCAModule_taxonomies extends WPCAModule_Base {
 
 	/**
 	 * Register taxonomies to sidebar post type
+	 *
+	 * @since  1.0
 	 * @return void 
 	 */
 	public function add_taxonomies_to_sidebar() {
@@ -443,8 +454,10 @@ class WPCAModule_taxonomies extends WPCAModule_Base {
 	
 	/**
 	 * Auto-select children of selected ancestor
-	 * @param  int $term_id  
-	 * @param  int $tt_id    
+	 *
+	 * @since  1.0
+	 * @param  int    $term_id  
+	 * @param  int    $tt_id    
 	 * @param  string $taxonomy 
 	 * @return void           
 	 */

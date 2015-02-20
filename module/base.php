@@ -21,30 +21,35 @@ abstract class WPCAModule_Base {
 	
 	/**
 	 * Module idenfification
+	 * 
 	 * @var string
 	 */
 	protected $id;
 
 	/**
 	 * Module name
+	 * 
 	 * @var string
 	 */
 	protected $name;
 
 	/**
 	 * Module description
+	 * 
 	 * @var string
 	 */
 	protected $description;
 
 	/**
 	 * Enable AJAX search in editor
+	 * 
 	 * @var boolean
 	 */
 	protected $searchable = false;
 
 	/**
 	 * Enable display for all content of type
+	 * 
 	 * @var boolean
 	 */
 	protected $type_display = false;
@@ -59,10 +64,11 @@ abstract class WPCAModule_Base {
 	
 	/**
 	 * Constructor
-	 * @author  Joachim Jensen <jv@intox.dk>
+	 *
 	 * @param   string    $id
 	 * @param   string    $title
 	 * @param   boolean   $ajax
+	 * @param   string    $description
 	 */
 	public function __construct($id, $title, $ajax = false, $description = "") {
 		$this->id = $id;
@@ -72,13 +78,17 @@ abstract class WPCAModule_Base {
 
 		if(is_admin()) {
 
-			add_action('cas-module-admin-box',				array(&$this,'meta_box_content'));
-			add_action('cas-module-save-data',				array(&$this,'save_data'));
+			add_action('cas-module-admin-box',
+				array(&$this,'meta_box_content'));
+			add_action('cas-module-save-data',
+				array(&$this,'save_data'));
 
-			add_filter('cas-module-print-data',				array(&$this,'print_group_data'),10,2);
+			add_filter('cas-module-print-data',
+				array(&$this,'print_group_data'),10,2);
 
 			foreach(WPCACore::post_types()->get_all() as $post_type) {
-				add_filter('manage_'.$post_type->name.'_columns', array(&$this,'metabox_preferences'));
+				add_filter('manage_'.$post_type->name.'_columns',
+					array(&$this,'metabox_preferences'));
 			}
 			
 			if($this->ajax) {
@@ -86,14 +96,15 @@ abstract class WPCAModule_Base {
 			}
 		}
 		
-		add_filter('cas-context-data',						array(&$this,'parse_context_data'));
+		add_filter('cas-context-data',
+			array(&$this,'parse_context_data'));
 
 	}
 
 	/**
 	 * Display module in Screen Settings
-	 * @author Joachim Jensen <jv@intox.dk>
-	 * @version 2.3
+	 *
+	 * @since   1.0
 	 * @param   array    $columns
 	 * @return  array
 	 */
@@ -104,11 +115,12 @@ abstract class WPCAModule_Base {
 	
 	/**
 	 * Default meta box content
+	 * 
 	 * @global object $post
+	 * @since  1.0
 	 * @return void 
 	 */
 	public function meta_box_content() {
-		global $post;
 
 		$data = $this->_get_content();
 		
@@ -117,23 +129,13 @@ abstract class WPCAModule_Base {
 
 		$screen = get_current_screen();
 
-		$hidden_columns  = get_hidden_columns( $screen->id );
-		$id = 'box-'.$this->id;
-		$hidden = in_array($id, $hidden_columns) ? ' hide-if-js' : '';
-
-		echo '<li id="'.$id.'" class="manage-column column-box-'.$this->id.' control-section accordion-section'.$hidden.'">';
-		echo '<h3 class="accordion-section-title" title="'.$this->name.'" tabindex="0">'.$this->name.'</h3>'."\n";
-		echo '<div class="accordion-section-content cas-rule-content" data-cas-module="'.$this->id.'" id="cas-'.$this->id.'">';
-
-		if($this->description) {
-			echo '<p>'.$this->description.'</p>';
-		}
-
+		$panels = "";
 		if($this->type_display) {
-			echo '<ul><li><label><input class="cas-chk-all" type="checkbox" name="cas_condition['.$this->id.'][]" value="'.$this->id.'" /> '.sprintf(__('Display with All %s',WPCACore::DOMAIN),$this->name).'</label></li></ul>'."\n";
+			$panels .= '<ul><li><label><input class="cas-chk-all" type="checkbox" name="cas_condition['.$this->id.'][]" value="'.$this->id.'" /> '.sprintf(__('Display with All %s',WPCACore::DOMAIN),$this->name).'</label></li></ul>'."\n";
 		}
-
+		
 		if($data) {
+
 			$tabs = array();
 			$tabs['all'] = array(
 				'title' => __('View All'),
@@ -150,22 +152,24 @@ abstract class WPCAModule_Base {
 				);
 			}
 
-			echo $this->create_tab_panels($this->id,$tabs);
+			$panels .= $this->create_tab_panels($this->id,$tabs);
 		}
 
-		echo '<p class="button-controls">';
-
-		echo '<span class="add-to-group"><input data-cas-condition="'.$this->id.'" data-cas-module="'.$this->id.'" type="button" name="cas-condition-add" class="js-cas-condition-add button" value="'.__('Add to Group',WPCACore::DOMAIN).'"></span>';
-
-		echo '</p>';
-
-		echo '</div>';
-		echo '</li>';
+		WPCAView::make("module.meta_box",array(
+			'hidden'       => in_array("box-".$this->id, get_hidden_columns( $screen->id )) ? ' hide-if-js' : '',
+			'id'           => $this->id,
+			'description'  => $this->description,
+			'name'         => $this->name,
+			'panels'       => $panels
+		))->render();
+		
 	}
 	
 	/**
 	 * Default query join
+	 * 
 	 * @global wpdb   $wpdb
+	 * @since  1.0
 	 * @return string 
 	 */
 	public function db_join() {
@@ -175,6 +179,8 @@ abstract class WPCAModule_Base {
 	
 	/**
 	 * Idenficiation getter
+	 *
+	 * @since  1.0
 	 * @return string 
 	 */
 	final public function get_id() {
@@ -183,6 +189,8 @@ abstract class WPCAModule_Base {
 
 	/**
 	 * Save data on POST
+	 *
+	 * @since  1.0
 	 * @param  int  $post_id
 	 * @return void
 	 */
@@ -213,33 +221,27 @@ abstract class WPCAModule_Base {
 
 	/**
 	 * Print saved condition data for a group
-	 * @author Joachim Jensen <jv@intox.dk>
-	 * @since  2.0
+	 *
+	 * @since  1.0
 	 * @param  int    $post_id
 	 * @return void
 	 */
 	public function print_group_data($post_id) {
 		$data = get_post_custom_values(WPCACore::PREFIX . $this->id, $post_id);
 		if($data) {
-			echo '<div class="cas-condition cas-condition-'.$this->id.'">';
-
-			echo '<h4>'.$this->name.'</h4>';
-			echo '<ul>';
-
-			if(in_array($this->id,$data)) {
-				echo '<li><label><input type="checkbox" name="cas_condition['.$this->id.'][]" value="'.$this->id.'" checked="checked" /> '.sprintf(__('All %s',WPCACore::DOMAIN),$this->name).'</label></li>';
-			}
-
-			echo $this->_get_checkboxes($this->_get_content(array('include' => $data)),false,true);
-
-			echo '</ul>';
-			echo '</div>';	
+			WPCAView::make('module.group',array(
+				'id' => $this->id,
+				'name' => $this->name,
+				'data' => $data,
+				'checkboxes' => $this->_get_checkboxes($this->_get_content(array('include' => $data)),false,true)
+			))->render();
 		}
 	}
 
 	/**
 	 * Get content for sidebar edit screen
-	 * @author  Joachim Jensen <jv@intox.dk>
+	 *
+	 * @since   1.0
 	 * @param   array     $args
 	 * @return  array
 	 */
@@ -247,8 +249,8 @@ abstract class WPCAModule_Base {
 
 	/**
 	 * Get checkboxes for sidebar edit screen
-	 * @author  Joachim Jensen <jv@intox.dk>
-	 * @version 2.4
+	 *
+	 * @since   1.0
 	 * @param   array           $data
 	 * @param   boolean         $pagination
 	 * @param   array|boolean   $selected_content
@@ -269,21 +271,24 @@ abstract class WPCAModule_Base {
 
 	/**
 	 * Determine if current content is relevant
+	 *
+	 * @since  1.0
 	 * @return boolean 
 	 */
 	abstract public function in_context();
 
 	/**
 	 * Get data from current content
-	 * @author Joachim Jensen <jv@intox.dk>
-	 * @since  2.0
+	 *
+	 * @since  1.0
 	 * @return array|string
 	 */
 	abstract public function get_context_data();
 
 	/**
 	 * Parse context data to sql query
-	 * @author  Joachim Jensen <jv@intox.dk>
+	 *
+	 * @since   1.0
 	 * @param   array|string    $data
 	 * @return  array
 	 */
@@ -307,8 +312,8 @@ abstract class WPCAModule_Base {
 
 	/**
 	 * Create tab panels for administrative meta boxes
-	 * @author Joachim Jensen <jv@intox.dk>
-	 * @since  2
+	 *
+	 * @since  1.0
 	 * @param  string    $id
 	 * @param  array     $args
 	 * @return string
@@ -348,8 +353,8 @@ abstract class WPCAModule_Base {
 
 	/**
 	 * Get content in HTML
-	 * @author  Joachim Jensen <jv@intox.dk>
-	 * @version 2.5
+	 *
+	 * @since   1.0
 	 * @param   array    $args
 	 * @return  string
 	 */
@@ -359,8 +364,8 @@ abstract class WPCAModule_Base {
 
 	/**
 	 * Print HTML content for AJAX request
-	 * @author  Joachim Jensen <jv@intox.dk>
-	 * @version 2.5
+	 *
+	 * @since   1.0
 	 * @return  void
 	 */
 	final public function ajax_print_content() {
