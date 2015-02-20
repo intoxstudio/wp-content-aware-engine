@@ -13,6 +13,29 @@
 	 * @since  2.0
 	 */
 	function GroupHandler() {
+
+		this._init = function() {
+
+			var that = this;
+			var new_current_group = $('.cas-group-single',this.getGroupContainer()).first();
+			if(!new_current_group.length) {
+				$('.accordion-section-content input').attr('disabled',true);
+			} else {
+				$('.cas-group-single input:checkbox').attr('disabled',true);
+				this.setCurrent(new_current_group);
+			}
+
+			this.getGroupContainer().on("change","input",function(e) {
+				$this = $(this);
+				var option = that._oldOptions[$this.attr("name")];
+				if(option && $this.is(":checked") !== option) {
+					that._optionsChanged++;
+				} else {
+					that._optionsChanged--;
+				}
+			});
+		};
+
 		/**
 		 * Container element
 		 * @type {Object}
@@ -25,13 +48,23 @@
 		 */
 		this._currentGroup = null;
 
-		this._oldOptionNegate = null;
+		this._oldOptions = {};
+
+		this._optionsChanged = 0;
 
 		/**
 		 * CSS class for current group
 		 * @type {string}
 		 */
 		this._activeClass = 'cas-group-active';
+
+		this.setOldOptions = function() {
+			var that = this;
+			this.getCurrent().find('.js-cas-group-option').each(function() {
+				$this = $(this);
+				that._oldOptions[$this.attr('name')] = $this.is(":checked");
+			});
+		};
 
 		/**
 		 * Add a group to gui
@@ -87,8 +120,9 @@
 			}
 			if(retval) {
 				this._currentGroup = obj;
-				this._oldOptionNegate = obj.find('.cas-switch input').is(':checked');
+				this.setOldOptions();
 				this._setActive(true);
+				
 			}
 			return retval;
 		};
@@ -105,6 +139,7 @@
 			var retval = true;
 			var remove;
 			cas_alert.dismiss();
+			var that = this;
 			if(this.getCurrent()) {
 
 				if(this.isNewGroup()) {
@@ -117,7 +152,7 @@
 						this._setActive(false);
 						this.remove(this.getCurrent());
 						this._currentGroup = null;
-						this._oldOptionNegate = null;
+						this._oldOptions = {};
 					} else {
 						retval = false;
 					}
@@ -138,7 +173,15 @@
 								$(this).remove();
 							}
 						});
-						this.getCurrent().find('.cas-switch input').attr('checked',this._oldOptionNegate);
+
+						$(this._oldOptions).each(function() {
+
+						});
+
+						$.each(this._oldOptions, function( key, value ) {
+							$("input[name='"+key+"']",that.getCurrent()).attr("checked",value);
+						});
+
 						//Show all again
 						$('li').fadeIn('slow');
 						this._setActive(false);
@@ -183,8 +226,7 @@
 		 * @return {Boolean}
 		 */
 		this.hasUnsavedRules = function() {
-			return this.getCurrent().find('li.cas-new').length > 0 ||
-			(this.getCurrent().find('.cas-switch input').is(':checked') != this._oldOptionNegate);
+			return this._optionsChanged > 0 || this.getCurrent().find('li.cas-new').length > 0;
 		};
 
 		/**
@@ -205,13 +247,15 @@
 		 * @param  {Boolean}  active
 		 */
 		this._setActive = function(active) {
-			$('.js-cas-condition-add, .accordion-section-content input:checkbox').attr('disabled',!active);
+			this._optionsChanged = 0;
+			$('.accordion-section-content input').attr('disabled',!active);
 			$('.accordion-container').toggleClass('accordion-disabled',!active);
 			this.getCurrent().toggleClass(this._activeClass,active);
-			var checkboxes = $(".cas-content input:checkbox",this.getCurrent());
+			var checkboxes = $("input:checkbox",this.getCurrent());
 			checkboxes.attr('disabled',!active);
 			if(active) {
 				checkboxes.attr('checked',true);
+				checkboxes.find('.cas-switch input').attr('checked',this._oldOptionNegate);
 			}
 		};
 
@@ -269,6 +313,8 @@
 			}
 		}
 	};
+		this._init();
+	}
 
 	var cas_admin = {
 
@@ -277,13 +323,6 @@
 		sidebarID: $('#current_sidebar').val(),
 
 		init: function() {
-
-			var new_current_group = $('.cas-group-single',this.groups.getGroupContainer()).first();
-			if(!new_current_group.length) {
-				$('.js-cas-condition-add').attr('disabled',true);
-			} else {
-				this.groups.setCurrent(new_current_group);
-			}
 
 			$('.cas-groups-body .cas-content').on('change', 'input:checkbox', function(e) {
 				var $this = $(this);
@@ -298,11 +337,10 @@
 				}
 			});
 
-			this.addPaginationListener();	
+			this.addPaginationListener();
 			this.addTabListener();
 			this.addPublishListener();
 
-			//this.addCheckboxListener();
 			this.addSearchListener();
 			this.addNewGroupListener();
 			this.addSetGroupListener();
@@ -554,28 +592,6 @@
 			});
 		},
 		
-		/**
-		 * Set tickers if at least one checkbox is checked
-		 */
-		addCheckboxListener: function() {
-			$('.cas-rule-content :input').change( function() {
-				var parent = $(this).parents('.cas-rule-content'); 
-				cas_admin.toggleTick(parent);
-				if($(this).attr('class') == 'cas-chk-all')
-					cas_admin.toggleSelectAll(this, parent);
-			}).change(); //fire change event on page load
-		},
-		toggleTick: function(parent) {
-			//Toggle on any selected checkbox
-			parent.prev().toggleClass('cas-tick',parent.find('input:checked').length > 0);
-		},
-		/**
-		 * Toggle specific input depending on "show with all" checkbox
-		 */
-		toggleSelectAll: function(checkbox, parent) {
-			var checkboxes = parent.find("input[type=checkbox]").not(checkbox);
-			checkboxes.attr("disabled", $(checkbox).is(":checked"));
-		},
 		/**
 		 * Use AJAX to search for content from a specific module
 		 */
