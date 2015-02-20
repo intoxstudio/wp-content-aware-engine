@@ -42,9 +42,11 @@ if(!class_exists("WPCACore")) {
 		const TYPE_CONDITION_GROUP = 'sidebar_group';
 
 		/**
-		 * Post Status for negated condition groups
+		 * Post Statuses for condition groups
 		 */
 		const STATUS_NEGATED       = 'negated';
+		const STATUS_PUBLISHED     = 'publish';
+
 
 		/**
 		 * Language domain
@@ -113,8 +115,7 @@ if(!class_exists("WPCACore")) {
 		/**
 		 * Get post type manager
 		 * 
-		 * @author  Joachim Jensen <jv@intox.dk>
-		 * @version 1.0
+		 * @since 1.0
 		 * @return  WPCAPostTypeManager
 		 */
 		public static function post_types() {
@@ -126,9 +127,8 @@ if(!class_exists("WPCACore")) {
 
 		/**
 		 * Get module manager
-		 * 
-		 * @author  Joachim Jensen <jv@intox.dk>
-		 * @version 1.0
+		 *
+		 * @since 1.0
 		 * @return  WPCAModuleManager
 		 */
 		public static function modules() {
@@ -141,8 +141,7 @@ if(!class_exists("WPCACore")) {
 		/**
 		 * Set initial modules
 		 * 
-		 * @author  Joachim Jensen <jv@intox.dk>
-		 * @version 1.0
+		 * @since 1.0
 		 * @return  void
 		 */
 		public static function set_modules() {
@@ -152,6 +151,7 @@ if(!class_exists("WPCACore")) {
 				'authors'       => true,
 				'page_template' => true,
 				'taxonomies'    => true,
+				'date'          => true,
 				'bbpress'       => function_exists('bbp_get_version'),	// bbPress
 				'bp_member'     => defined('BP_VERSION'),				// BuddyPress
 				'polylang'      => defined('POLYLANG_VERSION'),			// Polylang
@@ -169,8 +169,7 @@ if(!class_exists("WPCACore")) {
 		/**
 		 * Load textdomain
 		 * 
-		 * @author  Joachim Jensen <jv@intox.dk>
-		 * @version 1.0
+		 * @since 1.0
 		 * @return  void
 		 */
 		public static function load_textdomain() {
@@ -179,9 +178,8 @@ if(!class_exists("WPCACore")) {
 		
 		/**
 		 * Register group post type
-		 * 
-		 * @author  Joachim Jensen <jv@intox.dk>
-		 * @version 1.0
+		 *
+		 * @since 1.0
 		 * @return  void
 		 */
 		public static function add_group_post_type() {
@@ -208,7 +206,7 @@ if(!class_exists("WPCACore")) {
 					'all_items'          => '',
 					'view_item'          => '',
 					'search_items'       => '',
-					'not_found'          => '',
+					'not_found'          => __('No Groups found',self::DOMAIN),
 					'not_found_in_trash' => ''
 				),
 				'capabilities' => $capabilities,
@@ -219,7 +217,7 @@ if(!class_exists("WPCACore")) {
 				'supports'     => array('author'), //prevents fallback
 			));
 
-			register_post_status( 'negated', array(
+			register_post_status( self::STATUS_NEGATED, array(
 				'label'                     => _x( 'Negated', 'post' ),
 				'public'                    => false,
 				'exclude_from_search'       => true,
@@ -325,7 +323,9 @@ if(!class_exists("WPCACore")) {
 
 			$context_data['WHERE'][] = "posts.post_type = '".self::TYPE_CONDITION_GROUP."'";
 			
-			$post_status = array('publish',self::STATUS_NEGATED);
+
+			$post_status = array(self::STATUS_PUBLISHED,self::STATUS_NEGATED);
+
 			$context_data['WHERE'][] = "posts.post_status IN ('".implode("','", $post_status)."')";
 				
 			//Syntax changed in MySQL 5.5 and MariaDB 10.0 (reports as version 5.5)
@@ -524,7 +524,7 @@ if(!class_exists("WPCACore")) {
 			}
 
 			return wp_insert_post(array(
-				'post_status' => 'publish', 
+				'post_status' => self::STATUS_PUBLISHED, 
 				'post_type'   => self::TYPE_CONDITION_GROUP,
 				'post_author' => $post->post_author,
 				'post_parent' => $post->ID,
@@ -536,7 +536,6 @@ if(!class_exists("WPCACore")) {
 		 * Uses current post per default
 		 * Creates the first group if necessary
 		 * 
-		 * @author Joachim Jensen <jv@intox.dk>
 		 * @since  1.0
 		 * @param  WP_Post|int    $post_id
 		 * @param  boolean        $create_first
@@ -549,7 +548,7 @@ if(!class_exists("WPCACore")) {
 				'posts_per_page'   => -1,
 				'post_type'        => self::TYPE_CONDITION_GROUP,
 				'post_parent'      => $post->ID,
-				'post_status'      => 'publish,'.self::STATUS_NEGATED,
+				'post_status'      => array(self::STATUS_PUBLISHED,self::STATUS_NEGATED),
 				'order'            => 'ASC'
 			));
 			if($groups == null && $create_first) {
@@ -564,8 +563,7 @@ if(!class_exists("WPCACore")) {
 		/**
 		 * AJAX callback to update a condition group
 		 * 
-		 * @author  Joachim Jensen <jv@intox.dk>
-		 * @version 1.0
+		 * @since 1.0
 		 * @return  void
 		 */
 		public static function ajax_update_group() {
@@ -595,7 +593,7 @@ if(!class_exists("WPCACore")) {
 
 				wp_update_post(array(
 					'ID' => $post_id,
-					'post_status' => isset($_POST[self::PREFIX.'status']) ? self::STATUS_NEGATED : 'publish'
+					'post_status' => isset($_POST[self::PREFIX.'status']) ? self::STATUS_NEGATED : self::STATUS_PUBLISHED
 				));
 
 				do_action('cas-module-save-data',$post_id);
@@ -614,7 +612,6 @@ if(!class_exists("WPCACore")) {
 		/**
 		 * AJAX call to remove condition group from a post type
 		 * 
-		 * @author Joachim Jensen <jv@intox.dk>
 		 * @since  1.0
 		 * @return void
 		 */
@@ -652,9 +649,8 @@ if(!class_exists("WPCACore")) {
 		/**
 		 * Register and enqueue scripts and styles
 		 * for post edit screen
-		 * 
-		 * @author  Joachim Jensen <jv@intox.dk>
-		 * @version 1.0
+		 *
+		 * @since 1.0
 		 * @param   string    $hook
 		 * @return  void
 		 */
@@ -691,8 +687,7 @@ if(!class_exists("WPCACore")) {
 		/**
 		 * Autoload class files
 		 * 
-		 * @author  Joachim Jensen <jv@intox.dk>
-		 * @version 1.0
+		 * @since 1.0
 		 * @param   string    $class
 		 * @return  void
 		 */
@@ -713,9 +708,8 @@ if(!class_exists("WPCACore")) {
 		/**
 		 * Helper function to replace first
 		 * occurence of substring
-		 * 
-		 * @author  Joachim Jensen <jv@intox.dk>
-		 * @version 1.0
+		 *
+		 * @since 1.0
 		 * @param   string    $search
 		 * @param   string    $replace
 		 * @param   string    $subject
