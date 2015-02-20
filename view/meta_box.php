@@ -40,15 +40,17 @@
 						<div class="cas-content">
 							<?php do_action('cas-module-print-data',$group->ID); ?>
 						</div>
-						<div class="menu-settings">
-						<dl>
-						<dt>Negate group</dt>
-						<dd><div class="cas-switch">
-							<input class="js-cas-group-option" type="checkbox" id="cas-negate-<?php echo $group->ID ?>" name="<?php echo WPCACore::PREFIX; ?>status" value="1"<?php checked($group->post_status,WPCACore::STATUS_NEGATED); ?>>
-							<label for="cas-negate-<?php echo $group->ID ?>" data-on="<?php _e('Target all but this context',WPCACore::DOMAIN); ?>" data-off="<?php _e('Target this context',WPCACore::DOMAIN); ?>"></label>
-						</div></dd>
-</dl>
-</div>
+						<div class="menu-settings cas-group-settings">
+							<dl>
+								<dt><?php _e("Negate group",WPCACore::DOMAIN); ?></dt>
+								<dd>
+									<div class="cas-switch">
+										<input class="js-cas-group-option" type="checkbox" id="cas-negate-<?php echo $group->ID ?>" name="<?php echo WPCACore::PREFIX; ?>status" value="1"<?php checked($group->post_status,WPCACore::STATUS_NEGATED); ?>>
+										<label for="cas-negate-<?php echo $group->ID ?>" data-on="<?php _e('Target all but this context',WPCACore::DOMAIN); ?>" data-off="<?php _e('Target this context',WPCACore::DOMAIN); ?>"></label>
+									</div>
+								</dd>
+							</dl>
+						</div>
 						<input type="hidden" class="cas_group_id" name="cas_group_id" value="<?php echo $group->ID; ?>" />
 					</div>
 					<div class="cas-group-sep">

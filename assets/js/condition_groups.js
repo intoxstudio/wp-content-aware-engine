@@ -28,7 +28,9 @@
 			this.getGroupContainer().on("change","input",function(e) {
 				$this = $(this);
 				var option = that._oldOptions[$this.attr("name")];
-				if(option && $this.is(":checked") !== option) {
+				console.log(option);
+				console.log(typeof option !== 'undefined');
+				if(typeof option !== 'undefined' && $this.is(":checked") !== option) {
 					that._optionsChanged++;
 				} else {
 					that._optionsChanged--;
@@ -60,10 +62,12 @@
 
 		this.setOldOptions = function() {
 			var that = this;
+			this._optionsChanged = 0;
 			this.getCurrent().find('.js-cas-group-option').each(function() {
 				$this = $(this);
 				that._oldOptions[$this.attr('name')] = $this.is(":checked");
 			});
+			console.log(this._oldOptions);
 		};
 
 		/**
@@ -174,11 +178,8 @@
 							}
 						});
 
-						$(this._oldOptions).each(function() {
-
-						});
-
 						$.each(this._oldOptions, function( key, value ) {
+							console.log(value);
 							$("input[name='"+key+"']",that.getCurrent()).attr("checked",value);
 						});
 
@@ -186,7 +187,6 @@
 						$('li').fadeIn('slow');
 						this._setActive(false);
 						this._currentGroup = null;
-						this._oldOptionNegate = null;
 					} else {
 						retval = false;
 					}
@@ -247,15 +247,13 @@
 		 * @param  {Boolean}  active
 		 */
 		this._setActive = function(active) {
-			this._optionsChanged = 0;
 			$('.accordion-section-content input').attr('disabled',!active);
 			$('.accordion-container').toggleClass('accordion-disabled',!active);
 			this.getCurrent().toggleClass(this._activeClass,active);
 			var checkboxes = $("input:checkbox",this.getCurrent());
 			checkboxes.attr('disabled',!active);
 			if(active) {
-				checkboxes.attr('checked',true);
-				checkboxes.find('.cas-switch input').attr('checked',this._oldOptionNegate);
+				checkboxes.not('.js-cas-group-option').attr('checked',true);
 			}
 		};
 
@@ -268,6 +266,8 @@
 		this.getGroupContainer = function() {
 			return this._$groupContainer;
 		};
+
+		this._init();
 	}
 
 	/**
@@ -313,8 +313,6 @@
 			}
 		}
 	};
-		this._init();
-	}
 
 	var cas_admin = {
 
@@ -496,13 +494,13 @@
 							content.removeClass('cas-new');
 						}
 
+						cas_admin.groups.setOldOptions();
+
 						$(".cas-condition",cas_admin.groups.getCurrent()).each( function() {
 							if(!$(this).find('input').length) {
 								$(this).remove();
 							}
 						});
-
-						cas_admin.groups._oldOptionNegate = cas_admin.groups.getCurrent().find('.cas-switch input').is(':checked');
 
 						if(data.new_post_id) {
 							cas_admin.groups.getCurrent().append('<input type="hidden" class="cas_group_id" name="cas_group_id" value="'+data.new_post_id+'" />');
