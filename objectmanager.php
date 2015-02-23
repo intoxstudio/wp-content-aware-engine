@@ -37,20 +37,22 @@ if(!class_exists("WPCAObjectManager")) {
 		 * Add object to the manager if key is
 		 * not already added
 		 *
-		 * @since 1.0
+		 * @since   1.0
 		 * @param   mixed    $object
 		 * @param   string   $name
+		 * @return  WPCAObjectManager
 		 */
 		public function add($object,$name) {
 			if(!$this->has($name)) {
 				$this->set($object,$name);
 			}
+			return $this;
 		}
 
 		/**
 		 * Remove object with key from manager
 		 *
-		 * @since 1.0
+		 * @since   1.0
 		 * @param   string    $name
 		 * @return  void
 		 */
