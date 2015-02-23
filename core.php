@@ -31,15 +31,13 @@ if(!class_exists("WPCACore")) {
 
 		/**
 		 * Prefix for data (keys) stored in database
-		 * Backwards compatible
 		 */
-		const PREFIX               = '_cas_';
+		const PREFIX               = '_ca_';
 
 		/**
 		 * Post Type for condition groups
-		 * Backwards compatible
 		 */
-		const TYPE_CONDITION_GROUP = 'sidebar_group';
+		const TYPE_CONDITION_GROUP = 'condition_group';
 
 		/**
 		 * Post Statuses for condition groups
@@ -57,6 +55,11 @@ if(!class_exists("WPCACore")) {
 		 * Capability to manage sidebars
 		 */
 		const CAPABILITY           = 'edit_theme_options';
+
+		/**
+		 * Name for generated nonces
+		 */
+		const NONCE                = '_ca_nonce';
 
 		/**
 		 * Post Types that use the engine
@@ -436,7 +439,7 @@ if(!class_exists("WPCACore")) {
 					'title'    => isset($post_type_obj->labels->ca_title) ? $post_type_obj->labels->ca_title : "",
 					'no_groups'=> isset($post_type_obj->labels->ca_not_found) ? $post_type_obj->labels->ca_not_found : __('No Groups found.',self::DOMAIN),
 					'groups'   => self::_get_condition_groups(null,false),
-					'nonce'    => wp_nonce_field(self::PREFIX.get_the_ID(), '_ca-sidebar-nonce', true, false)
+					'nonce'    => wp_nonce_field(self::PREFIX.get_the_ID(), self::NONCE, true, false)
 				));
 
 				add_meta_box(
@@ -445,7 +448,7 @@ if(!class_exists("WPCACore")) {
 					array($view,'render'),
 					$post_type,
 					'normal',
-					'high'
+					'default'
 				);
 			}
 		}

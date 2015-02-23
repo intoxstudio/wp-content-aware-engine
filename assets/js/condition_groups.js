@@ -317,7 +317,7 @@
 	var cas_admin = {
 
 		groups:new GroupHandler(),
-		nonce: $('#_ca-sidebar-nonce').val(),
+		nonce: $('#_ca_nonce').val(),
 		sidebarID: $('#current_sidebar').val(),
 
 		init: function() {

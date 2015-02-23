@@ -274,7 +274,7 @@ class WPCAModule_taxonomies extends WPCAModule_Base {
 				echo '</li></ul>' . "\n";
 			}
 			echo '<ul><li>' . "\n";
-			echo '<label><input class="cas-chk-all" type="checkbox" name="cas_condition['.$this->id.'][]" value="' . $taxonomy->name . '" /> ' . sprintf(__('Display with %s', WPCACore::DOMAIN), $taxonomy->labels->all_items) . '</label>' . "\n";
+			echo '<label><input class="cas-chk-all" type="checkbox" name="cas_condition['.$this->id.'][]" value="' . $taxonomy->name . '" /> ' . $taxonomy->labels->all_items . '</label>' . "\n";
 			echo '</li></ul>' . "\n";
 	
 			if (!$terms) {
