@@ -449,13 +449,22 @@
 
 				e.preventDefault();
 
+				var groupLabelId = "casn"+new Date().getTime();
+
 				var group = $('<li>', {class: 'cas-group-single cas-group-single-new', html: '<div class="cas-group-body"><span class="cas-group-control cas-group-control-active">'+
 							'<input type="button" class="button js-cas-group-save" value="'+WPCA.save+'" /> | <a class="js-cas-group-cancel" href="#">'+WPCA.cancel+'</a>'+
 							'</span>'+
 							'<span class="cas-group-control">'+
 							'<a class="js-cas-group-edit" href="#">'+WPCA.edit+'</a> | <a class="submitdelete trash js-cas-group-remove" href="#">'+WPCA.remove+'</a>'+
 							'</span>'+
-							'<div class="cas-content"></div></div><div class="cas-group-sep">'+WPCA.or+'</div>'});
+							'<div class="cas-content"></div>'+
+							'<div class="menu-settings cas-group-settings">'+
+							'<dl><dt>'+WPCA.negateGroup+'</dt>'+
+							'<dd><div class="cas-switch">'+
+							'<input class="js-cas-group-option" type="checkbox" id="'+groupLabelId+'" name="'+WPCA.prefix+'status" value="1">'+
+							'<label for="'+groupLabelId+'" data-on="'+WPCA.targetNegate+'" data-off="'+WPCA.targetThis+'"></label>'+
+							'</div></dd></dl>'+
+							'</div></div><div class="cas-group-sep">'+WPCA.or+'</div>'});
 
 				cas_admin.groups.add(group);
 			});

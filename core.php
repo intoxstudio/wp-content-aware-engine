@@ -118,7 +118,7 @@ if(!class_exists("WPCACore")) {
 		/**
 		 * Get post type manager
 		 * 
-		 * @since 1.0
+		 * @since   1.0
 		 * @return  WPCAPostTypeManager
 		 */
 		public static function post_types() {
@@ -131,7 +131,7 @@ if(!class_exists("WPCACore")) {
 		/**
 		 * Get module manager
 		 *
-		 * @since 1.0
+		 * @since   1.0
 		 * @return  WPCAModuleManager
 		 */
 		public static function modules() {
@@ -172,7 +172,7 @@ if(!class_exists("WPCACore")) {
 		/**
 		 * Load textdomain
 		 * 
-		 * @since 1.0
+		 * @since   1.0
 		 * @return  void
 		 */
 		public static function load_textdomain() {
@@ -182,7 +182,7 @@ if(!class_exists("WPCACore")) {
 		/**
 		 * Register group post type
 		 *
-		 * @since 1.0
+		 * @since   1.0
 		 * @return  void
 		 */
 		public static function add_group_post_type() {
@@ -232,7 +232,7 @@ if(!class_exists("WPCACore")) {
 		/**
 		 * Get group IDs by their parent ID
 		 * 
-		 * @since 1.0
+		 * @since   1.0
 		 * @param   int    $parent_id
 		 * @return  array
 		 */
@@ -269,7 +269,7 @@ if(!class_exists("WPCACore")) {
 		/**
 		 * Trash groups when their parent is trashed
 		 *
-		 * @since 1.0
+		 * @since   1.0
 		 * @param   int    $post_id
 		 * @return  void
 		 */
@@ -286,7 +286,7 @@ if(!class_exists("WPCACore")) {
 		/**
 		 * Untrash groups when their parent is untrashed
 		 *
-		 * @since 1.0
+		 * @since   1.0
 		 * @param   int    $post_id
 		 * @return  void
 		 */
@@ -626,7 +626,11 @@ if(!class_exists("WPCACore")) {
 					'remove'        => __('Remove',self::DOMAIN),
 					'confirmRemove' => __('Remove this group and its contents permanently?',self::DOMAIN),
 					'noResults'     => __('No results found.',self::DOMAIN),
-					'confirmCancel' => __('The current group has unsaved changes. Do you want to continue and discard these changes?', self::DOMAIN)
+					'confirmCancel' => __('The current group has unsaved changes. Do you want to continue and discard these changes?', self::DOMAIN),
+					'prefix'        => self::PREFIX,
+					'negateGroup'   => __("Negate group",self::DOMAIN),
+					'targetNegate'  => __('Target all but this context',self::DOMAIN),
+					'targetThis'    => __('Target this context',self::DOMAIN)
 				));
 				wp_enqueue_style('cas_admin_style');
 			}
