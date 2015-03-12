@@ -21,13 +21,13 @@ if (!defined('WPCACore::VERSION')) {
  * b) any or specific author archive
  *
  */
-class WPCAModule_authors extends WPCAModule_Base {
+class WPCAModule_author extends WPCAModule_Base {
 	
 	/**
 	 * Constructor
 	 */
 	public function __construct() {
-		parent::__construct('authors',__('Authors',WPCACore::DOMAIN),true);
+		parent::__construct('author',__('Authors',WPCACore::DOMAIN),true);
 		$this->searchable = true;
 		$this->type_display = true;
 	}

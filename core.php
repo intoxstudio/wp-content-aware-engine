@@ -144,16 +144,16 @@ if(!class_exists("WPCACore")) {
 		/**
 		 * Set initial modules
 		 * 
-		 * @since 1.0
+		 * @since   1.0
 		 * @return  void
 		 */
 		public static function set_modules() {
 			$modules = array(
 				'static'        => true,
-				'post_types'    => true,
-				'authors'       => true,
+				'post_type'     => true,
+				'author'        => true,
 				'page_template' => true,
-				'taxonomies'    => true,
+				'taxonomy'      => true,
 				'date'          => true,
 				'bbpress'       => function_exists('bbp_get_version'),	// bbPress
 				'bp_member'     => defined('BP_VERSION'),				// BuddyPress
@@ -362,7 +362,7 @@ if(!class_exists("WPCACore")) {
 				//TODO: move to modules
 				foreach($context_data['EXCLUDE'] as $exclude) {
 					//quick fix to check for taxonomies terms
-					if($exclude == 'taxonomies') {
+					if($exclude == 'taxonomy') {
 						if($wpdb->get_var("SELECT COUNT(*) FROM $wpdb->term_relationships WHERE object_id = '{$sidebar->ID}'") > 0) {
 							unset($valid[$sidebar->ID]);
 							break;						

@@ -27,7 +27,7 @@ class WPCAModule_page_template extends WPCAModule_Base {
 	 * Constructor
 	 */
 	public function __construct() {
-		parent::__construct('page_templates',__('Page Templates',WPCACore::DOMAIN));
+		parent::__construct('page_template',__('Page Templates',WPCACore::DOMAIN));
 
 		$this->type_display = true;
 	}

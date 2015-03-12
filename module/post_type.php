@@ -21,7 +21,7 @@ if (!defined('WPCACore::VERSION')) {
  * b) specific post type archive or home
  * 
  */
-class WPCAModule_post_types extends WPCAModule_Base {
+class WPCAModule_post_type extends WPCAModule_Base {
 	
 	/**
 	 * Registered public post types
@@ -34,7 +34,7 @@ class WPCAModule_post_types extends WPCAModule_Base {
 	 * Constructor
 	 */
 	public function __construct() {
-		parent::__construct('post_types',__('Post Types',WPCACore::DOMAIN), true);
+		parent::__construct('post_type',__('Post Types',WPCACore::DOMAIN), true);
 		$this->type_display = true;
 		$this->searchable = true;
 		

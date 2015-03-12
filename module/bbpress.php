@@ -20,7 +20,7 @@ if (!defined('WPCACore::VERSION')) {
  * a) any or specific bbpress user profile
  *
  */
-class WPCAModule_bbpress extends WPCAModule_authors {
+class WPCAModule_bbpress extends WPCAModule_author {
 	
 	/**
 	 * Constructor
@@ -30,7 +30,7 @@ class WPCAModule_bbpress extends WPCAModule_authors {
 		$this->id = 'bb_profile';
 		$this->name = __('bbPress User Profiles',WPCACore::DOMAIN);
 		
-		add_filter('cas-db-where-post_types', array(&$this,'add_forum_dependency'));
+		add_filter('cas-db-where-post_type', array(&$this,'add_forum_dependency'));
 	}
 	
 	/**
@@ -75,7 +75,7 @@ class WPCAModule_bbpress extends WPCAModule_authors {
 			if(function_exists('bbp_get_forum_id')) {
 				$data[] = bbp_get_forum_id();
 			}
-			$where = "(post_types.meta_value IS NULL OR post_types.meta_value IN('".implode("','", $data)."'))";
+			$where = "(post_type.meta_value IS NULL OR post_type.meta_value IN('".implode("','", $data)."'))";
 		}
 		return $where;
 	}

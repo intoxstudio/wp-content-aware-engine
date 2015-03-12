@@ -21,7 +21,7 @@ if (!defined('WPCACore::VERSION')) {
  * b) taxonomy archive or specific term archive
  *
  */
-class WPCAModule_taxonomies extends WPCAModule_Base {
+class WPCAModule_taxonomy extends WPCAModule_Base {
 	
 	/**
 	 * Registered public taxonomies
@@ -41,7 +41,7 @@ class WPCAModule_taxonomies extends WPCAModule_Base {
 	 * Constructor
 	 */
 	public function __construct() {
-		parent::__construct('taxonomies',__('Taxonomies',WPCACore::DOMAIN),true);
+		parent::__construct('taxonomy',__('Taxonomies',WPCACore::DOMAIN),true);
 		$this->type_display = true;
 		$this->searchable = true;
 
@@ -101,7 +101,7 @@ class WPCAModule_taxonomies extends WPCAModule_Base {
 		$joins  = "LEFT JOIN $wpdb->term_relationships term ON term.object_id = posts.ID ";
 		$joins .= "LEFT JOIN $wpdb->term_taxonomy taxonomy ON taxonomy.term_taxonomy_id = term.term_taxonomy_id ";
 		$joins .= "LEFT JOIN $wpdb->terms terms ON terms.term_id = taxonomy.term_id ";
-		$joins .= "LEFT JOIN $wpdb->postmeta taxonomies ON taxonomies.post_id = posts.ID AND taxonomies.meta_key = '".WPCACore::PREFIX."taxonomies'";
+		$joins .= "LEFT JOIN $wpdb->postmeta post_taxonomy ON post_taxonomy.post_id = posts.ID AND post_taxonomy.meta_key = '".WPCACore::PREFIX."taxonomy'";
 		
 		return $joins;
 	
@@ -130,13 +130,13 @@ class WPCAModule_taxonomies extends WPCAModule_Base {
 				$taxrules[] = WPCACore::PREFIX."sub_".$taxonomy;
 			}
 
-			return "(terms.slug IS NULL OR ".implode(" OR ",$termrules).") AND (taxonomies.meta_value IS NULL OR taxonomies.meta_value IN('".implode("','",$taxrules)."'))";
+			return "(terms.slug IS NULL OR ".implode(" OR ",$termrules).") AND (post_taxonomy.meta_value IS NULL OR post_taxonomy.meta_value IN('".implode("','",$taxrules)."'))";
 		
 			
 		}
 		$term = get_queried_object();
 
-		return "(terms.slug IS NULL OR (taxonomy.taxonomy = '".$term->taxonomy."' AND terms.slug = '".$term->slug."')) AND (taxonomies.meta_value IS NULL OR taxonomies.meta_value IN ('".$term->taxonomy."','".WPCACore::PREFIX."sub_".$term->taxonomy."'))";
+		return "(terms.slug IS NULL OR (taxonomy.taxonomy = '".$term->taxonomy."' AND terms.slug = '".$term->slug."')) AND (post_taxonomy.meta_value IS NULL OR post_taxonomy.meta_value IN ('".$term->taxonomy."','".WPCACore::PREFIX."sub_".$term->taxonomy."'))";
 	}
 
 	/**
