@@ -292,6 +292,7 @@ class WPCAModule_post_type extends WPCAModule_Base {
 			WPCAView::make("module.meta_box",array(
 				'hidden'       => in_array('box-'.$this->id.'-'.$post_type->name, $hidden_columns) ? ' hide-if-js' : '',
 				'id'           => $this->id.'-'. $post_type->name,
+				'module'       => $this->id,
 				'description'  => "",
 				'name'         => $post_type->label,
 				'panels'       => $panels

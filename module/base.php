@@ -158,6 +158,7 @@ abstract class WPCAModule_Base {
 		WPCAView::make("module.meta_box",array(
 			'hidden'       => in_array("box-".$this->id, get_hidden_columns( $screen->id )) ? ' hide-if-js' : '',
 			'id'           => $this->id,
+			'module'       => $this->id,
 			'description'  => $this->description,
 			'name'         => $this->name,
 			'panels'       => $panels

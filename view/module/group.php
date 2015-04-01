@@ -7,7 +7,7 @@
  */
 ?>
 
-<div class="cas-condition cas-condition-'.$id.'">
+<div class="cas-condition cas-condition-<?php echo $id; ?>">
 	<h4><?php echo $name; ?></h4>
 	<ul>
 <?php if(in_array($id,$data)) : ?>
