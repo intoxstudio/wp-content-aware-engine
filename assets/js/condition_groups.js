@@ -322,7 +322,7 @@
 
 		init: function() {
 
-			$('.cas-groups-body .cas-content').on('change', 'input:checkbox', function(e) {
+			this.groups.getGroupContainer().on('change', '.cas-content input:checkbox', function(e) {
 				var $this = $(this);
 				console.log("change");
 				if(!$this.is('checked')) {
