@@ -135,7 +135,7 @@ if(!class_exists("WPCAMeta")) {
 		 */
 		public function get_data($post_id, $default_fallback = false, $single = true) {
 			$data = get_post_meta($post_id, WPCACore::PREFIX . $this->id, $single);
-			if(!$data && $default_fallback) {
+			if($data == '' && $default_fallback) {
 				$data = $this->default_value;
 			}
 			return $data;
