@@ -221,7 +221,7 @@ if(!class_exists("WPCACore")) {
 			));
 
 			register_post_status( self::STATUS_NEGATED, array(
-				'label'                     => _x( 'Negated', 'post' ),
+				'label'                     => _x( 'Negated', 'condition group', self::DOMAIN ),
 				'public'                    => false,
 				'exclude_from_search'       => true,
 				'show_in_admin_all_list'    => false,
@@ -437,7 +437,7 @@ if(!class_exists("WPCACore")) {
 
 				$view = WPCAView::make("meta_box",array(
 					'title'    => isset($post_type_obj->labels->ca_title) ? $post_type_obj->labels->ca_title : "",
-					'no_groups'=> isset($post_type_obj->labels->ca_not_found) ? $post_type_obj->labels->ca_not_found : __('No Groups found.',self::DOMAIN),
+					'no_groups'=> isset($post_type_obj->labels->ca_not_found) ? $post_type_obj->labels->ca_not_found : __('No Groups found',self::DOMAIN),
 					'groups'   => self::_get_condition_groups(null,false),
 					'nonce'    => wp_nonce_field(self::PREFIX.get_the_ID(), self::NONCE, true, false)
 				));
