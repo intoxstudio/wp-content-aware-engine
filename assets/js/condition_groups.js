@@ -375,7 +375,7 @@
 
 				$.ajax({
 					url: ajaxurl,
-					data:link.attr('href').split('?')[1]+'&nonce='+cas_admin.nonce+'&sidebar_id='+cas_admin.sidebarID+'&action=cas-module-'+action.attr('data-cas-module'),
+					data:link.attr('href').split('?')[1]+'&nonce='+cas_admin.nonce+'&sidebar_id='+cas_admin.sidebarID+'&action=wpca/module/'+action.attr('data-cas-module'),
 					dataType: 'JSON',
 					type: 'POST',
 					success:function(data){
@@ -484,7 +484,7 @@
 				button.attr('disabled',true);
 
 				var data = cas_admin.groups.getCurrent().find("input").serializeArray();
-				data.push({name:"action",value:"cas_add_rule"});
+				data.push({name:"action",value:"wpca/add-rule"});
 				data.push({name:"token",value:cas_admin.nonce});
 				data.push({name:"current_id",value:cas_admin.sidebarID});
 
@@ -542,7 +542,7 @@
 					$.ajax({
 						url: ajaxurl,
 						data:{
-							action: 'cas_remove_group',
+							action: 'wpca/remove-group',
 							token: cas_admin.nonce,
 							cas_group_id: group.find('.cas_group_id').val(),
 							current_id: cas_admin.sidebarID
@@ -647,7 +647,7 @@
 			$.ajax({
 				url: ajaxurl,
 				data:{
-					'action': 'cas-module-'+action.attr('data-cas-module'),
+					'action': 'wpca/module/'+action.attr('data-cas-module'),
 					'nonce': cas_admin.nonce,
 					'sidebar_id': cas_admin.sidebarID,
 					'item_object': input.attr('data-cas-item_object'),

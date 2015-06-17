@@ -99,9 +99,9 @@ if(!class_exists("WPCACore")) {
 				add_action('add_meta_boxes',
 					array(__CLASS__,'add_group_meta_box'),10,3);
 			
-				add_action('wp_ajax_cas_add_rule',
+				add_action('wp_ajax_wpca/add-rule',
 					array(__CLASS__,'ajax_update_group'));
-				add_action('wp_ajax_cas_remove_group',
+				add_action('wp_ajax_wpca/remove-group',
 					array(__CLASS__,'ajax_remove_group'));
 
 			}

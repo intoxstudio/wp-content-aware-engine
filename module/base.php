@@ -92,7 +92,7 @@ abstract class WPCAModule_Base {
 			}
 			
 			if($this->ajax) {
-				add_action('wp_ajax_cas-module-'.$this->id,	array(&$this,'ajax_print_content'));
+				add_action('wp_ajax_wpca/module/'.$this->id,array(&$this,'ajax_print_content'));
 			}
 		}
 		
