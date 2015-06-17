@@ -28,7 +28,7 @@ class WPCAModule_bp_member extends WPCAModule_Base {
 	public function __construct() {
 		parent::__construct('bp_member',__('BuddyPress Members',WPCACore::DOMAIN));
 		
-		add_filter('cas-is-content-static', array(&$this,'static_is_content'));
+		add_filter('wpca/module/static/in-context', array(&$this,'static_is_content'));
 		
 	}
 

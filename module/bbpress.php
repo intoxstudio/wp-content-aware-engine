@@ -30,7 +30,7 @@ class WPCAModule_bbpress extends WPCAModule_author {
 		$this->id = 'bb_profile';
 		$this->name = __('bbPress User Profiles',WPCACore::DOMAIN);
 		
-		add_filter('cas-db-where-post_type', array(&$this,'add_forum_dependency'));
+		add_filter('wpca/module/post_type/db-where', array(&$this,'add_forum_dependency'));
 	}
 	
 	/**

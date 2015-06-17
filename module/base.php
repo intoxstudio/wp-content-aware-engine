@@ -78,12 +78,12 @@ abstract class WPCAModule_Base {
 
 		if(is_admin()) {
 
-			add_action('cas-module-admin-box',
+			add_action('wpca/modules/admin-box',
 				array(&$this,'meta_box_content'));
-			add_action('cas-module-save-data',
+			add_action('wpca/modules/save-data',
 				array(&$this,'save_data'));
 
-			add_filter('cas-module-print-data',
+			add_filter('wpca/modules/print-data',
 				array(&$this,'print_group_data'),10,2);
 
 			foreach(WPCACore::post_types()->get_all() as $post_type) {
@@ -96,7 +96,7 @@ abstract class WPCAModule_Base {
 			}
 		}
 		
-		add_filter('cas-context-data',
+		add_filter('wpca/modules/context-data',
 			array(&$this,'parse_context_data'));
 
 	}
@@ -294,15 +294,15 @@ abstract class WPCAModule_Base {
 	 * @return  array
 	 */
 	final public function parse_context_data($data) {
-		if(apply_filters("cas-is-content-{$this->id}", $this->in_context())) {
-			$data['JOIN'][$this->id] = apply_filters("cas-db-join-{$this->id}", $this->db_join());
+		if(apply_filters("wpca/module/{$this->id}/in-context", $this->in_context())) {
+			$data['JOIN'][$this->id] = apply_filters("wpca/module/{$this->id}/db-join", $this->db_join());
 
 			$context_data = $this->get_context_data();
 
 			if(is_array($context_data)) {
 				$context_data = "({$this->id}.meta_value IS NULL OR {$this->id}.meta_value IN ('".implode("','",$context_data) ."'))";
 			}
-			$data['WHERE'][$this->id] = apply_filters("cas-db-where-{$this->id}", $context_data);
+			$data['WHERE'][$this->id] = apply_filters("wpca/module/{$this->id}/db-where", $context_data);
 
 			
 		} else {

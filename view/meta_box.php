@@ -12,7 +12,7 @@
 <div id="cas-container">
 	<div id="cas-accordion" class="accordion-container postbox<?php echo (empty($groups) ? ' accordion-disabled' : ''); ?>">
 		<ul class="outer-border">
-		<?php do_action('cas-module-admin-box'); ?>
+		<?php do_action('wpca/modules/admin-box'); ?>
 		</ul>
 	</div>
 	<div id="cas-groups" class="postbox<?php echo (empty($groups) ? '' : ' cas-has-groups'); ?>">
@@ -38,7 +38,7 @@
 							<a class="js-cas-group-edit" href="#"><?php _ex('Edit','group',WPCACore::DOMAIN); ?></a> | <a class="submitdelete js-cas-group-remove" href="#"><?php _e('Remove',WPCACore::DOMAIN); ?></a>
 						</span>
 						<div class="cas-content">
-							<?php do_action('cas-module-print-data',$group->ID); ?>
+							<?php do_action('wpca/modules/print-data',$group->ID); ?>
 						</div>
 						<div class="menu-settings cas-group-settings">
 							<dl>

@@ -318,7 +318,7 @@ if(!class_exists("WPCACore")) {
 			}
 
 			$context_data['WHERE'] = $context_data['JOIN'] = $context_data['EXCLUDE'] = array();
-			$context_data = apply_filters('cas-context-data',$context_data);
+			$context_data = apply_filters('wpca/modules/context-data',$context_data);
 
 			// Check if there are any rules for this type of content
 			if(empty($context_data['WHERE']))
@@ -545,7 +545,7 @@ if(!class_exists("WPCACore")) {
 					'post_status' => isset($_POST[self::PREFIX.'status']) ? self::STATUS_NEGATED : self::STATUS_PUBLISHED
 				));
 
-				do_action('cas-module-save-data',$post_id);
+				do_action('wpca/modules/save-data',$post_id);
 
 				$response['message'] = __('Condition group saved',self::DOMAIN);
 
