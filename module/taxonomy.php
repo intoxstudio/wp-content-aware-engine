@@ -224,6 +224,9 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 			//$posts = wp_get_object_terms( $post_id, $taxonomy->name);
 			if($posts || isset($ids[$taxonomy->name]) || isset($ids[WPCACore::PREFIX.'sub_' . $taxonomy->name])) {
 				echo '<div class="cas-condition cas-condition-'.$this->id.'-'.$taxonomy->name.'">';
+				echo '<div class="cas-group-sep">';
+				_e('And',WPCACore::DOMAIN);
+				echo '</div>';
 				echo '<h4>'.$taxonomy->label.'</h4>';
 				echo '<ul>';
 				if(isset($ids[WPCACore::PREFIX.'sub_' . $taxonomy->name])) {
@@ -236,7 +239,7 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 					echo $this->term_checklist($taxonomy, $posts);
 				}
 				echo '</ul>';
-				echo '</div>';	
+				echo '</div>';
 			}
 		}
 

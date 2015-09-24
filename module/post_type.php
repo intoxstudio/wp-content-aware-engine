@@ -168,6 +168,9 @@ class WPCAModule_post_type extends WPCAModule_Base {
 				$posts = $this->_get_content(array('include' => $ids, 'posts_per_page' => -1, 'post_type' => $post_type->name, 'orderby' => 'title', 'order' => 'ASC'));
 				if($posts || isset($lookup[$post_type->name]) || isset($lookup[WPCACore::PREFIX.'sub_' . $post_type->name])) {
 					echo '<div class="cas-condition cas-condition-'.$this->id.'-'.$post_type->name.'">';
+					echo '<div class="cas-group-sep">';
+					_e('And',WPCACore::DOMAIN);
+					echo '</div>';
 					echo '<h4>'.$post_type->label.'</h4>';
 					echo '<ul>';
 					if(isset($lookup[WPCACore::PREFIX.'sub_' . $post_type->name])) {
@@ -208,7 +211,7 @@ class WPCAModule_post_type extends WPCAModule_Base {
 		if(is_singular()) {
 			return array(
 				get_post_type(),
-				get_the_ID()
+				get_queried_object_id()
 			);
 		}
 		global $post_type;

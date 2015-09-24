@@ -53,9 +53,7 @@
 						</div>
 						<input type="hidden" class="cas_group_id" name="cas_group_id" value="<?php echo $group->ID; ?>" />
 					</div>
-					<div class="cas-group-sep">
-						<?php _e('Or',WPCACore::DOMAIN); ?>
-					</div>
+					<div class="cas-group-sep"><?php _e('Or',WPCACore::DOMAIN); ?></div>
 				</li>
 <?php
 				$i++;

@@ -409,7 +409,7 @@
 					var data = [];
 
 					if(!condition_elem.length) {
-						condition_elem = $('<div class="cas-condition cas-condition-'+button.attr('data-cas-condition')+'"><h4>'+button.closest('.accordion-section').find('.accordion-section-title').text()+'</h4><ul></ul></div>');
+						condition_elem = $('<div class="cas-condition cas-condition-'+button.attr('data-cas-condition')+'"><div class="cas-group-sep">'+WPCA.and+'</div><h4>'+button.closest('.accordion-section').find('.accordion-section-title').text()+'</h4><ul></ul></div>');
 						cas_admin.groups.getCurrent().find('.cas-content').append(condition_elem);
 					}
 					

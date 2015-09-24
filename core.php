@@ -304,12 +304,12 @@ if(!class_exists("WPCACore")) {
 		 * Get filtered posts from a post type
 		 * @global type    $wpdb
 		 * @global WP_Post $post
-		 * @return array|boolean 
+		 * @return array 
 		 */
 		public static function get_posts($post_type) {
-			global $wpdb, $post;
+			global $wpdb, $wp_query, $post;
 			
-			if(!self::post_types()->has($post_type) || !$post || is_admin() || post_password_required())
+			if(!self::post_types()->has($post_type) || (!$wp_query->query && !$post) || is_admin() || post_password_required())
 				return array();
 			
 			// Return cache if present
@@ -622,6 +622,7 @@ if(!class_exists("WPCACore")) {
 					'save'          => __('Save',self::DOMAIN),
 					'cancel'        => __('Cancel',self::DOMAIN),
 					'or'            => __('Or',self::DOMAIN),
+					'and'           => __('And',self::DOMAIN),
 					'edit'          => _x('Edit','group',self::DOMAIN),
 					'remove'        => __('Remove',self::DOMAIN),
 					'confirmRemove' => __('Remove this group and its contents permanently?',self::DOMAIN),

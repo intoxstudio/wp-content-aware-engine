@@ -8,6 +8,7 @@
 ?>
 
 <div class="cas-condition cas-condition-<?php echo $id; ?>">
+	<div class="cas-group-sep"><?php _e('And',WPCACore::DOMAIN); ?></div>
 	<h4><?php echo $name; ?></h4>
 	<ul>
 <?php if(in_array($id,$data)) : ?>
