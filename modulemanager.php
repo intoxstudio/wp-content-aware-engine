@@ -22,6 +22,7 @@ if(!class_exists("WPCAModuleManager")) {
 		 * Constructor
 		 */
 		public function __construct() {
+			parent::__construct();
 			add_action('init',array($this,'deploy'),98);
 		}
 
