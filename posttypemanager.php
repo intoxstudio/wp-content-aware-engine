@@ -60,7 +60,7 @@ if(!class_exists("WPCAPostTypeManager")) {
 		 * @return  array
 		 */
 		public function metabox_preferences($columns) {
-			$columns['_title'] = __("Selectable Content",WPCACore::DOMAIN);
+			$columns['_title'] = __("Conditional Content",WPCACore::DOMAIN);
 			return $columns;
 		}
 	}
