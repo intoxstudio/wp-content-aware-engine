@@ -615,7 +615,7 @@ if(!class_exists("WPCACore")) {
 
 				wp_register_script(self::PREFIX.'condition-groups', plugins_url('/assets/js/condition_groups.min.js', __FILE__), array('jquery','accordion'), self::VERSION, true);
 				
-				wp_register_style('cas_admin_style', plugins_url('/assets/css/condition_groups.css', __FILE__), array(), self::VERSION);
+				wp_register_style(self::PREFIX.'condition-groups', plugins_url('/assets/css/condition_groups.css', __FILE__), array(), self::VERSION);
 
 				wp_enqueue_script(self::PREFIX.'condition-groups');
 				wp_localize_script(self::PREFIX.'condition-groups', 'WPCA', array(
@@ -633,7 +633,7 @@ if(!class_exists("WPCACore")) {
 					'targetNegate'  => __('Target all but this context',self::DOMAIN),
 					'targetThis'    => __('Target this context',self::DOMAIN)
 				));
-				wp_enqueue_style('cas_admin_style');
+				wp_enqueue_style(self::PREFIX.'condition-groups');
 			}
 
 		}
