@@ -95,7 +95,7 @@ class WPCAModule_post_type extends WPCAModule_Base {
 			$posts = $wpdb->get_results($wpdb->prepare("
 				SELECT ID, post_title, post_type, post_parent
 				FROM $wpdb->posts
-				WHERE post_type = '%s' AND (post_title LIKE '%s' OR post_name LIKE '%s') AND post_status IN('publish','private','future')
+				WHERE post_type = '%s' AND (post_title LIKE '%s' OR post_name LIKE '%s') AND post_status IN('publish','private','future','draft')
 				".$exclude_query."
 				ORDER BY post_title ASC
 				LIMIT 0,20
@@ -111,7 +111,7 @@ class WPCAModule_post_type extends WPCAModule_Base {
 			$query = new WP_Query(array(
 				'posts_per_page'         => $args['posts_per_page'],
 				'post_type'              => $args['post_type'],
-				'post_status'            => 'publish,private,future',
+				'post_status'            => 'publish,private,future,draft',
 				'post__in'               => $args['include'],
 				'post__not_in'           => $exclude,
 				'orderby'                => $args['orderby'],

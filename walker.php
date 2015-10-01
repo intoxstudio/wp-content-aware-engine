@@ -120,9 +120,14 @@ class WPCAWalker extends Walker {
 		extract($args);
 
 		$value = $object->{$this->value_arg};
-		$title = $object->{$this->label_arg};
+		$title = esc_html($object->{$this->label_arg});
 
-		$output .= "\n".'<li><label><input value="'.$value.'" type="checkbox" title="'.esc_attr( $title ).'" name="'.$this->name.'"'.$this->_checked($value,$selected_terms).'/> '.esc_html( $title ).'</label>';
+		//todo: move to other object
+		if($object instanceof WP_Post) {
+			$title .= $this->_post_states($object);
+		}
+
+		$output .= "\n".'<li><label><input value="'.$value.'" type="checkbox" title="'.esc_attr( $title ).'" name="'.$this->name.'"'.$this->_checked($value,$selected_terms).'/> '. $title .'</label>';
 
 	}
 
@@ -153,6 +158,57 @@ class WPCAWalker extends Walker {
 			return checked(in_array($current,$selected),true,false);
 		}
 		return checked($selected,true,false);
+	}
+
+	/**
+	 * Get post states
+	 *
+	 * @since  1.0
+	 * @see    _post_states()
+	 * @param  WP_Post  $post
+	 * @return string
+	 */
+	private function _post_states($post) {
+		$post_states = array();
+
+		if ( !empty($post->post_password) )
+			$post_states['protected'] = __('Password protected');
+		if ( 'private' == $post->post_status)
+			$post_states['private'] = __('Private');
+		if ( 'draft' == $post->post_status)
+			$post_states['draft'] = __('Draft');
+		if ( 'pending' == $post->post_status)
+			/* translators: post state */
+			$post_states['pending'] = _x('Pending', 'post state');
+		if ( is_sticky($post->ID) )
+			$post_states['sticky'] = __('Sticky');
+		if ( 'future' === $post->post_status ) {
+			$post_states['scheduled'] = __( 'Scheduled' );
+		}
+ 
+		/**
+		 * Filter the default post display states used in the posts list table.
+		 *
+		 * @since 2.8.0
+		 *
+		 * @param array $post_states An array of post display states.
+		 * @param int   $post        The post ID.
+		 */
+		$post_states = apply_filters( 'display_post_states', $post_states, $post );
+
+		$retval = "";
+		if ( ! empty($post_states) ) {
+			$state_count = count($post_states);
+			$i = 0;
+			$retval .= ' - ';
+			foreach ( $post_states as $state ) {
+				++$i;
+				( $i == $state_count ) ? $sep = '' : $sep = ', ';
+				$retval .= "<span class='post-state'>$state$sep</span>";
+			}
+		}
+		return $retval;
+	 
 	}
 }
 
