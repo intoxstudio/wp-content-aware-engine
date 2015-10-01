@@ -78,8 +78,8 @@ class WPCAModule_post_type extends WPCAModule_Base {
 
 		$exclude = array();
 		if ($args['post_type'] == 'page' && 'page' == get_option('show_on_front')) {
-			$exclude[] = get_option('page_on_front');
-			$exclude[] = get_option('page_for_posts');
+			$exclude[] = intval(get_option('page_on_front'));
+			$exclude[] = intval(get_option('page_for_posts'));
 		}
 
 		//WordPress searches in title and content by default
@@ -113,7 +113,7 @@ class WPCAModule_post_type extends WPCAModule_Base {
 				'post_type'              => $args['post_type'],
 				'post_status'            => 'publish,private,future',
 				'post__in'               => $args['include'],
-				'exclude'                => $exclude,
+				'post__not_in'           => $exclude,
 				'orderby'                => $args['orderby'],
 				'order'                  => $args['order'],
 				'paged'                  => $args['paged'],
