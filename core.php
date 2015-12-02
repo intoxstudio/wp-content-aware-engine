@@ -156,7 +156,7 @@ if(!class_exists("WPCACore")) {
 				'bbpress'       => function_exists('bbp_get_version'),	// bbPress
 				'bp_member'     => defined('BP_VERSION'),				// BuddyPress
 				'polylang'      => defined('POLYLANG_VERSION'),			// Polylang
-				'qtranslate'    => defined('QT_SUPPORTED_WP_VERSION'),	// qTranslate
+				'qtranslate'    => defined('QTX_VERSION'),				// qTranslate
 				'transposh'     => defined('TRANSPOSH_PLUGIN_VER'),		// Transposh Translation Filter
 				'wpml'          => class_exists('SitePress')			// WPML Multilingual Blog/CMS
 			);
