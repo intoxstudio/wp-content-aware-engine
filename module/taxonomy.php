@@ -63,12 +63,13 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 	 */
 	public function in_context() {
 		if(is_singular()) {
+			$tax = $this->_get_taxonomies();
 			// Check if content has any taxonomies supported
 			$taxonomies = get_object_taxonomies(get_post_type(),'object');
-			//Only want public taxonomies
+			//Only want taxonomies selectable in admin
 			$taxonomy_names = array();
 			foreach($taxonomies as $taxonomy) {
-				if($taxonomy->public)
+				if(isset($tax[$taxonomy->name]))
 					$taxonomy_names[] = $taxonomy->name;
 			}
 			if(!empty($taxonomy_names)) {
@@ -176,6 +177,10 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 		if (empty($this->taxonomy_objects)) {
 			foreach (get_taxonomies(array('public' => true), 'objects') as $tax) {
 				$this->taxonomy_objects[$tax->name] = $tax;
+			}
+			//Polylang module should later take advantage of taxonomy
+			if(defined('POLYLANG_VERSION')) {
+				unset($this->taxonomy_objects["language"]);
 			}
 		}
 		return $this->taxonomy_objects;
