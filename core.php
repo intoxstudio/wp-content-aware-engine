@@ -613,9 +613,30 @@ if(!class_exists("WPCACore")) {
 					wp_register_script('accordion', plugins_url('/assets/js/accordion.min.js', __FILE__), array('jquery'), self::VERSION, true);
 				}
 
-				wp_register_script(self::PREFIX.'condition-groups', plugins_url('/assets/js/condition_groups.min.js', __FILE__), array('jquery','accordion'), self::VERSION, true);
+				if(!wp_script_is("select2","registered")) {
+					wp_register_script(
+						'select2',
+						plugins_url('/assets/js/select2.min.js', __FILE__),
+						array('jquery'),
+						'3.5.4',
+						true
+					);
+				}
+
+				wp_register_script(
+					self::PREFIX.'condition-groups',
+					plugins_url('/assets/js/condition_groups.min.js', __FILE__),
+					array('jquery','select2','backbone'),
+					self::VERSION,
+					true
+				);
 				
-				wp_register_style(self::PREFIX.'condition-groups', plugins_url('/assets/css/condition_groups.css', __FILE__), array(), self::VERSION);
+				wp_register_style(
+					self::PREFIX.'condition-groups',
+					plugins_url('/assets/css/condition_groups.css', __FILE__),
+					array(),
+					self::VERSION
+				);
 
 				wp_enqueue_script(self::PREFIX.'condition-groups');
 				wp_localize_script(self::PREFIX.'condition-groups', 'WPCA', array(
