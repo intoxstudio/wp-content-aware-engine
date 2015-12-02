@@ -1,7 +1,6 @@
 <?php
 /**
  * @package WP Content Aware Engine
- * @version 1.0
  * @copyright Joachim Jensen <jv@intox.dk>
  * @license GPLv3
  */
@@ -27,8 +26,7 @@ class WPCAModule_author extends WPCAModule_Base {
 	 * Constructor
 	 */
 	public function __construct() {
-		parent::__construct('author',__('Authors',WPCACore::DOMAIN),true);
-		$this->searchable = true;
+		parent::__construct('author',__('Authors',WPCACore::DOMAIN));
 		$this->type_display = true;
 	}
 	
@@ -70,7 +68,7 @@ class WPCAModule_author extends WPCAModule_Base {
 		$args['fields'] = array('ID','display_name');
 
 		if(isset($args['search'])) {
-			add_filter( 'user_search_columns', array(&$this,'filter_search_column'), 10, 3 );
+			add_filter( 'user_search_columns', array($this,'filter_search_column'), 10, 3 );
 		}
 
 		$user_query = new WP_User_Query(  $args );
@@ -85,11 +83,11 @@ class WPCAModule_author extends WPCAModule_Base {
 	}
 
 	/**
-	 * Get content in HTML
+	 * Get content in JSON
 	 *
 	 * @since   1.0
 	 * @param   array    $args
-	 * @return  string
+	 * @return  array
 	 */
 	public function ajax_get_content($args) {
 		$args = wp_parse_args($args, array(
@@ -99,16 +97,13 @@ class WPCAModule_author extends WPCAModule_Base {
 		));
 
 		//display_name does not seem to be recognized, add it anyway
-		$posts = $this->_get_content(array(
+		return $this->_get_content(array(
 			'orderby'   => 'title',
 			'order'     => 'ASC',
 			'offset'    => ($args['paged']-1)*20,
 			'search'    => '*'.$args['search'].'*',
 			'search_columns' => array( 'user_nicename', 'user_login', 'display_name' )
 		));
-
-		return $this->_get_checkboxes($posts, empty($args['search']));
-
 	}
 
 	/**

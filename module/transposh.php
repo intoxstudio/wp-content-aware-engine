@@ -1,7 +1,6 @@
 <?php
 /**
  * @package WP Content Aware Engine
- * @version 1.0
  * @copyright Joachim Jensen <jv@intox.dk>
  * @license GPLv3
  */
@@ -86,5 +85,20 @@ class WPCAModule_transposh extends WPCAModule_Base {
 		}
 		return $langs;
 	}
-	
+
+	/**
+	 * Get content in JSON
+	 *
+	 * @since  2.0
+	 * @param  array  $args
+	 * @return array
+	 */
+	public function ajax_get_content($args) {
+		$args = wp_parse_args($args, array(
+			'paged'          => 1,
+			'search'         => ''
+		));
+
+		return $this->_get_content($args);
+	}
 }

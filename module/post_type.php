@@ -1,7 +1,6 @@
 <?php
 /**
  * @package WP Content Aware Engine
- * @version 1.0
  * @copyright Joachim Jensen <jv@intox.dk>
  * @license GPLv3
  */
@@ -34,27 +33,25 @@ class WPCAModule_post_type extends WPCAModule_Base {
 	 * Constructor
 	 */
 	public function __construct() {
-		parent::__construct('post_type',__('Post Types',WPCACore::DOMAIN), true);
+		parent::__construct('post_type',__('Post Types',WPCACore::DOMAIN));
 		$this->type_display = true;
-		$this->searchable = true;
-		
-		add_action('transition_post_status',
-			array(&$this,'post_ancestry_check'),10,3);
-
 	}
 
 	/**
-	 * Display module in Screen Settings
+	 * Initiate module
 	 *
-	 * @since   1.0
-	 * @param   array    $columns
-	 * @return  array
+	 * @since  2.0
+	 * @return void
 	 */
-	public function metabox_preferences($columns) {
+	public function initiate() {
+		parent::initiate();
+
+		add_action('transition_post_status',
+			array(&$this,'post_ancestry_check'),10,3);
+
 		foreach ($this->_post_types()->get_all() as $post_type) {
-			$columns['box-'.$this->id.'-'.$post_type->name] = $post_type->label;
+			add_action('wp_ajax_wpca/module/'.$this->id.'-'.$post_type->name,array($this,'ajax_print_content'));
 		}
-		return $columns;
 	}
 
 	/**
@@ -68,8 +65,8 @@ class WPCAModule_post_type extends WPCAModule_Base {
 		$args = wp_parse_args($args, array(
 			'include'        => '',
 			'post_type'      => 'post',
-			'orderby'        => 'date',
-			'order'          => 'DESC',
+			'orderby'        => 'title',
+			'order'          => 'ASC',
 			'paged'          => 1,
 			'posts_per_page' => 20,
 			'search'         => ''
@@ -80,6 +77,11 @@ class WPCAModule_post_type extends WPCAModule_Base {
 		if ($args['post_type'] == 'page' && 'page' == get_option('show_on_front')) {
 			$exclude[] = intval(get_option('page_on_front'));
 			$exclude[] = intval(get_option('page_for_posts'));
+		}
+
+		$post_status = array('publish','private','future','draft');
+		if($args["post_type"] == "attachment") {
+			$post_status = "inherit";
 		}
 
 		//WordPress searches in title and content by default
@@ -93,9 +95,9 @@ class WPCAModule_post_type extends WPCAModule_Base {
 			//Using unprepared (safe) exclude because WP is not good at parsing arrays
 			global $wpdb;
 			$posts = $wpdb->get_results($wpdb->prepare("
-				SELECT ID, post_title, post_type, post_parent
+				SELECT ID, post_title, post_type, post_parent, post_status, post_password
 				FROM $wpdb->posts
-				WHERE post_type = '%s' AND (post_title LIKE '%s' OR post_name LIKE '%s') AND post_status IN('publish','private','future','draft')
+				WHERE post_type = '%s' AND (post_title LIKE '%s' OR post_name LIKE '%s') AND post_status IN('".implode("','", $post_status)."')
 				".$exclude_query."
 				ORDER BY post_title ASC
 				LIMIT 0,20
@@ -104,14 +106,11 @@ class WPCAModule_post_type extends WPCAModule_Base {
 				"%".$args['search']."%",
 				"%".$args['search']."%"
 			));
-			$total_pages = 1;
-			$total_items = $args['posts_per_page'];
 		} else {
-			//WP3.1 does not support (array) as post_status
 			$query = new WP_Query(array(
 				'posts_per_page'         => $args['posts_per_page'],
 				'post_type'              => $args['post_type'],
-				'post_status'            => 'publish,private,future,draft',
+				'post_status'            => $post_status,
 				'post__in'               => $args['include'],
 				'post__not_in'           => $exclude,
 				'orderby'                => $args['orderby'],
@@ -121,16 +120,7 @@ class WPCAModule_post_type extends WPCAModule_Base {
 				'update_post_term_cache' => false
 			));
 			$posts = $query->posts;
-			$total_pages = $query->max_num_pages;
-			$total_items = $query->found_posts;
 		}
-
-		$this->pagination = array(
-			'paged'       => $args['paged'],
-			'per_page'    => $args['posts_per_page'],
-			'total_pages' => $total_pages,
-			'total_items' => $total_items
-		);
 
 		return $posts;
 	}
@@ -153,42 +143,42 @@ class WPCAModule_post_type extends WPCAModule_Base {
 	}
 
 	/**
-	 * Print saved condition data for a group
+	 * Get data for condition group
 	 *
-	 * @since   1.0
-	 * @param   int    $post_id
-	 * @return  void
+	 * @since  2.0
+	 * @param  array  $group_data
+	 * @param  int    $post_id
+	 * @return array
 	 */
-	public function print_group_data($post_id) {
+	public function get_group_data($group_data,$post_id) {
 		$ids = get_post_custom_values(WPCACore::PREFIX . $this->id, $post_id);
-		
 		if($ids) {
 			$lookup = array_flip((array)$ids);
 			foreach($this->_post_types()->get_all() as $post_type) {
-				$posts = $this->_get_content(array('include' => $ids, 'posts_per_page' => -1, 'post_type' => $post_type->name, 'orderby' => 'title', 'order' => 'ASC'));
-				if($posts || isset($lookup[$post_type->name]) || isset($lookup[WPCACore::PREFIX.'sub_' . $post_type->name])) {
-					echo '<div class="cas-condition cas-condition-'.$this->id.'-'.$post_type->name.'">';
-					echo '<div class="cas-group-sep">';
-					_e('And',WPCACore::DOMAIN);
-					echo '</div>';
-					echo '<h4>'.$post_type->label.'</h4>';
-					echo '<ul>';
+				$data = $this->_get_content(array('include' => $ids, 'posts_per_page' => -1, 'post_type' => $post_type->name, 'orderby' => 'title', 'order' => 'ASC'));
+
+				if($data || isset($lookup[$post_type->name]) || isset($lookup[WPCACore::PREFIX.'sub_' . $post_type->name])) {
+					$group_data[$this->id."-".$post_type->name] = array(
+						"label" => $post_type->label
+					);
+
+					if($data) {
+						$posts = array();
+						foreach ($data as $post) {
+							$posts[$post->ID] = $post->post_title.$this->_post_states($post);
+						}
+						$group_data[$this->id."-".$post_type->name]["data"] = $posts;
+					}
+
 					if(isset($lookup[WPCACore::PREFIX.'sub_' . $post_type->name])) {
-						echo '<li><label><input type="checkbox" name="cas_condition['.$this->id.'][]" value="'.WPCACore::PREFIX.'sub_' . $post_type->name . '" checked="checked" /> ' . __('Automatically select new children of a selected ancestor', WPCACore::DOMAIN) . '</label></li>' . "\n";
+						$group_data[$this->id."-".$post_type->name]["options"] = array(
+							WPCACore::PREFIX.'sub_' . $post_type->name => true
+						);
 					}
-					if(isset($lookup[$post_type->name])) {
-						echo '<li><label><input type="checkbox" name="cas_condition['.$this->id.'][]" value="'.$post_type->name.'" checked="checked" /> '.$post_type->labels->all_items.'</label></li>' . "\n";
-					}
-					if($posts) {
-						echo $this->term_checklist($post_type->name, $posts, false, $ids);	
-					}					
-					echo '</ul>';
-					echo '</div>';	
 				}
 			}
-
 		}
-
+		return $group_data;
 	}
 	
 	/**
@@ -223,126 +213,6 @@ class WPCAModule_post_type extends WPCAModule_Base {
 	}
 
 	/**
-	 * Meta box content
-	 * 
-	 * @global WP_Post $post
-	 * @since  1.0
-	 * @return void 
-	 */
-	public function meta_box_content() {
-		global $post;
-
-		$screen = get_current_screen();
-		$hidden_columns  = get_hidden_columns( $screen->id );
-
-		foreach ($this->_post_types()->get_all() as $post_type) {
-
-			$recent_posts = $this->_get_content(array('post_type' => $post_type->name));
-
-			$panels = "";
-			if($post_type->hierarchical) {
-				$panels .= '<ul><li>' . "\n";
-				$panels .= '<label><input type="checkbox" name="cas_condition['.$this->id.'][]" value="'.WPCACore::PREFIX.'sub_' . $post_type->name . '" /> ' . __('Automatically add new children of a selected ancestor', WPCACore::DOMAIN) . '</label>' . "\n";
-				$panels .= '</li></ul>' . "\n";
-			}
-			
-			if($this->type_display) {
-				$archive_label = $post_type->has_archive ? "/".sprintf(__("%s Archives",WPCACore::DOMAIN),$post_type->labels->singular_name) : "";
-				$archive_label = $post_type->name == "post" ? "/".__("Blog Page",WPCACore::DOMAIN) : $archive_label;
-				$panels .= '<ul><li>' . "\n";
-				$panels .= '<label><input class="cas-chk-all" type="checkbox" name="cas_condition['.$this->id.'][]" value="' . $post_type->name . '" /> ' . $post_type->labels->all_items . $archive_label . '</label>' . "\n";
-				$panels .= '</li></ul>' . "\n";
-			}
-
-			if (!$recent_posts) {
-				$panels .= '<p>' . __('No items.') . '</p>';
-			} else {
-				//No need to use two queries before knowing there are items
-				if(count($recent_posts) < 20) {
-					$posts = $recent_posts;
-				} else {
-					$posts = $this->_get_content(array(
-						'post_type' => $post_type->name,
-						'orderby' => 'title',
-						'order' => 'ASC'
-					));
-				}
-
-				$tabs = array();
-				$tabs['most-recent'] = array(
-					'title' => __('Most Recent'),
-					'status' => true,
-					'content' => $this->term_checklist($post_type->name, $recent_posts)
-				);
-				$tabs['all'] = array(
-					'title' => __('View All'),
-					'status' => false,
-					'content' => $this->term_checklist($post_type->name, $posts, true)
-				);
-				if($this->searchable) {
-					$tabs['search'] = array(
-						'title' => __('Search'),
-						'status' => false,
-						'content' => '',
-						'content_before' => '<p><input data-cas-item_object="'.$post_type->name.'" class="cas-autocomplete-' . $this->id . ' cas-autocomplete quick-search" id="cas-autocomplete-' . $this->id . '-' . $post_type->name . '" type="search" name="cas-autocomplete" value="" placeholder="'.__('Search').'" autocomplete="off" /><span class="spinner"></span></p>'
-					);
-				}
-
-				$panels .= $this->create_tab_panels($this->id . '-' . $post_type->name,$tabs);
-				
-			}
-
-			WPCAView::make("module.meta_box",array(
-				'hidden'       => in_array('box-'.$this->id.'-'.$post_type->name, $hidden_columns) ? ' hide-if-js' : '',
-				'id'           => $this->id.'-'. $post_type->name,
-				'module'       => $this->id,
-				'description'  => "",
-				'name'         => $post_type->label,
-				'panels'       => $panels
-			))->render();
-
-		}
-	}
-
-	/**
-	 * Get checkboxes for sidebar edit screen
-	 *
-	 * @since   1.0
-	 * @param   string          $item_object
-	 * @param   array           $data
-	 * @param   boolean         $pagination
-	 * @param   array|boolean   $selected_data
-	 * @return  string
-	 */
-	protected function term_checklist($item_object, $data, $pagination = false, $selected_data = array()) {
-
-		$args['selected_terms'] = $selected_data;
-
-		$return = WPCAWalker::make($this->id,'post_parent','ID','post_title')
-		->walk($data,0,$args);
-
-		if($pagination) {
-
-			$paginate = paginate_links(array(
-				'base'         => admin_url( 'admin-ajax.php').'%_%',
-				'format'       => '?paged=%#%',
-				'total'        => $this->pagination['total_pages'],
-				'current'      => $this->pagination['paged'],
-				'mid_size'     => 2,
-				'end_size'     => 1,
-				'prev_next'    => true,
-				'prev_text'    => 'prev',
-				'next_text'    => 'next',
-				'add_args'     => array('item_object'=>$item_object),
-			));
-			$return = $paginate.$return.$paginate;
-		}
-		
-		return $return;
-
-	}
-
-	/**
 	 * Get content in HTML
 	 *
 	 * @since   1.0
@@ -355,6 +225,9 @@ class WPCAModule_post_type extends WPCAModule_Base {
 			'paged'          => 1,
 			'search'         => ''
 		));
+
+		preg_match('/post_type-(.+)$/i', $args["item_object"], $matches);
+		$args['item_object'] = isset($matches[1]) ? $matches[1] : "";
 
 		$post_type = get_post_type_object($args['item_object']);
 
@@ -370,8 +243,90 @@ class WPCAModule_post_type extends WPCAModule_Base {
 			'search'    => $args['search']
 		));
 
-		return $this->term_checklist($post_type->name, $posts, empty($args['search']));
+		$retval = array();
+		foreach ($posts as $post) {
+			$retval[$post->ID] = $post->post_title.$this->_post_states($post);
+		}
+		return $retval;
 
+	}
+
+	/**
+	 * Set module info in list
+	 *
+	 * @since  2.0
+	 * @param  array  $list
+	 * @return array
+	 */
+	public function list_module($list) {
+		foreach($this->_post_types()->get_all() as $post_type) {
+			$list[$this->id."-".$post_type->name] = $post_type->label;
+		}
+		return $list;
+	}
+
+	/**
+	 * Create module Backbone template
+	 * for administration
+	 *
+	 * @since  2.0
+	 * @return void
+	 */
+	public function template_condition() {
+		if(WPCACore::post_types()->has(get_post_type())) {
+			foreach($this->_post_types()->get_all() as $post_type) {
+				if($this->type_display) {
+					$placeholder = $post_type->has_archive ? "/".sprintf(__("%s Archives",WPCACore::DOMAIN),$post_type->labels->singular_name) : "";
+					$placeholder = $post_type->name == "post" ? "/".__("Blog Page",WPCACore::DOMAIN) : $placeholder;
+					$placeholder = $post_type->labels->all_items.$placeholder;
+				}
+				echo WPCAView::make("module/condition_".$this->id."_template",array(
+					'id'          => $this->id,
+					'placeholder' => $placeholder,
+					'post_type'   => $post_type->name,
+					'autoselect'  => WPCACore::PREFIX.'sub_'.$post_type->name
+				))->render();
+			}
+		}
+	}
+
+	/**
+	 * Get post states
+	 *
+	 * @since  1.0
+	 * @see    _post_states()
+	 * @param  WP_Post  $post
+	 * @return string
+	 */
+	private function _post_states($post) {
+		$post_states = array();
+
+		if ( !empty($post->post_password) )
+			$post_states['protected'] = __('Password protected');
+		if ( 'private' == $post->post_status)
+			$post_states['private'] = __('Private');
+		if ( 'draft' == $post->post_status)
+			$post_states['draft'] = __('Draft');
+		if ( 'pending' == $post->post_status)
+			/* translators: post state */
+			$post_states['pending'] = _x('Pending', 'post state');
+		if ( is_sticky($post->ID) )
+			$post_states['sticky'] = __('Sticky');
+		if ( 'future' === $post->post_status ) {
+			$post_states['scheduled'] = __( 'Scheduled' );
+		}
+ 
+		/**
+		 * Filter the default post display states used in the posts list table.
+		 *
+		 * @since 2.8.0
+		 *
+		 * @param array $post_states An array of post display states.
+		 * @param int   $post        The post ID.
+		 */
+		$post_states = apply_filters( 'display_post_states', $post_states, $post );
+
+		return $post_states ? " (".implode(", ", $post_states).")" : "";
 	}
 
 	

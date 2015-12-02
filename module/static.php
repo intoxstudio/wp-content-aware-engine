@@ -1,7 +1,6 @@
 <?php
 /**
  * @package WP Content Aware Engine
- * @version 1.0
  * @copyright Joachim Jensen <jv@intox.dk>
  * @license GPLv3
  */
@@ -23,6 +22,12 @@ if (!defined('WPCACore::VERSION')) {
  *
  */
 class WPCAModule_static extends WPCAModule_Base {
+
+	/**
+	 * Cached search string
+	 * @var string
+	 */
+	protected $search_string;
 	
 	/**
 	 * Constructor
@@ -45,10 +50,42 @@ class WPCAModule_static extends WPCAModule_Base {
 			'search'     => __('Search Results', WPCACore::DOMAIN),
 			'404'        => __('404 Page', WPCACore::DOMAIN)
 		);
+
 		if(isset($args['include'])) {
 			$static = array_intersect_key($static, array_flip($args['include']));
 		}
+		if(isset($args["search"]) && $args["search"]) {
+			$this->search_string = $args["search"];
+			$static = array_filter($static,array($this,"_filter_search"));
+		}
 		return $static;
+	}
+
+	/**
+	 * Filter content based on search
+	 *
+	 * @since  2.0
+	 * @param  string  $value
+	 * @return boolean
+	 */
+	protected function _filter_search($value) {
+		return mb_stripos($value, $this->search_string) !== false;
+	}
+
+	/**
+	 * Get content in JSON
+	 *
+	 * @since  2.0
+	 * @param  array  $args
+	 * @return array
+	 */
+	public function ajax_get_content($args) {
+		$args = wp_parse_args($args, array(
+			'paged'          => 1,
+			'search'         => ''
+		));
+
+		return $this->_get_content($args);
 	}
 
 	/**

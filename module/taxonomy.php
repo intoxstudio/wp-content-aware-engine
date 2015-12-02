@@ -1,7 +1,6 @@
 <?php
 /**
  * @package WP Content Aware Engine
- * @version 1.0
  * @copyright Joachim Jensen <jv@intox.dk>
  * @license GPLv3
  */
@@ -41,26 +40,19 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 	 * Constructor
 	 */
 	public function __construct() {
-		parent::__construct('taxonomy',__('Taxonomies',WPCACore::DOMAIN),true);
+		parent::__construct('taxonomy',__('Taxonomies',WPCACore::DOMAIN));
 		$this->type_display = true;
-		$this->searchable = true;
-
-		add_action('created_term', array(&$this,'term_ancestry_check'),10,3);
-
 	}
 
-	/**
-	 * Display module in Screen Settings
-	 *
-	 * @since   1.0
-	 * @param   array    $columns
-	 * @return  array
-	 */
-	public function metabox_preferences($columns) {
-		foreach ($this->_get_taxonomies() as $tax) {
-			$columns['box-'.$this->id.'-'.$tax->name] = $tax->label;
+	public function initiate() {
+		parent::initiate();
+		add_action('created_term',
+			array($this,'term_ancestry_check'),10,3);
+
+		foreach ($this->_get_taxonomies() as $taxonomy) {
+			add_action('wp_ajax_wpca/module/'.$this->id.'-'.$taxonomy->name,
+				array($this,'ajax_print_content'));
 		}
-		return $columns;
 	}
 	
 	/**
@@ -158,9 +150,8 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 		));
 		extract($args);
 		$total_items = wp_count_terms($taxonomy,array('hide_empty'=>false));
-		if(!$total_items) {
-			$terms = array();
-		} else {
+		$terms = array();
+		if($total_items) {
 			$terms = get_terms($taxonomy, array(
 				'number'     => $number,
 				'hide_empty' => false,
@@ -169,18 +160,8 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 				'orderby'    => $orderby,
 				'order'      => $order,
 				'search'     => $args['search']
-			));	
+			));
 		}
-	
-		$per_page = $number;
-		$this->pagination = array(
-			'paged'       => $offset+1,
-			'per_page'    => $per_page,
-			'total_pages' => ceil($total_items/$per_page),
-			'total_items' => $total_items
-		);
-
-		
 		return $terms;
 	}
 
@@ -201,13 +182,14 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 	}
 
 	/**
-	 * Print condition data for a group
+	 * Get data for condition group
 	 *
-	 * @since   1.0
-	 * @param   int    $post_id
-	 * @return  void
+	 * @since  2.0
+	 * @param  array  $group_data
+	 * @param  int    $post_id
+	 * @return array
 	 */
-	public function print_group_data($post_id) {
+	public function get_group_data($group_data,$post_id) {
 		$ids = array_flip((array)get_post_custom_values(WPCACore::PREFIX . $this->id, $post_id));
 
 		//Fetch all terms and group by tax to prevent lazy loading
@@ -221,161 +203,79 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 
 			$posts = isset($terms_by_tax[$taxonomy->name]) ? $terms_by_tax[$taxonomy->name] : 0;
 
-			//$posts = wp_get_object_terms( $post_id, $taxonomy->name);
 			if($posts || isset($ids[$taxonomy->name]) || isset($ids[WPCACore::PREFIX.'sub_' . $taxonomy->name])) {
-				echo '<div class="cas-condition cas-condition-'.$this->id.'-'.$taxonomy->name.'">';
-				echo '<div class="cas-group-sep">';
-				_e('And',WPCACore::DOMAIN);
-				echo '</div>';
-				echo '<h4>'.$taxonomy->label.'</h4>';
-				echo '<ul>';
-				if(isset($ids[WPCACore::PREFIX.'sub_' . $taxonomy->name])) {
-					echo '<li class=""><label><input type="checkbox" name="cas_condition['.$this->id.'][]" value="'.WPCACore::PREFIX.'sub_' . $taxonomy->name . '" checked="checked" /> ' . __('Automatically select new children of a selected ancestor', WPCACore::DOMAIN) . '</label></li>' . "\n";
-				}
-				if(isset($ids[$taxonomy->name])) {
-					echo '<li class=""><label><input type="checkbox" name="cas_condition['.$this->id.'][]" value="'.$taxonomy->name.'" checked="checked" /> '.$taxonomy->labels->all_items.'</label></li>' . "\n";
-				}
-				if($posts) {
-					echo $this->term_checklist($taxonomy, $posts);
-				}
-				echo '</ul>';
-				echo '</div>';
-			}
-		}
-
-	}
-
-	/**
-	 * Meta box content
-	 * 
-	 * @global WP_Post $post
-	 * @since  1.0
-	 * @return void 
-	 */
-	public function meta_box_content() {
-		global $post;
-
-		$screen = get_current_screen();
-
-		$hidden_columns  = get_hidden_columns( $screen->id );
-
-		foreach ($this->_get_taxonomies() as $taxonomy) {
-
-			$id = 'box-'.$this->id.'-'.$taxonomy->name;
-			$hidden = in_array($id, $hidden_columns) ? ' hide-if-js' : '';
-
-			echo '<li id="'.$id.'" class="manage-column column-'.$id.' control-section accordion-section'.$hidden.'">';
-			echo '<h3 class="accordion-section-title" title="'.$taxonomy->label.'" tabindex="0">'.$taxonomy->label.'</h3>'."\n";
-			echo '<div class="accordion-section-content cas-rule-content" data-cas-module="'.$this->id.'" id="cas-' . $this->id . '-' . $taxonomy->name . '">';
-
-			$terms = $this->_get_content(array('taxonomy' => $taxonomy->name));
-			
-
-			if($taxonomy->hierarchical) {
-				echo '<ul><li>' . "\n";
-				echo '<label><input type="checkbox" name="cas_condition['.$this->id.'][]" value="'.WPCACore::PREFIX.'sub_' . $taxonomy->name . '" /> ' . __('Automatically select new children of a selected ancestor', WPCACore::DOMAIN) . '</label>' . "\n";
-				echo '</li></ul>' . "\n";
-			}
-			echo '<ul><li>' . "\n";
-			echo '<label><input class="cas-chk-all" type="checkbox" name="cas_condition['.$this->id.'][]" value="' . $taxonomy->name . '" /> ' . $taxonomy->labels->all_items . '</label>' . "\n";
-			echo '</li></ul>' . "\n";
-	
-			if (!$terms) {
-				echo '<p>' . __('No items.') . '</p>';
-			} else {
-
-				//No need to use two queries before knowing there are items
-				if(count($terms) < 20) {
-					$popular_terms = $terms;
-				} else {
-					$popular_terms = $this->_get_content(array('taxonomy' => $taxonomy->name, 'orderby' => 'count', 'order' => 'DESC'));
-				}
 				
+				$group_data[$this->id."-".$taxonomy->name] = array(
+						"label" => $taxonomy->label
+				);
 
-				$tabs = array();
-				$tabs['popular'] = array(
-					'title'   => __('Most Used'),
-					'status'  => true,
-					'content' => $this->term_checklist($taxonomy, $popular_terms)
-				);
-				$tabs['all'] = array(
-					'title'   => __('View All'),
-					'status'  => false,
-					'content' => $this->term_checklist($taxonomy, $terms, false, true)
-				);
-				if($this->searchable) {
-					$tabs['search'] = array(
-						'title' => __('Search'),
-						'status' => false,
-						'content' => '',
-						'content_before' => '<p><input data-cas-item_object="'.$taxonomy->name.'" class="cas-autocomplete-' . $this->id . ' cas-autocomplete quick-search" id="cas-autocomplete-' . $this->id . '-' . $taxonomy->name . '" type="search" name="cas-autocomplete" value="" placeholder="'.__('Search').'" autocomplete="off" /><span class="spinner"></span></p>'
+				if($posts) {
+					$retval = array();
+
+					//Hierarchical taxonomies use ids instead of slugs
+					//see http://codex.wordpress.org/Function_Reference/wp_set_post_objects
+					$value_var = ($taxonomy->hierarchical ? 'term_id' : 'slug');
+
+					foreach ($posts as $post) {
+						$retval[$post->$value_var] = $post->name;
+					}
+					$group_data[$this->id."-".$taxonomy->name]["data"] = $retval;
+				}
+
+				if(isset($ids[WPCACore::PREFIX.'sub_' . $taxonomy->name])) {
+					$group_data[$this->id."-".$taxonomy->name]["options"] = array(
+						WPCACore::PREFIX.'sub_' . $taxonomy->name => true
 					);
 				}
-
-				echo $this->create_tab_panels($this->id . '-' . $taxonomy->name,$tabs);
-				
 			}
-
-			echo '<p class="button-controls">';
-
-			echo '<span class="add-to-group"><input data-cas-condition="'.$this->id.'-'.$taxonomy->name.'" type="button" name="" id="cas-' . $this->id . '-' . $taxonomy->name . '-add" class="js-cas-condition-add button" value="'.__('Add to Group',WPCACore::DOMAIN).'"></span>';
-
-			echo '</p>';
-
-			echo '</div>'."\n";
-			echo '</li>';
 		}
+		return $group_data;
 	}
 
 	/**
-	 * Show terms from a specific taxonomy
+	 * Set module info in list
 	 *
-	 * @since  1.0
-	 * @param  int     $post_id      
-	 * @param  object  $taxonomy     
-	 * @param  array   $terms        
-	 * @param  array   $selected_ids 
-	 * @return void 
+	 * @since  2.0
+	 * @param  array  $list
+	 * @return array
 	 */
-	private function term_checklist($taxonomy, $terms, $selected_terms = false, $pagination = false) {
-
-		//Hierarchical taxonomies use ids instead of slugs
-		//see http://codex.wordpress.org/Function_Reference/wp_set_post_objects
-		$value_var = ($taxonomy->hierarchical ? 'term_id' : 'slug');
-		$args = array(
-			'taxonomy'       => $taxonomy,
-			'selected_terms' => $selected_terms
-		);
-		
-		$return = WPCAWalker::make(array("tax_input",$taxonomy->name),'parent','term_id','name',$value_var)
-		->walk($terms, 0, $args);
-
-		if($pagination) {
-			$paginate = paginate_links(array(
-				'base'      => admin_url( 'admin-ajax.php').'%_%',
-				'format'    => '?paged=%#%',
-				'total'     => $this->pagination['total_pages'],
-				'current'   => $this->pagination['paged'],
-				'mid_size'  => 2,
-				'end_size'  => 1,
-				'prev_next' => true,
-				'prev_text' => 'prev',
-				'next_text' => 'next',
-				'add_args'  => array('item_object'=>$taxonomy->name),
-			));
-			$return = $paginate.$return.$paginate;
+	public function list_module($list) {
+		foreach($this->_get_taxonomies() as $taxonomy) {
+			$list[$this->id."-".$taxonomy->name] = $taxonomy->label;
 		}
-
-		return $return;
-
+		return $list;
 	}
 
 	/**
-	 * Get content in HTML
+	 * Create module Backbone template
+	 * for administration
+	 *
+	 * @since  2.0
+	 * @return void
+	 */
+	public function template_condition() {
+		if(WPCACore::post_types()->has(get_post_type())) {
+			foreach($this->_get_taxonomies() as $taxonomy) {
+				if($this->type_display) {
+					$placeholder = "/".sprintf(__("%s Archives",WPCACore::DOMAIN),$taxonomy->labels->singular_name);
+					$placeholder = $taxonomy->labels->all_items.$placeholder;
+				}
+				echo WPCAView::make("module/condition_".$this->id."_template",array(
+					'id'          => $this->id,
+					'placeholder' => $placeholder,
+					'taxonomy'    => $taxonomy->name,
+					'autoselect'  => WPCACore::PREFIX.'sub_'.$taxonomy->name
+				))->render();
+			}
+		}
+	}
+
+	/**
+	 * Get content in JSON
 	 *
 	 * @since   1.0
 	 * @param   array    $args
-	 * @return  string
+	 * @return  array
 	 */
 	public function ajax_get_content($args) {
 
@@ -384,6 +284,9 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 			'paged'          => 1,
 			'search'         => ''
 		));
+
+		preg_match('/taxonomy-(.+)$/i', $args["item_object"], $matches);
+		$args['item_object'] = isset($matches[1]) ? $matches[1] : "";
 
 		$taxonomy = get_taxonomy($args['item_object']);
 		
@@ -399,7 +302,16 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 			'search'   => $args['search']
 		));
 
-		return $this->term_checklist($taxonomy, $posts, array(), empty($args['search']));
+		$retval = array();
+
+		//Hierarchical taxonomies use ids instead of slugs
+		//see http://codex.wordpress.org/Function_Reference/wp_set_post_objects
+		$value_var = ($taxonomy->hierarchical ? 'term_id' : 'slug');
+
+		foreach ($posts as $post) {
+			$retval[$post->$value_var] = $post->name;
+		}
+		return $retval;
 
 	}
 
@@ -411,31 +323,53 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 	 * @return  void
 	 */
 	public function save_data($post_id) {
-		parent::save_data($post_id);
-
-		$tax_input = isset($_POST['cas_condition']['tax_input']) ? $_POST['cas_condition']['tax_input'] : array();
+		//parent::save_data($post_id);
+		$meta_key = WPCACore::PREFIX . $this->id;
+		$old = array_flip(get_post_meta($post_id, $meta_key, false));
+		$tax_input = isset($_POST['cas_condition'][$this->id]) ? $_POST['cas_condition'][$this->id] : array();
 
 		//Save terms
 		//Loop through each public taxonomy
 		foreach($this->_get_taxonomies() as $taxonomy) {
 
-			if (current_user_can($taxonomy->cap->assign_terms) ) {
+			$special = array(
+				$taxonomy->name,
+				WPCACore::PREFIX.'sub_'.$taxonomy->name
+			);
 
-				//If no terms, maybe delete old ones
-				if(!isset($tax_input[$taxonomy->name])) {
-					$terms = null;
-				} else {
-					$terms = $tax_input[$taxonomy->name];
+			//If no terms, maybe delete old ones
+			if(!isset($tax_input[$taxonomy->name])) {
+				$terms = array();
+				foreach ($special as $key) {
+					if(isset($old[$key])) {
+						delete_post_meta($post_id, $meta_key, $key);
+					}
+				}
+			} else {
+				$terms = $tax_input[$taxonomy->name];
 
-					//Hierarchical taxonomies use ids instead of slugs
-					//see http://codex.wordpress.org/Function_Reference/wp_set_post_terms
-					if($taxonomy->hierarchical) {
-						$terms = array_unique(array_map('intval', $terms));
-					}						
+				foreach ($special as $key) {
+					$found_key = array_search($key, $terms);
+					//If special key found maybe add it
+					if($found_key !== false) {
+						if(!isset($old[$key])) {
+							add_post_meta($post_id, $meta_key, $key);
+						}
+						unset($terms[$found_key]);
+					//Otherwise maybe delete it
+					} else if(isset($old[$key])) {
+						delete_post_meta($post_id, $meta_key, $key);
+					}
 				}
 
-				wp_set_object_terms( $post_id, $terms, $taxonomy->name );
-			}			
+				//Hierarchical taxonomies use ids instead of slugs
+				//see http://codex.wordpress.org/Function_Reference/wp_set_post_terms
+				if($taxonomy->hierarchical) {
+					$terms = array_unique(array_map('intval', $terms));
+				}
+			}
+
+			wp_set_object_terms( $post_id, $terms, $taxonomy->name );
 
 		}
 

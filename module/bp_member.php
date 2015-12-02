@@ -1,7 +1,6 @@
 <?php
 /**
  * @package WP Content Aware Engine
- * @version 1.0
  * @copyright Joachim Jensen <jv@intox.dk>
  * @license GPLv3
  */
@@ -21,15 +20,32 @@ if (!defined('WPCACore::VERSION')) {
  *
  */
 class WPCAModule_bp_member extends WPCAModule_Base {
-	
+
+	/**
+	 * Cached search string
+	 * @var string
+	 */
+	protected $search_string;
+
 	/**
 	 * Constructor
 	 */
 	public function __construct() {
 		parent::__construct('bp_member',__('BuddyPress Members',WPCACore::DOMAIN));
 		
-		add_filter('wpca/module/static/in-context', array(&$this,'static_is_content'));
 		
+	}
+
+	/**
+	 * Initiate module
+	 *
+	 * @since  2.0
+	 * @return void
+	 */
+	public function initiate() {
+		parent::initiate();
+		add_filter('wpca/module/static/in-context',
+			array($this,'static_is_content'));
 	}
 
 	/**
@@ -45,22 +61,41 @@ class WPCAModule_bp_member extends WPCAModule_Base {
 
 		$content = array();
 
-		if(isset($bp->loaded_components)) {
+		if(isset($bp->loaded_components,$bp->bp_options_nav)) {
 			$components = $bp->loaded_components;
 			unset($components['members'],$components['xprofile']);
 			$components['profile'] = 'profile';
-			
-			
+
 			foreach((array)$components as $name) {
 				$content[$name] = ucfirst($name);
+				if(isset($bp->bp_options_nav[$name])) {
+					foreach($bp->bp_options_nav[$name] as $child) {
+						$content[$name."-".$child["slug"]] = $child['name'];
+					}
+				}
 			}
 		}
 
 		if(isset($args['include'])) {
 			$content = array_intersect_key($content,array_flip($args['include']));
 		}
+		if(isset($args["search"]) && $args["search"]) {
+			$this->search_string = $args["search"];
+			$content = array_filter($content,array($this,"_filter_search"));
+		}
 		
 		return $content;
+	}
+
+	/**
+	 * Filter content based on search
+	 *
+	 * @since  2.0
+	 * @param  string  $value
+	 * @return boolean
+	 */
+	protected function _filter_search($value) {
+		return mb_stripos($value, $this->search_string) !== false;
 	}
 	
 	/**
@@ -93,64 +128,21 @@ class WPCAModule_bp_member extends WPCAModule_Base {
 		}
 		return $data;
 	}
-	
+
 	/**
-	 * Meta box content
-	 * 
-	 * @global WP_Post $post
-	 * @global object  $bp
-	 * @since  1.0
-	 * @return void 
+	 * Get content in JSON
+	 *
+	 * @since   2.0
+	 * @param   array    $args
+	 * @return  array
 	 */
-	public function meta_box_content() {
-		global $post, $bp;
+	public function ajax_get_content($args) {
+		$args = wp_parse_args($args, array(
+			'paged'          => 1,
+			'search'         => ''
+		));
 
-		if(!$bp->bp_options_nav) {
-			return;
-		}
-
-		$screen = get_current_screen();
-
-		$hidden_columns  = get_hidden_columns( $screen->id );
-		$id = 'box-'.$this->id;
-		$hidden = in_array($id, $hidden_columns) ? ' hide-if-js' : '';
-
-		echo '<li id="'.$id.'" class="manage-column column-'.$id.' control-section accordion-section'.$hidden.'">';
-		echo '<h3 class="accordion-section-title" title="'.$this->name.'" tabindex="0">'.$this->name.'</h3>'."\n";
-		echo '<div class="accordion-section-content cas-rule-content" data-cas-module="'.$this->id.'" id="cas-'.$this->id.'">';
-
-		$field = $this->id;
-
-		$tab_content = "";
-
-		foreach ($this->_get_content() as $id => $name) {
-			$tab_content .= '<li class="cas-'.$this->id.'-'.$id.'"><label class="selectit"><input type="checkbox" name="cas_condition[' . $field . '][]" value="' . $id . '" /> ' . $name . '</label></li>' . "\n";
-			if(isset($bp->bp_options_nav[$id])) {
-				$tab_content .= '<li><ul class="children">';
-				foreach($bp->bp_options_nav[$id] as $child) {
-					$tab_content .= '<li class="cas-'.$this->id.'-'.$id.'-'.$child['slug'].'"><label class="selectit"><input type="checkbox" name="cas_condition[' . $field . '][]" value="' . $id . '-'. $child['slug'].'" /> ' . $child['name'] . '</label></li>' . "\n";
-				}
-				$tab_content .= '</ul></li>';
-			}
-			
-		}
-
-		$tabs['all'] = array(
-			'title'   => __('View All'),
-			'status'  => true,
-			'content' => $tab_content
-		);
-
-		echo $this->create_tab_panels($this->id,$tabs);
-
-		echo '<p class="button-controls">';
-
-		echo '<span class="add-to-group"><input data-cas-condition="'.$this->id.'" data-cas-module="'.$this->id.'" type="button" name="cas-condition-add" class="js-cas-condition-add button" value="'.__('Add to Group',WPCACore::DOMAIN).'"></span>';
-
-		echo '</p>';
-
-		echo '</div>'."\n";
-		echo '</li>';
+		return $this->_get_content($args);
 	}
 	
 	/**

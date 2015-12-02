@@ -1,7 +1,6 @@
 <?php
 /**
  * @package WP Content Aware Engine
- * @version 1.0
  * @copyright Joachim Jensen <jv@intox.dk>
  * @license GPLv3
  */
@@ -30,7 +29,18 @@ class WPCAModule_bbpress extends WPCAModule_author {
 		$this->id = 'bb_profile';
 		$this->name = __('bbPress User Profiles',WPCACore::DOMAIN);
 		
-		add_filter('wpca/module/post_type/db-where', array(&$this,'add_forum_dependency'));
+		}
+
+	/**
+	 * Initiate module
+	 *
+	 * @since  2.0
+	 * @return void
+	 */
+	public function initiate() {
+		parent::initiate();
+		add_filter('wpca/module/post_type/db-where',
+			array($this,'add_forum_dependency'));
 	}
 	
 	/**

@@ -1,7 +1,6 @@
 <?php
 /**
  * @package WP Content Aware Engine
- * @version 1.0
  * @copyright Joachim Jensen <jv@intox.dk>
  * @license GPLv3
  */
@@ -28,8 +27,7 @@ class WPCAModule_date extends WPCAModule_Base {
 	public function __construct() {
 		parent::__construct(
 			'date',
-			__('Dates',WPCACore::DOMAIN),
-			false
+			__('Dates',WPCACore::DOMAIN)
 		);
 	}
 
@@ -59,9 +57,8 @@ class WPCAModule_date extends WPCAModule_Base {
 	}
 
 	/**
-	 * Get authors
+	 * Get content
 	 * 
-	 * @global object $wpdb
 	 * @since  1.0
 	 * @return array 
 	 */
@@ -74,6 +71,22 @@ class WPCAModule_date extends WPCAModule_Base {
 		}
 		return $data;
 
+	}
+
+	/**
+	 * Get content in JSON
+	 *
+	 * @since   2.0
+	 * @param   array    $args
+	 * @return  array
+	 */
+	public function ajax_get_content($args) {
+		$args = wp_parse_args($args, array(
+			'paged'          => 1,
+			'search'         => ''
+		));
+
+		return $this->_get_content($args);
 	}
 	
 }

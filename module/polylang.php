@@ -1,7 +1,6 @@
 <?php
 /**
  * @package WP Content Aware Engine
- * @version 1.0
  * @copyright Joachim Jensen <jv@intox.dk>
  * @license GPLv3
  */
@@ -27,8 +26,12 @@ class WPCAModule_polylang extends WPCAModule_Base {
 	 */
 	public function __construct() {
 		parent::__construct('language',__('Languages',WPCACore::DOMAIN));
-		
-		add_filter('pll_get_post_types', array(&$this,'remove_sidebar_multilingual'));
+	}
+
+	public function initiate() {
+		parent::initiate();
+		add_filter('pll_get_post_types',
+			array($this,'remove_sidebar_multilingual'));
 		
 	}
 	
@@ -79,6 +82,22 @@ class WPCAModule_polylang extends WPCAModule_Base {
 			$langs = array_intersect_key($langs,array_flip($args['include']));
 		}
 		return $langs;
+	}
+
+	/**
+	 * Get content in JSON
+	 *
+	 * @since   2.0
+	 * @param   array    $args
+	 * @return  array
+	 */
+	public function ajax_get_content($args) {
+		$args = wp_parse_args($args, array(
+			'paged'          => 1,
+			'search'         => ''
+		));
+
+		return $this->_get_content($args);
 	}
 	
 	/**
