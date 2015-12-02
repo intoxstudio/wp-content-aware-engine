@@ -87,7 +87,7 @@ if(!class_exists("WPCACore")) {
 			spl_autoload_register(array(__CLASS__,"_autoload_class_files"));
 
 			if(is_admin()) {
-				
+
 				add_action('admin_enqueue_scripts',
 					array(__CLASS__,'enqueue_scripts_styles'));
 				add_action('delete_post',
@@ -101,8 +101,6 @@ if(!class_exists("WPCACore")) {
 			
 				add_action('wp_ajax_wpca/add-rule',
 					array(__CLASS__,'ajax_update_group'));
-				add_action('wp_ajax_wpca/remove-group',
-					array(__CLASS__,'ajax_remove_group'));
 
 			}
 
@@ -325,9 +323,11 @@ if(!class_exists("WPCACore")) {
 				return array();
 
 			$context_data['WHERE'][] = "posts.post_type = '".self::TYPE_CONDITION_GROUP."'";
-			
 
-			$post_status = array(self::STATUS_PUBLISHED,self::STATUS_NEGATED);
+			$post_status = array(
+				self::STATUS_PUBLISHED,
+				self::STATUS_NEGATED
+			);
 
 			$context_data['WHERE'][] = "posts.post_status IN ('".implode("','", $post_status)."')";
 				
@@ -434,22 +434,30 @@ if(!class_exists("WPCACore")) {
 			if(self::post_types()->has($post_type)) {
 
 				$post_type_obj = self::post_types()->get($post_type);
+				$options = apply_filters("wpca/modules/list",array());
 
 				$view = WPCAView::make("meta_box",array(
+					'post_type'=> $post_type,
 					'title'    => isset($post_type_obj->labels->ca_title) ? $post_type_obj->labels->ca_title : "",
-					'no_groups'=> isset($post_type_obj->labels->ca_not_found) ? $post_type_obj->labels->ca_not_found : __('No Groups found',self::DOMAIN),
-					'groups'   => self::_get_condition_groups(null,false),
-					'nonce'    => wp_nonce_field(self::PREFIX.get_the_ID(), self::NONCE, true, false)
+					'nonce'    => wp_nonce_field(self::PREFIX.get_the_ID(), self::NONCE, true, false),
+					'options'  => $options
 				));
 
 				add_meta_box(
 					'cas-rules',
-					__('Content', self::DOMAIN),
+					__('Conditional Logic', self::DOMAIN),
 					array($view,'render'),
 					$post_type,
 					'normal',
 					'default'
 				);
+
+				$template = WPCAView::make("group_template",array(
+					'post_type'=> $post_type,
+					'options'  => $options
+				));
+
+				add_action("admin_footer",array($template,"render"));
 			}
 		}
 
@@ -528,71 +536,40 @@ if(!class_exists("WPCACore")) {
 
 				//Make sure some rules are sent
 				if(!isset($_POST['cas_condition'])) {
-					$response = __('Condition group cannot be empty',self::DOMAIN);
-					throw new Exception("Internal Server Error",500);
+					//Otherwise we delete group
+					if(isset($_POST['cas_group_id']) && wp_delete_post(intval($_POST['cas_group_id']), true) === false) {
+						$response = __('Could not delete conditions',self::DOMAIN);
+						throw new Exception("Internal Server Error",500);
+					}
+					$response['removed'] = true;
+				}
+				if(!isset($response['removed'])) {
+					//If ID was not sent at this point, it is a new group
+					if(!isset($_POST['cas_group_id'])) {
+						$post_id = self::_add_condition_group(intval($_POST['current_id']));
+						$response['new_post_id'] = $post_id;
+					} else {
+						$post_id = intval($_POST['cas_group_id']);
+					}
+
+					wp_update_post(array(
+						'ID' => $post_id,
+						'post_status' => isset($_POST[self::PREFIX.'status']) ? self::STATUS_NEGATED : self::STATUS_PUBLISHED
+					));
+
+					do_action('wpca/modules/save-data',$post_id);
 				}
 
-				//If ID was not sent at this point, it is a new group
-				if(!isset($_POST['cas_group_id'])) {
-					$post_id = self::_add_condition_group(intval($_POST['current_id']));
-					$response['new_post_id'] = $post_id;
-				} else {
-					$post_id = intval($_POST['cas_group_id']);
-				}
+				$response['message'] = __('Conditions updated',self::DOMAIN);
 
-				wp_update_post(array(
-					'ID' => $post_id,
-					'post_status' => isset($_POST[self::PREFIX.'status']) ? self::STATUS_NEGATED : self::STATUS_PUBLISHED
-				));
-
-				do_action('wpca/modules/save-data',$post_id);
-
-				$response['message'] = __('Condition group saved',self::DOMAIN);
-
-				echo json_encode($response);
+				wp_send_json($response);
 				
 			} catch(Exception $e) {
 				header("HTTP/1.1 ".$e->getCode()." ".$e->getMessage());
 				echo $response;
+				wp_die();
 			}
-			die();
-		}
-
-		/**
-		 * AJAX call to remove condition group from a post type
-		 * 
-		 * @since  1.0
-		 * @return void
-		 */
-		public static function ajax_remove_group() {
-
-			$response = "";
-
-			try {
-				if(!isset($_POST['current_id'],$_POST['cas_group_id'])) {
-					$response = __('Unauthorized request',self::DOMAIN);
-					throw new Exception("Forbidden",403);
-				}	
-
-				if(!check_ajax_referer(self::PREFIX.$_POST['current_id'],'token',false)) {
-					$response = __('Unauthorized request',self::DOMAIN);
-					throw new Exception("Forbidden",403);
-				}
-
-				if(wp_delete_post(intval($_POST['cas_group_id']), true) === false) {
-					$response = __('Condition group could not be removed',self::DOMAIN);
-					throw new Exception("Internal Server Error",500);
-				}
-
-				echo json_encode(array(
-					'message' => __('Condition group removed',self::DOMAIN)
-				));
-				
-			} catch(Exception $e) {
-				header("HTTP/1.1 ".$e->getCode()." ".$e->getMessage());
-				echo $response;
-			}
-			die();
+			
 		}
 
 		/**
@@ -609,8 +586,15 @@ if(!class_exists("WPCACore")) {
 
 			if(self::post_types()->has($current_screen->post_type) && $current_screen->base == 'post') {
 				
-				if(!wp_script_is('accordion','registered')) {
-					wp_register_script('accordion', plugins_url('/assets/js/accordion.min.js', __FILE__), array('jquery'), self::VERSION, true);
+				$groups = self::_get_condition_groups(null,false);
+				$data = array();
+				foreach ($groups as $group) {
+					$data[] = array(
+						"id" => $group->ID,
+						"status" => $group->post_status,
+						"options" => get_post_custom($group->ID),
+						"conditions" => apply_filters("wpca/modules/group-data",array(),$group->ID)
+					);
 				}
 
 				if(!wp_script_is("select2","registered")) {
@@ -644,15 +628,14 @@ if(!class_exists("WPCACore")) {
 					'cancel'        => __('Cancel',self::DOMAIN),
 					'or'            => __('Or',self::DOMAIN),
 					'and'           => __('And',self::DOMAIN),
-					'edit'          => _x('Edit','group',self::DOMAIN),
 					'remove'        => __('Remove',self::DOMAIN),
-					'confirmRemove' => __('Remove this group and its contents permanently?',self::DOMAIN),
+					'searching'     => __('Searching',self::DOMAIN),
 					'noResults'     => __('No results found.',self::DOMAIN),
 					'confirmCancel' => __('The current group has unsaved changes. Do you want to continue and discard these changes?', self::DOMAIN),
 					'prefix'        => self::PREFIX,
-					'negateGroup'   => __("Negate group",self::DOMAIN),
 					'targetNegate'  => __('Target all but this context',self::DOMAIN),
-					'targetThis'    => __('Target this context',self::DOMAIN)
+					'targetThis'    => __('Target this context',self::DOMAIN),
+					'groups'        => $data
 				));
 				wp_enqueue_style(self::PREFIX.'condition-groups');
 			}

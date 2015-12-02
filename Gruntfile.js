@@ -22,7 +22,12 @@ module.exports = function(grunt) {
 			development: {
 				options: {
 					paths: ["css"],
-					cleancss: true,
+					compress: false,
+					ieCompat: false,
+					plugins: [
+						new (require('less-plugin-autoprefix'))({browsers: ["last 2 versions"]}),
+						new (require('less-plugin-clean-css'))({advanced:true})
+					]
 				},
 				files: {
 					"assets/css/condition_groups.css": "assets/css/condition_groups.less"
@@ -32,12 +37,18 @@ module.exports = function(grunt) {
 
 		uglify: {
 			options: {
-				preserveComments: 'some',
+				preserveComments: /^!/,
 				compress: {
-					drop_console: true
+					drop_console: true,
+					join_vars: true,
+					loops: true,
+					conditionals: true,
+					sequences: true,
+					unused: true,
+					properties: true
 				},
 				mangle: {
-					except: ['jQuery', 'WPCA']
+					except: ['WPCA']
 				}
 			},
 			my_target: {
@@ -49,8 +60,12 @@ module.exports = function(grunt) {
 
 		watch: {
 			css: {
-				files: '**/condition_groups.less',
+				files: 'assets/css/*.less',
 				tasks: ['less']
+			},
+			js: {
+				files: 'assets/js/condition_groups.js',
+				tasks: ['uglify']
 			}
 		}
 	});
