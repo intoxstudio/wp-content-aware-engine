@@ -1,7 +1,7 @@
 <?php
 /**
  * @package WP Content Aware Engine
- * @version 1.0
+ * @version 2.0
  * @copyright Joachim Jensen <jv@intox.dk>
  * @license GPLv3
  */
@@ -27,7 +27,7 @@ if(!class_exists("WPCACore")) {
 		/**
 		 * Engine version
 		 */
-		const VERSION              = '1.0';
+		const VERSION              = '2.0';
 
 		/**
 		 * Prefix for data (keys) stored in database
@@ -66,6 +66,12 @@ if(!class_exists("WPCACore")) {
 		 * @var WPCAPostTypeManager
 		 */
 		private static $post_type_manager;
+
+		/**
+		 * Conditions retrieved from database
+		 * @var array
+		 */
+		private static $condition_cache = array();
 
 		/**
 		 * Sidebars retrieved from database
@@ -301,20 +307,20 @@ if(!class_exists("WPCACore")) {
 		}
 
 		/**
-		 * Get filtered posts from a post type
-		 * @global type    $wpdb
-		 * @global WP_Post $post
-		 * @return array 
+		 * Get filtered condition groups
+		 *
+		 * @since  2.0
+		 * @return array
 		 */
-		public static function get_posts($post_type) {
+		public static function get_conditions() {
 			global $wpdb, $wp_query, $post;
 			
-			if(!self::post_types()->has($post_type) || (!$wp_query->query && !$post) || is_admin() || post_password_required())
+			if((!$wp_query->query && !$post) || is_admin() || post_password_required())
 				return array();
 			
 			// Return cache if present
-			if(isset(self::$post_cache[$post_type])) {
-				return self::$post_cache[$post_type];
+			if(self::$condition_cache) {
+				return self::$condition_cache;
 			}
 
 			$context_data['WHERE'] = $context_data['JOIN'] = $context_data['EXCLUDE'] = array();
@@ -389,6 +395,31 @@ if(!class_exists("WPCACore")) {
 				}
 				$handled_already[$sidebar->post_parent] = 1;
 			}
+
+			return self::$condition_cache = $valid;
+		}
+
+		/**
+		 * Get filtered posts from a post type
+		 *
+		 * @since  1.0
+		 * @global type     $wpdb
+		 * @global WP_Query $wp_query
+		 * @global WP_Post  $post
+		 * @return array 
+		 */
+		public static function get_posts($post_type) {
+			global $wpdb, $wp_query, $post;
+
+			// Return cache if present
+			if(isset(self::$post_cache[$post_type])) {
+				return self::$post_cache[$post_type];
+			}
+
+			if(!self::post_types()->has($post_type) || (!$wp_query->query && !$post) || is_admin() || post_password_required())
+				return array();
+
+			$valid = self::get_conditions();
 
 			$post_types = array_keys(self::post_types()->get_all());
 			foreach ($post_types as $post_type) {
