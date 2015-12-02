@@ -1,7 +1,6 @@
 <?php
 /**
  * @package WP Content Aware Engine
- * @version 1.0
  * @copyright Joachim Jensen <jv@intox.dk>
  * @license GPLv3
  */
@@ -34,7 +33,7 @@ if(!class_exists("WPCAModuleManager")) {
 		 * @param string  $name
 		 */
 		public function add($class,$name) {
-			if(($class && class_exists($class))) {
+			if($class && $class instanceof WPCAModule_Base) {
 				parent::add($class,$name);
 			}
 		}
@@ -47,13 +46,7 @@ if(!class_exists("WPCAModuleManager")) {
 		 */
 		public function deploy() {
 			foreach($this->get_all() as $name => $class) {
-				$obj = new $class;
-				if($obj instanceof WPCAModule_Base) {
-					$this->set($obj,$obj->get_id()); 
-				} else {
-					$this->remove($name);
-					unset($obj);
-				}
+				$class->initiate();
 			}
 		}
 	}

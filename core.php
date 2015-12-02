@@ -162,7 +162,9 @@ if(!class_exists("WPCACore")) {
 			);
 			foreach($modules as $name => $bool) {
 				if($bool) {
-					self::modules()->add(self::CLASS_PREFIX."Module_".$name,$name);
+					$class_name = self::CLASS_PREFIX."Module_".$name;
+					$class = new $class_name();
+					self::modules()->add($class,$name);
 				}
 			}
 		}
@@ -426,7 +428,7 @@ if(!class_exists("WPCACore")) {
 		/**
 		 * Add meta box to manage condition groups
 		 * 
-		 * @since 1.0
+		 * @since   1.0
 		 * @param   string    $post_type
 		 * @param   WP_Post   $post
 		 */

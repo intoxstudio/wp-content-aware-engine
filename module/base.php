@@ -1,7 +1,6 @@
 <?php
 /**
  * @package WP Content Aware Engine
- * @version 1.0
  * @copyright Joachim Jensen <jv@intox.dk>
  * @license GPLv3
  */
@@ -41,11 +40,17 @@ abstract class WPCAModule_Base {
 	protected $description;
 
 	/**
-	 * Enable AJAX search in editor
+	 * Placeholder label
 	 * 
-	 * @var boolean
+	 * @var string
 	 */
-	protected $searchable = false;
+	protected $placeholder;
+
+	/**
+	 * Default condition value
+	 * @var string
+	 */
+	protected $default_value = "";
 
 	/**
 	 * Enable display for all content of type
@@ -53,119 +58,60 @@ abstract class WPCAModule_Base {
 	 * @var boolean
 	 */
 	protected $type_display = false;
-
-	protected $pagination = array(
-		'per_page' => 20,
-		'total_pages' => 1,
-		'total_items' => 0 
-	);
-
-	protected $ajax = false;
 	
 	/**
 	 * Constructor
 	 *
 	 * @param   string    $id
 	 * @param   string    $title
-	 * @param   boolean   $ajax
 	 * @param   string    $description
 	 */
-	public function __construct($id, $title, $ajax = false, $description = "") {
+	public function __construct($id, $title, $description = "", $placeholder = "") {
 		$this->id = $id;
 		$this->name = $title;
-		$this->ajax = $ajax;
 		$this->description = $description;
+		$this->placeholder = $placeholder;
+	}
 
+	/**
+	 * Initiate module
+	 *
+	 * @since  2.0
+	 * @return void
+	 */
+	public function initiate() {
 		if(is_admin()) {
-
-			add_action('wpca/modules/admin-box',
-				array(&$this,'meta_box_content'));
 			add_action('wpca/modules/save-data',
-				array(&$this,'save_data'));
+				array($this,'save_data'));
+			add_action('admin_footer-post.php',
+				array($this,'template_condition'),1);
+			add_action('admin_footer-post-new.php',
+				array($this,'template_condition'),1);
+			add_action('wp_ajax_wpca/module/'.$this->id,
+				array($this,'ajax_print_content'));
 
-			add_filter('wpca/modules/print-data',
-				array(&$this,'print_group_data'),10,2);
-
-			foreach(WPCACore::post_types()->get_all() as $post_type) {
-				add_filter('manage_'.$post_type->name.'_columns',
-					array(&$this,'metabox_preferences'));
-			}
-			
-			if($this->ajax) {
-				add_action('wp_ajax_wpca/module/'.$this->id,array(&$this,'ajax_print_content'));
-			}
+			add_filter('wpca/modules/list',
+				array($this,'list_module'));
+			add_filter('wpca/modules/group-data',
+				array($this,'get_group_data'),10,2);
 		}
 		
 		add_filter('wpca/modules/context-data',
-			array(&$this,'parse_context_data'));
-
+			array($this,'parse_context_data'));
 	}
 
 	/**
-	 * Display module in Screen Settings
+	 * Set module info in list
 	 *
-	 * @since   1.0
-	 * @param   array    $columns
-	 * @return  array
+	 * @since  2.0
+	 * @param  array  $list
+	 * @return array
 	 */
-	public function metabox_preferences($columns) {
-		$columns['box-'.$this->id] = $this->name;
-		return $columns;
+	public function list_module($list) {
+		$list[$this->id] = $this->name;
+		return $list;
 	}
-	
-	/**
-	 * Default meta box content
-	 * 
-	 * @global object $post
-	 * @since  1.0
-	 * @return void 
-	 */
-	public function meta_box_content() {
 
-		$data = $this->_get_content();
-		
-		if(!$data && !$this->type_display)
-			return;
-
-		$screen = get_current_screen();
-
-		$panels = "";
-		if($this->type_display) {
-			$panels .= '<ul><li><label><input class="cas-chk-all" type="checkbox" name="cas_condition['.$this->id.'][]" value="'.$this->id.'" /> '.sprintf(__('Display with All %s',WPCACore::DOMAIN),$this->name).'</label></li></ul>'."\n";
-		}
-		
-		if($data) {
-
-			$tabs = array();
-			$tabs['all'] = array(
-				'title' => __('View All'),
-				'status' => true,
-				'content' => $this->_get_checkboxes($data)
-			);
-
-			if($this->searchable) {
-				$tabs['search'] = array(
-					'title' => __('Search'),
-					'status' => false,
-					'content' => '',
-					'content_before' => '<p><input class="cas-autocomplete-' . $this->id . ' cas-autocomplete quick-search" id="cas-autocomplete-' . $this->id . '" type="search" name="cas-autocomplete" value="" placeholder="'.__('Search').'" autocomplete="off" /><span class="spinner"></span></p>'
-				);
-			}
-
-			$panels .= $this->create_tab_panels($this->id,$tabs);
-		}
-
-		WPCAView::make("module.meta_box",array(
-			'hidden'       => in_array("box-".$this->id, get_hidden_columns( $screen->id )) ? ' hide-if-js' : '',
-			'id'           => $this->id,
-			'module'       => $this->id,
-			'description'  => $this->description,
-			'name'         => $this->name,
-			'panels'       => $panels
-		))->render();
-		
-	}
-	
 	/**
 	 * Default query join
 	 * 
@@ -221,22 +167,22 @@ abstract class WPCAModule_Base {
 	}
 
 	/**
-	 * Print saved condition data for a group
+	 * Get data for condition group
 	 *
-	 * @since  1.0
+	 * @since  2.0
+	 * @param  array  $group_data
 	 * @param  int    $post_id
-	 * @return void
+	 * @return array
 	 */
-	public function print_group_data($post_id) {
+	public function get_group_data($group_data,$post_id) {
 		$data = get_post_custom_values(WPCACore::PREFIX . $this->id, $post_id);
 		if($data) {
-			WPCAView::make('module.group',array(
-				'id' => $this->id,
-				'name' => $this->name,
-				'data' => $data,
-				'checkboxes' => $this->_get_checkboxes($this->_get_content(array('include' => $data)),false,true)
-			))->render();
+			$group_data[$this->id] = array(
+				"label" => $this->name,
+				"data" => $this->_get_content(array('include' => $data))
+			);
 		}
+		return $group_data;
 	}
 
 	/**
@@ -247,28 +193,6 @@ abstract class WPCAModule_Base {
 	 * @return  array
 	 */
 	abstract protected function _get_content($args = array());
-
-	/**
-	 * Get checkboxes for sidebar edit screen
-	 *
-	 * @since   1.0
-	 * @param   array           $data
-	 * @param   boolean         $pagination
-	 * @param   array|boolean   $selected_content
-	 * @return  string
-	 */
-	protected function _get_checkboxes($data, $pagination = false, $selected_data = array()) {
-		$content = '';
-		foreach($data as $id => $name) {
-			if(is_array($selected_data)) {
-				$selected = checked(in_array($id,$selected_data),true,false);
-			} else {
-				$selected = checked($selected_data,true,false);
-			}
-			$content .= '<li class="cas-'.$this->id.'-'.$id.'"><label><input class="cas-' . $this->id . '" type="checkbox" name="cas_condition['.$this->id.'][]" title="'.$name.'" value="'.$id.'"'.$selected.'/> '.$name.'</label></li>'."\n";
-		}
-		return $content;
-	}
 
 	/**
 	 * Determine if current content is relevant
@@ -312,48 +236,7 @@ abstract class WPCAModule_Base {
 	}
 
 	/**
-	 * Create tab panels for administrative meta boxes
-	 *
-	 * @since  1.0
-	 * @param  string    $id
-	 * @param  array     $args
-	 * @return string
-	 */
-	final protected function create_tab_panels($id, $args) {
-		$return = '<div id="'.$id.'" class="posttypediv">';
-		
-		$content = '';
-		$tabs = '';
-		
-		$count = count($args);
-		foreach($args as $key => $tab) {
-			if($count > 1) {
-				$tabs .= '<li'.($tab['status'] ? ' class="tabs"' : '').'>';
-				$tabs .= '<a class="nav-tab-link" href="#tabs-panel-' . $id . '-'.$key.'" data-type="tabs-panel-' . $id . '-'.$key.'"> '.$tab['title'].' </a>';
-				$tabs .= '</li>';				
-			}
-			$content .= '<div id="tabs-panel-' . $id . '-'.$key.'" class="tabs-panel'.($tab['status'] ? ' tabs-panel-active' : ' tabs-panel-inactive').'">';
-			if(isset($tab['content_before'])) {
-				$content .= $tab['content_before'];
-			}
-			$content .= '<ul id="cas-list-' . $id . '" class="cas-contentlist categorychecklist form-no-clear">'."\n";
-			$content .= $tab['content'];
-			$content .= '</ul>'."\n";
-			$content .= '</div>';
-		}
-
-		if($tabs) {
-			$return .= '<ul class="category-tabs">'.$tabs.'</ul>';
-		}
-		$return .= $content;
-
-		$return .'</div>';
-
-		return $return;
-	}
-
-	/**
-	 * Get content in HTML
+	 * Get content for AJAX
 	 *
 	 * @since   1.0
 	 * @param   array    $args
@@ -364,7 +247,7 @@ abstract class WPCAModule_Base {
 	}
 
 	/**
-	 * Print HTML content for AJAX request
+	 * Print JSON for AJAX request
 	 *
 	 * @since   1.0
 	 * @return  void
@@ -373,21 +256,38 @@ abstract class WPCAModule_Base {
 
 		if(!isset($_POST['sidebar_id']) || 
 			!check_ajax_referer(WPCACore::PREFIX.$_POST['sidebar_id'],'nonce',false)) {
-			die();
+			wp_die();
 		}
 
 		$paged = isset($_POST['paged']) ? $_POST['paged'] : 1;
 		$search = isset($_POST['search']) ? $_POST['search'] : false;
-		$item_object = isset($_POST['item_object']) ? $_POST['item_object'] : '';
 
 		$response = $this->ajax_get_content(array(
 			'paged' => $paged,
 			'search' => $search,
-			'item_object' => $item_object
+			'item_object' => $_POST["action"]
 		));
 
-		echo json_encode($response);
-		die();
+		wp_send_json($response);
+	}
+
+	/**
+	 * Create module Backbone template
+	 * for administration
+	 *
+	 * @since  2.0
+	 * @return void
+	 */
+	public function template_condition() {
+		if(WPCACore::post_types()->has(get_post_type())) {
+			echo WPCAView::make("module/condition_template",array(
+				'id'          => $this->id,
+				'placeholder' => $this->placeholder,
+				'default'     => $this->default_value
+			))->render();
+		}
 	}
 	
 }
+
+//eol
