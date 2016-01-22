@@ -161,6 +161,7 @@ if(!class_exists("WPCACore")) {
 				'date'          => true,
 				'bbpress'       => function_exists('bbp_get_version'),	// bbPress
 				'bp_member'     => defined('BP_VERSION'),				// BuddyPress
+				'pods'          => defined("PODS_DIR"),
 				'polylang'      => defined('POLYLANG_VERSION'),			// Polylang
 				'qtranslate'    => defined('QTX_VERSION'),				// qTranslate
 				'transposh'     => defined('TRANSPOSH_PLUGIN_VER'),		// Transposh Translation Filter
