@@ -27,7 +27,7 @@
 				<?php _e("Negate conditions",WPCACore::DOMAIN); ?>
 			</label></div>
 		<?php do_action("wpca/group/settings",$post_type); ?>
-		<input class="js-wpca-save-group button" type="button" value="Save Changes" />
+		<input class="js-wpca-save-group button" type="button" value="<?php _e("Save Changes",WPCACore::DOMAIN); ?>" />
 	</div>
 </div>
 <div class="cas-group-sep">
