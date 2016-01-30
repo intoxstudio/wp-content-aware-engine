@@ -95,7 +95,7 @@ if(!class_exists("WPCACore")) {
 			if(is_admin()) {
 
 				add_action('admin_enqueue_scripts',
-					array(__CLASS__,'enqueue_scripts_styles'));
+					array(__CLASS__,'enqueue_scripts_styles'),9);
 				add_action('delete_post',
 					array(__CLASS__,'sync_group_deletion'));
 				add_action('trashed_post',
@@ -631,15 +631,16 @@ if(!class_exists("WPCACore")) {
 					);
 				}
 
-				if(!wp_script_is("select2","registered")) {
-					wp_register_script(
-						'select2',
-						plugins_url('/assets/js/select2.min.js', __FILE__),
-						array('jquery'),
-						'3.5.4',
-						true
-					);
+				if(wp_script_is("select2","registered")) {
+					wp_unregister_script("select2");
 				}
+				wp_register_script(
+					'select2',
+					plugins_url('/assets/js/select2.min.js', __FILE__),
+					array('jquery'),
+					'3.5.4',
+					true
+				);
 
 				wp_register_script(
 					self::PREFIX.'condition-groups',
