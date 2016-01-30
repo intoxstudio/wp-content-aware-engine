@@ -10,20 +10,6 @@
 	"use strict";
 
 	/**
-	 * Translate result2
-	 * @type {Object}
-	 */
-	$.fn.select2.locales.en = {
-		formatNoMatches: function () {
-			return WPCA.noResults;
-		},
-		formatSearching: function () {
-			return WPCA.searching+"...";
-		}
-	};
-	$.extend($.fn.select2.defaults, $.fn.select2.locales.en);
-
-	/**
 	 * Namespace
 	 * @type {Object}
 	 */
@@ -370,6 +356,8 @@
 				allowClear:true,
 				multiple: true,
 				width:"100%",
+				formatNoMatches: WPCA.noResults,
+				formatSearching: WPCA.searching+"...",
 				nextSearchTerm: function(selectedObject, currentSearchTerm) {
 					return currentSearchTerm;
 				},
