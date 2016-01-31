@@ -356,8 +356,14 @@
 				allowClear:true,
 				multiple: true,
 				width:"100%",
-				formatNoMatches: WPCA.noResults,
-				formatSearching: WPCA.searching+"...",
+				//these needs to be functions for compat
+				//with other plugins using older select2
+				formatNoMatches: function() {
+					return WPCA.noResults;
+				},
+				formatSearching: function() {
+					return WPCA.searching+"...";
+				},
 				nextSearchTerm: function(selectedObject, currentSearchTerm) {
 					return currentSearchTerm;
 				},
