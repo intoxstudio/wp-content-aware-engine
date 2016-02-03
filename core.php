@@ -631,15 +631,19 @@ if(!class_exists("WPCACore")) {
 					);
 				}
 
+				//Make sure to use packaged version
 				if(wp_script_is("select2","registered")) {
-					wp_unregister_script("select2");
+					wp_deregister_script("select2");
 				}
+
+				//Add to head to take priority
+				//if being added under other name
 				wp_register_script(
 					'select2',
 					plugins_url('/assets/js/select2.min.js', __FILE__),
 					array('jquery'),
 					'3.5.4',
-					true
+					false
 				);
 
 				wp_register_script(
