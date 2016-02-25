@@ -5,15 +5,18 @@
  * @license GPLv3
  */
 
+/**
+ * Namespace
+ * @type {Object}
+ */
+var CAE = CAE || {};
 
-(function($) {
+(function($, CAE) {
 	"use strict";
 
-	/**
-	 * Namespace
-	 * @type {Object}
-	 */
-	var CAE = CAE || {};
+	CAE.settings = {
+		views: {}
+	};
 
 	/**
 	 * Backbone Models
@@ -217,7 +220,12 @@
 				$select.val(0).blur();
 			},
 			addConditionView: function(model) {
-				var condition = new CAE.Views.Condition({model:model});
+				if(CAE.Views[model.get("module")]) {
+					var condition = new CAE.Views[model.get("module")]({model:model});
+				} else {
+					var condition = new CAE.Views.Condition({model:model});
+				}
+				
 				condition.$el.hide().appendTo(this.$el.find(".cas-content")).fadeIn();
 			},
 			removeCondition: function(model) {
@@ -340,7 +348,7 @@
 
 			this.alert = new CAE.Views.Alert({model:new CAE.Models.Alert()});
 			
-			new CAE.Views.GroupCollection({
+			CAE.conditionGroups = new CAE.Views.GroupCollection({
 				collection:new CAE.Models.GroupCollection(WPCA.groups,{parse:true})
 			});
 		},
@@ -416,4 +424,4 @@
 
 	$(document).ready(function(){ wpca_admin.init(); });
 
-})(jQuery);
+})(jQuery, CAE);
