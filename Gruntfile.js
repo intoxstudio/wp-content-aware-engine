@@ -58,6 +58,38 @@ module.exports = function(grunt) {
 			}
 		},
 
+		/**
+		 * Get .po files from Transifex project
+		 */
+		transifex: {
+			"wp-content-aware-engine": {
+				options: {
+					targetDir: "./lang",
+					mode: "file",
+					filename : "_resource_-_lang_.po"
+				}
+			}
+		},
+
+		/**
+		 * Compile po files
+		 */
+		potomo: {
+			dist: {
+				options: {
+					poDel: false
+				},
+				files: [{
+					expand: true,
+					cwd: './lang',
+					src: ['*.po'],
+					dest: './lang',
+					ext: '.mo',
+					nonull: true
+				}]
+			}
+		},
+
 		watch: {
 			css: {
 				files: 'assets/css/*.less',
@@ -74,6 +106,8 @@ module.exports = function(grunt) {
 	 * Register tasks
 	 */
 	grunt.registerTask('default', ['build']);
+	grunt.registerTask('localize', ['transifex','potomo']);
 	grunt.registerTask('build', ['less','uglify']);
+	grunt.registerTask('deploy', ['build','localize']);
 
 };

@@ -18,6 +18,8 @@
     "grunt-contrib-watch": "^0.6.1",
     "less-plugin-autoprefix": "^1.5.1",
     "less-plugin-clean-css": "^1.5.1",
+    "grunt-potomo": "^2.1.0",
+    "grunt-transifex": "git://github.com/intoxstudio/grunt-transifex",
     "load-grunt-tasks": "^0.6.0"
   }
 }
