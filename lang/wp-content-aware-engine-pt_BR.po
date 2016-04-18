@@ -1,0 +1,235 @@
+# Copyright (C) 2012 Content Aware Sidebars
+# This file is distributed under the same license as the Content Aware Sidebars package.
+# Translators:
+# Alberto Georges <trevohost@gmail.com>, 2016
+# Alexandre Lunelli da Silva <ovelhaaa@gmail.com>, 2015
+# William Ribeiro Araujo <waraujo123@gmail.com>, 2015
+msgid ""
+msgstr ""
+"Project-Id-Version: WP Content Aware Engine\n"
+"Report-Msgid-Bugs-To: http://wordpress.org/tag/content-aware-sidebars\n"
+"POT-Creation-Date: 2016-03-06 15:25-0800\n"
+"PO-Revision-Date: 2016-03-07 00:16+0000\n"
+"Last-Translator: Joachim Jensen <jv@intox.dk>\n"
+"Language-Team: Portuguese (Brazil) (http://www.transifex.com/intoxstudio/wp-content-aware-engine/language/pt_BR/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: pt_BR\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Generator: Poedit 1.8.7\n"
+"X-Poedit-Basepath: .\n"
+"X-Poedit-KeywordsList: __;_e;__ngettext:1,2;_n:1,2;__ngettext_noop:1,2;_n_noop:1,2;_c,_nc:4c,1,2;_x:1,2c;_nx:4c,1,2;_nx_noop:4c,1,2;_ex:1,2c;esc_attr__;esc_attr_e;esc_attr_x:1,2c;esc_html__;esc_html_e;esc_html_x:1,2c\n"
+"X-Poedit-SearchPath-0: .\n"
+"X-Poedit-SearchPath-1: ..\n"
+"X-Poedit-SearchPathExcluded-0: ../node_modules\n"
+"X-Poedit-SearchPathExcluded-1: ../lib/wp-content-aware-engine/node_modules\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Textdomain-Support: yes\n"
+
+#: ../core.php:210
+msgid "Condition Groups"
+msgstr "Grupos condicionais"
+
+#: ../core.php:211
+msgid "Condition Group"
+msgstr "Grupo condicional"
+
+#: ../core.php:212
+msgctxt "group"
+msgid "Add New"
+msgstr "Adicionar novo"
+
+#: ../core.php:213
+msgid "Add New Group"
+msgstr "Adicionar novo grupo"
+
+#: ../core.php:214
+msgctxt "group"
+msgid "Edit"
+msgstr "Editar"
+
+#: ../core.php:219
+msgid "No Groups found"
+msgstr ""
+
+#: ../core.php:231
+msgctxt "condition group"
+msgid "Negated"
+msgstr ""
+
+#: ../core.php:482
+msgid "Conditional Logic"
+msgstr ""
+
+#: ../core.php:567
+msgid "Unauthorized request"
+msgstr "Pedido não autorizado"
+
+#: ../core.php:575
+msgid "Could not delete conditions"
+msgstr ""
+
+#: ../core.php:597
+msgid "Conditions updated"
+msgstr ""
+
+#: ../core.php:666
+msgid "Save"
+msgstr "Salvar"
+
+#: ../core.php:667
+msgid "Cancel"
+msgstr "Cancelar"
+
+#: ../core.php:668 ../view/group_template.php:34
+msgid "Or"
+msgstr "Ou"
+
+#: ../core.php:669 ../view/module/condition_post_type_template.php:22
+#: ../view/module/condition_taxonomy_template.php:22
+#: ../view/module/condition_template.php:16
+msgid "And"
+msgstr ""
+
+#: ../core.php:670
+msgid "Remove"
+msgstr "Remover"
+
+#: ../core.php:671
+msgid "Searching"
+msgstr ""
+
+#: ../core.php:672
+msgid "No results found."
+msgstr "Nenhum resultado encontrado."
+
+#: ../core.php:673
+msgid ""
+"The current group has unsaved changes. Do you want to continue and discard "
+"these changes?"
+msgstr "O grupo atual tem alterações não salvas. Quer continuar e descartar essas alterações?"
+
+#: ../core.php:675
+msgid "Target all but this context"
+msgstr ""
+
+#: ../core.php:676
+msgid "Target this context"
+msgstr ""
+
+#: ../module/author.php:29
+msgid "Authors"
+msgstr "Autores"
+
+#: ../module/bbpress.php:30
+msgid "bbPress User Profiles"
+msgstr "Perfis de usuário do bbPress"
+
+#: ../module/bp_member.php:34
+msgid "BuddyPress Members"
+msgstr "Membros do BuddyPress"
+
+#: ../module/date.php:30
+msgid "Dates"
+msgstr "Datas"
+
+#: ../module/date.php:67
+msgid "Date Archives"
+msgstr "Arquivos de datas"
+
+#: ../module/page_template.php:35
+msgid "Page Templates"
+msgstr "Modelos de página"
+
+#: ../module/page_template.php:38
+msgid "All Templates"
+msgstr ""
+
+#: ../module/pods.php:28
+msgid "Pods Pages"
+msgstr ""
+
+#: ../module/pods.php:31
+msgid "All Pods Pages"
+msgstr ""
+
+#: ../module/polylang.php:28 ../module/qtranslate.php:28
+#: ../module/transposh.php:28 ../module/wpml.php:28
+msgid "Languages"
+msgstr "Idiomas"
+
+#: ../module/post_type.php:36
+msgid "Post Types"
+msgstr "Tipos de mensagens"
+
+#: ../module/post_type.php:279 ../module/taxonomy.php:265
+#, php-format
+msgid "%s Archives"
+msgstr ""
+
+#: ../module/post_type.php:280
+msgid "Blog Page"
+msgstr ""
+
+#: ../module/post_type.php:305 ../walker.php:174
+msgid "Password protected"
+msgstr ""
+
+#: ../module/post_type.php:307 ../walker.php:176
+msgid "Private"
+msgstr ""
+
+#: ../module/post_type.php:309 ../walker.php:178
+msgid "Draft"
+msgstr ""
+
+#: ../module/post_type.php:312 ../walker.php:181
+msgctxt "post state"
+msgid "Pending"
+msgstr ""
+
+#: ../module/post_type.php:314 ../walker.php:183
+msgid "Sticky"
+msgstr ""
+
+#: ../module/post_type.php:316 ../walker.php:185
+msgid "Scheduled"
+msgstr ""
+
+#: ../module/static.php:36
+msgid "Static Pages"
+msgstr "Páginas estáticas"
+
+#: ../module/static.php:49
+msgid "Front Page"
+msgstr "Página inicial"
+
+#: ../module/static.php:50
+msgid "Search Results"
+msgstr "Resultados da pesquisa"
+
+#: ../module/static.php:51
+msgid "404 Page"
+msgstr "Página 404"
+
+#: ../module/taxonomy.php:43
+msgid "Taxonomies"
+msgstr "Taxonomias"
+
+#: ../view/group_template.php:14 ../view/meta_box.php:15
+msgid "Select content type"
+msgstr ""
+
+#: ../view/group_template.php:27
+msgid "Negate conditions"
+msgstr ""
+
+#: ../view/group_template.php:30
+msgid "Save Changes"
+msgstr ""
+
+#: ../view/module/condition_post_type_template.php:18
+#: ../view/module/condition_taxonomy_template.php:18
+msgid "Automatically add new children of a selected ancestor"
+msgstr ""
