@@ -77,13 +77,16 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 			foreach(get_object_taxonomies(get_post_type()) as $taxonomy) {
 				//Only want taxonomies selectable in admin
 				if(isset($tax[$taxonomy])) {
-					$this->post_taxonomies[] = $taxonomy;
+					
 					//Check term caches, Core most likely used it
 					$terms = get_object_term_cache(get_the_ID(),$taxonomy);
 					if ($terms === false) {
 						$terms = wp_get_object_terms(get_the_ID(), $taxonomy);
 					}
-					$this->post_terms = array_merge($this->post_terms,$terms);
+					if($terms) {
+						$this->post_taxonomies[] = $taxonomy;
+						$this->post_terms = array_merge($this->post_terms,$terms);
+					}
 				}
 			}
 			return !!$this->post_terms;
@@ -146,7 +149,7 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 		}
 		$term = get_queried_object();
 
-		return "(term.term_taxonomy_id.slug IS NULL OR term.term_taxonomy_id = '".$term->term_taxonomy_id."') AND (taxonomy.meta_value IS NULL OR taxonomy.meta_value IN ('".$term->taxonomy."','".WPCACore::PREFIX."sub_".$term->taxonomy."'))";
+		return "(term.term_taxonomy_id IS NULL OR term.term_taxonomy_id = '".$term->term_taxonomy_id."') AND (taxonomy.meta_value IS NULL OR taxonomy.meta_value IN ('".$term->taxonomy."','".WPCACore::PREFIX."sub_".$term->taxonomy."'))";
 	}
 
 	/**
