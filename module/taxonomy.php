@@ -35,6 +35,12 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 	 * @var array
 	 */
 	private $post_terms;
+
+	/**
+	 * Taxonomies for a given singular
+	 * @var array
+	 */
+	private $post_taxonomies;
 	
 	/**
 	 * Constructor
@@ -64,20 +70,23 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 	public function in_context() {
 		if(is_singular()) {
 			$tax = $this->_get_taxonomies();
+			$this->post_terms = array();
+			$this->post_taxonomies = array();
+
 			// Check if content has any taxonomies supported
-			$taxonomies = get_object_taxonomies(get_post_type(),'object');
-			//Only want taxonomies selectable in admin
-			$taxonomy_names = array();
-			foreach($taxonomies as $taxonomy) {
-				if(isset($tax[$taxonomy->name]))
-					$taxonomy_names[] = $taxonomy->name;
+			foreach(get_object_taxonomies(get_post_type()) as $taxonomy) {
+				//Only want taxonomies selectable in admin
+				if(isset($tax[$taxonomy])) {
+					$this->post_taxonomies[] = $taxonomy;
+					//Check term caches, Core most likely used it
+					$terms = get_object_term_cache(get_the_ID(),$taxonomy);
+					if ($terms === false) {
+						$terms = wp_get_object_terms(get_the_ID(), $taxonomy);
+					}
+					$this->post_terms = array_merge($this->post_terms,$terms);
+				}
 			}
-			if(!empty($taxonomy_names)) {
-				// Check if content has any actual taxonomy terms
-				$this->post_terms = wp_get_object_terms(get_the_ID(),$taxonomy_names);
-				return !empty($this->post_terms);
-			}
-			return false;
+			return !!$this->post_terms;
 		}
 		return is_tax() || is_category() || is_tag();
 	}
@@ -90,12 +99,8 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 	 */
 	public function db_join() {
 		global $wpdb;
-		
-		$joins  = "LEFT JOIN $wpdb->term_relationships term ON term.object_id = posts.ID ";
-		$joins .= "LEFT JOIN $wpdb->term_taxonomy taxonomy ON taxonomy.term_taxonomy_id = term.term_taxonomy_id ";
-		$joins .= "LEFT JOIN $wpdb->terms terms ON terms.term_id = taxonomy.term_id ";
-		$joins .= "LEFT JOIN $wpdb->postmeta post_taxonomy ON post_taxonomy.post_id = posts.ID AND post_taxonomy.meta_key = '".WPCACore::PREFIX."taxonomy'";
-		
+		$joins  = parent::db_join();
+		$joins .= "LEFT JOIN $wpdb->term_relationships term ON term.object_id = posts.ID ";
 		return $joins;
 	
 	}
@@ -107,29 +112,25 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 	 * @return array
 	 */
 	public function get_context_data() {
-
-		if(is_singular()) {
-			$terms = array();
-
-			//Grab posts taxonomies and terms and sort them
-			foreach($this->post_terms as $term) {
-				$terms[$term->taxonomy][] = $term->term_id;
-			}
-			
-			// Make rules for taxonomies and terms
-			foreach($terms as $taxonomy => $term_arr) {  
-				$termrules[] = "(taxonomy.taxonomy = '".$taxonomy."' AND terms.term_id IN('".implode("','",$term_arr)."'))";
-				$taxrules[] = $taxonomy;
-				$taxrules[] = WPCACore::PREFIX."sub_".$taxonomy;
-			}
-
-			return "(terms.slug IS NULL OR ".implode(" OR ",$termrules).") AND (post_taxonomy.meta_value IS NULL OR post_taxonomy.meta_value IN('".implode("','",$taxrules)."'))";
 		
-			
+		//In more recent WP versions, term_id = term_tax_id
+		//but term_tax_id has always been unique
+		if(is_singular()) {
+			// Append sub options
+			foreach($this->post_taxonomies as $taxonomy) {  
+				$this->post_taxonomies[] = WPCACore::PREFIX."sub_".$taxonomy;
+			}
+			$terms = array();
+			foreach($this->post_terms as $term) {
+				$terms[] = $term->term_taxonomy_id;
+			}
+
+			return "(term.term_taxonomy_id IS NULL OR term.term_taxonomy_id IN (".implode(",",$terms).")) AND (taxonomy.meta_value IS NULL OR taxonomy.meta_value IN('".implode("','",$this->post_taxonomies)."'))";
+
 		}
 		$term = get_queried_object();
 
-		return "(terms.slug IS NULL OR (taxonomy.taxonomy = '".$term->taxonomy."' AND terms.slug = '".$term->slug."')) AND (post_taxonomy.meta_value IS NULL OR post_taxonomy.meta_value IN ('".$term->taxonomy."','".WPCACore::PREFIX."sub_".$term->taxonomy."'))";
+		return "(term.term_taxonomy_id.slug IS NULL OR term.term_taxonomy_id = '".$term->term_taxonomy_id."') AND (taxonomy.meta_value IS NULL OR taxonomy.meta_value IN ('".$term->taxonomy."','".WPCACore::PREFIX."sub_".$term->taxonomy."'))";
 	}
 
 	/**
