@@ -398,20 +398,6 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 	}
 
 	/**
-	 * Register taxonomies to sidebar post type
-	 *
-	 * @since  1.0
-	 * @return void 
-	 */
-	public function add_taxonomies_to_sidebar() {
-		foreach($this->_get_taxonomies() as $tax) {
-			foreach (WPCACore::post_types()->get_all() as $post_type) {
-				register_taxonomy_for_object_type( $tax->name, $post_type->name );
-			}
-		}
-	}
-	
-	/**
 	 * Auto-select children of selected ancestor
 	 *
 	 * @since  1.0
