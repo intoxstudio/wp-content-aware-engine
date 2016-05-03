@@ -331,21 +331,21 @@ if(!class_exists("WPCACore")) {
 			if(empty($context_data['WHERE']))
 				return array();
 
-			$context_data['WHERE'][] = "posts.post_type = '".self::TYPE_CONDITION_GROUP."'";
+			$context_data['WHERE'][] = "p.post_type = '".self::TYPE_CONDITION_GROUP."'";
 
 			$post_status = array(
 				self::STATUS_PUBLISHED,
 				self::STATUS_NEGATED
 			);
 
-			$context_data['WHERE'][] = "posts.post_status IN ('".implode("','", $post_status)."')";
+			$context_data['WHERE'][] = "p.post_status IN ('".implode("','", $post_status)."')";
 				
 			//Syntax changed in MySQL 5.5 and MariaDB 10.0 (reports as version 5.5)
 			$wpdb->query('SET'.(version_compare($wpdb->db_version(), '5.5', '>=') ? '' : ' OPTION').' SQL_BIG_SELECTS = 1');
 
 			$groups_in_context = $wpdb->get_results(
-				"SELECT posts.ID, posts.post_parent ".
-				"FROM $wpdb->posts posts ".
+				"SELECT p.ID, p.post_parent ".
+				"FROM $wpdb->posts p ".
 				implode(' ',$context_data['JOIN'])."
 				WHERE
 				".implode(' AND ',$context_data['WHERE'])."
@@ -418,24 +418,24 @@ if(!class_exists("WPCACore")) {
 			if($valid) {
 
 				$context_data = array();
-				$context_data['JOIN'][] = "INNER JOIN $wpdb->postmeta handle ON handle.post_id = posts.ID AND handle.meta_key = '".self::PREFIX."handle'";
-				$context_data['JOIN'][] = "INNER JOIN $wpdb->postmeta exposure ON exposure.post_id = posts.ID AND exposure.meta_key = '".self::PREFIX."exposure'";
-				$context_data['WHERE'][] = "posts.post_type IN ('".implode("','", $post_types)."')";
-				$context_data['WHERE'][] = "exposure.meta_value ".(is_archive() || is_home() ? '>' : '<')."= '1'";
-				$context_data['WHERE'][] = "posts.post_status = 'publish'";
+				$context_data['JOIN'][] = "INNER JOIN $wpdb->postmeta h ON h.post_id = p.ID AND h.meta_key = '".self::PREFIX."handle'";
+				$context_data['JOIN'][] = "INNER JOIN $wpdb->postmeta e ON e.post_id = p.ID AND e.meta_key = '".self::PREFIX."exposure'";
+				$context_data['WHERE'][] = "p.post_type IN ('".implode("','", $post_types)."')";
+				$context_data['WHERE'][] = "e.meta_value ".(is_archive() || is_home() ? '>' : '<')."= '1'";
+				$context_data['WHERE'][] = "p.post_status = 'publish'";
 				//$context_data['WHERE'][] = "posts.post_status ".(current_user_can('read_private_posts') ? "IN('publish','private')" : "= 'publish'")."";
-				$context_data['WHERE'][] = "posts.ID IN(".implode(',',$valid).")";
+				$context_data['WHERE'][] = "p.ID IN(".implode(',',$valid).")";
 
 				$results = $wpdb->get_results("
 					SELECT
-						posts.ID,
-						posts.post_type,
-						handle.meta_value handle
-					FROM $wpdb->posts posts
+						p.ID,
+						p.post_type,
+						h.meta_value handle
+					FROM $wpdb->posts p
 					".implode(' ',$context_data['JOIN'])."
 					WHERE
 					".implode(' AND ',$context_data['WHERE'])."
-					ORDER BY posts.menu_order ASC, handle.meta_value DESC, posts.post_date DESC
+					ORDER BY p.menu_order ASC, h.meta_value DESC, p.post_date DESC
 				");
 
 				foreach($results as $result) {

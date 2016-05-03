@@ -116,7 +116,7 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 	public function db_join() {
 		global $wpdb;
 		$joins  = parent::db_join();
-		$joins .= "LEFT JOIN $wpdb->term_relationships term ON term.object_id = posts.ID ";
+		$joins .= "LEFT JOIN $wpdb->term_relationships term ON term.object_id = p.ID ";
 		return $joins;
 	
 	}

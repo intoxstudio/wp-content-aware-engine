@@ -121,7 +121,7 @@ abstract class WPCAModule_Base {
 	 */
 	public function db_join() {
 		global $wpdb;
-		return "LEFT JOIN $wpdb->postmeta {$this->id} ON {$this->id}.post_id = posts.ID AND {$this->id}.meta_key = '".WPCACore::PREFIX.$this->id."' ";
+		return "LEFT JOIN $wpdb->postmeta {$this->id} ON {$this->id}.post_id = p.ID AND {$this->id}.meta_key = '".WPCACore::PREFIX.$this->id."' ";
 	}
 	
 	/**
