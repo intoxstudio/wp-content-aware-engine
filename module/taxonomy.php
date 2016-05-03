@@ -180,7 +180,8 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 				'offset'     => ($offset*$number),
 				'orderby'    => $orderby,
 				'order'      => $order,
-				'search'     => $args['search']
+				'search'     => $args['search'],
+				'update_term_meta_cache' => false
 			));
 		}
 		return $terms;
@@ -218,7 +219,13 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 		$ids = array_flip((array)get_post_custom_values(WPCACore::PREFIX . $this->id, $post_id));
 
 		//Fetch all terms and group by tax to prevent lazy loading
-		$terms = wp_get_object_terms( $post_id, array_keys($this->_get_taxonomies()));
+		$terms = wp_get_object_terms(
+			$post_id,
+			array_keys($this->_get_taxonomies())
+			// array(
+			// 	'update_term_meta_cache' => false
+			// )
+		);
 		$terms_by_tax = array();
 		foreach($terms as $term) {
 			$terms_by_tax[$term->taxonomy][] = $term;
