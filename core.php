@@ -422,7 +422,8 @@ if(!class_exists("WPCACore")) {
 				$context_data['JOIN'][] = "INNER JOIN $wpdb->postmeta exposure ON exposure.post_id = posts.ID AND exposure.meta_key = '".self::PREFIX."exposure'";
 				$context_data['WHERE'][] = "posts.post_type IN ('".implode("','", $post_types)."')";
 				$context_data['WHERE'][] = "exposure.meta_value ".(is_archive() || is_home() ? '>' : '<')."= '1'";
-				$context_data['WHERE'][] = "posts.post_status ".(current_user_can('read_private_posts') ? "IN('publish','private')" : "= 'publish'")."";
+				$context_data['WHERE'][] = "posts.post_status = 'publish'";
+				//$context_data['WHERE'][] = "posts.post_status ".(current_user_can('read_private_posts') ? "IN('publish','private')" : "= 'publish'")."";
 				$context_data['WHERE'][] = "posts.ID IN(".implode(',',$valid).")";
 
 				$results = $wpdb->get_results("
