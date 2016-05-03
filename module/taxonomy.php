@@ -90,6 +90,22 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 		}
 		return is_tax() || is_category() || is_tag();
 	}
+
+	/**
+	 * Remove posts if they have data from
+	 * other contexts (meaning conditions arent met)
+	 *
+	 * @since  3.2
+	 * @param  array  $posts
+	 * @return array
+	 */
+	public function filter_excluded_context($posts) {
+		global $wpdb;
+		$posts = parent::filter_excluded_context($posts);
+		$obj_w_tags = $wpdb->get_col("SELECT object_id FROM $wpdb->term_relationships WHERE object_id IN (".implode(",", array_keys($posts)).") GROUP BY object_id");
+		$posts = array_diff_key($posts, array_flip($obj_w_tags));
+		return $posts;
+	}
 	
 	/**
 	 * Query join

@@ -228,11 +228,29 @@ abstract class WPCAModule_Base {
 			}
 			$data['WHERE'][$this->id] = apply_filters("wpca/module/{$this->id}/db-where", $context_data);
 
-			
 		} else {
+			add_filter("wpca/modules/exclude-context",
+				array($this,"filter_excluded_context"));
 			$data['EXCLUDE'][] = $this->id;
 		}
 		return $data;
+	}
+
+	/**
+	 * Remove posts if they have data from
+	 * other contexts (meaning conditions arent met)
+	 *
+	 * @since  3.2
+	 * @param  array  $posts
+	 * @return array
+	 */
+	public function filter_excluded_context($posts) {
+		foreach($posts as $id => $parent) {
+			if(get_post_custom_values(WPCACore::PREFIX . $this->id, $id) !== null) {
+				unset($posts[$id]);
+			}
+		}
+		return $posts;
 	}
 
 	/**

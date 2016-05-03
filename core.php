@@ -360,30 +360,18 @@ if(!class_exists("WPCACore")) {
 				self::STATUS_NEGATED
 			),OBJECT_K);
 
-			$valid = array();
-
 			//Force update of meta cache to prevent lazy loading
 			update_meta_cache('post',array_keys($groups_in_context+$groups_negated));
-
-			//Exclude sidebars that have unrelated content in same group
+			
+			$valid = array();
 			foreach($groups_in_context as $key => $sidebar) {
 				$valid[$sidebar->ID] = $sidebar->post_parent;
-				//TODO: move to modules
-				foreach($context_data['EXCLUDE'] as $exclude) {
-					//quick fix to check for taxonomies terms
-					if($exclude == 'taxonomy') {
-						if($wpdb->get_var("SELECT COUNT(*) FROM $wpdb->term_relationships WHERE object_id = '{$sidebar->ID}'") > 0) {
-							unset($valid[$sidebar->ID]);
-							break;						
-						}
-					}
-					if(get_post_custom_values(self::PREFIX . $exclude, $sidebar->ID) !== null) {
-						unset($valid[$sidebar->ID]);
-						break;
-					}
-				}
 			}
 
+			//Exclude sidebars that have unrelated content in same group
+			$valid = apply_filters("wpca/modules/exclude-context",$valid);
+
+			//Filter negated sidebars
 			$handled_already = array_flip($valid);
 			foreach($groups_negated as $sidebar) {
 				if(isset($valid[$sidebar->ID])) {
