@@ -406,7 +406,7 @@ if(!class_exists("WPCACore")) {
 			}
 
 			if(!self::post_types()->has($post_type) || (!$wp_query->query && !$post) || is_admin() || post_password_required())
-				return array();
+				return false;
 
 			$valid = self::get_conditions();
 
@@ -440,6 +440,9 @@ if(!class_exists("WPCACore")) {
 
 				foreach($results as $result) {
 					self::$post_cache[$result->post_type][$result->ID] = $result;
+				}
+				foreach (self::$post_cache as $post_type => $result) {
+					self::$post_cache[$post_type] = apply_filters("wpca/get/{$post_type}",$result);
 				}
 			}
 			
