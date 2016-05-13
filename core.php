@@ -495,7 +495,7 @@ if(!class_exists("WPCACore")) {
 		 * @param  WP_Post|int    $post
 		 * @return int
 		 */
-		private static function _add_condition_group($post_id = null) {
+		public static function add_condition_group($post_id = null) {
 			$post = get_post($post_id);
 
 			//Make sure to go from auto-draft to draft
@@ -535,7 +535,7 @@ if(!class_exists("WPCACore")) {
 				'order'            => 'ASC'
 			));
 			if($groups == null && $create_first) {
-				$group = self::_add_condition_group($post);
+				$group = self::add_condition_group($post);
 				$groups[] = get_post($group);
 			}
 
@@ -572,7 +572,7 @@ if(!class_exists("WPCACore")) {
 				if(!isset($response['removed'])) {
 					//If ID was not sent at this point, it is a new group
 					if(!isset($_POST['cas_group_id'])) {
-						$post_id = self::_add_condition_group(intval($_POST['current_id']));
+						$post_id = self::add_condition_group(intval($_POST['current_id']));
 						$response['new_post_id'] = $post_id;
 					} else {
 						$post_id = intval($_POST['cas_group_id']);
