@@ -298,7 +298,7 @@ class WPCAModule_post_type extends WPCAModule_Base {
 	 * @param  WP_Post  $post
 	 * @return string
 	 */
-	private function _post_states($post) {
+	protected function _post_states($post) {
 		$post_states = array();
 
 		if ( !empty($post->post_password) )
