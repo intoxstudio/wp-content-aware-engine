@@ -167,10 +167,10 @@ var CAE = CAE || {};
 			tagName: "div",
 			className: "cas-condition",
 			events: {
-				"click .js-wpca-condition-remove": "removeCondition"
+				"click .js-wpca-condition-remove": "removeConditionModel"
 			},
 			initialize: function() {
-				this.listenTo( this.model, 'destroy', this.remove );
+				this.listenTo( this.model, 'destroy', this.fadeRemove );
 				this.template = _.template($('#wpca-template-'+this.model.get("module")).html());
 				this.render();
 			},
@@ -185,8 +185,13 @@ var CAE = CAE || {};
 					);
 				}
 			},
-			removeCondition: function(e) {
+			removeConditionModel: function(e) {
 				this.model.destroy();
+			},
+			fadeRemove: function() {
+				this.$el.slideUp(400,function() {
+					this.remove();
+				});
 			}
 		}),
 
@@ -200,13 +205,13 @@ var CAE = CAE || {};
 			},
 			initialize: function() {
 				this.render();
-				this.listenTo( this.model, 'destroy', this.fadeRemove );
+				this.listenTo( this.model, 'destroy', this.slideRemove );
 				this.listenTo( this.model.conditions, 'remove', this.removeCondition );
-				this.listenTo( this.model.conditions, 'add', this.addConditionView );
+				this.listenTo( this.model.conditions, 'add', this.addConditionViewSlide );
 			},
 			render: function() {
 				this.$el.append(this.template(this.model.attributes));
-				this.model.conditions.each(this.addConditionView,this);
+				this.model.conditions.each(this.addConditionViewFade,this);
 			},
 			addConditionModel: function(e) {
 				var $select = $(e.currentTarget);
@@ -225,8 +230,15 @@ var CAE = CAE || {};
 				} else {
 					var condition = new CAE.Views.Condition({model:model});
 				}
-				
-				condition.$el.hide().appendTo(this.$el.find(".cas-content")).fadeIn();
+				return condition.$el
+				.hide().appendTo(this.$el.find(".cas-content"));
+			},
+			addConditionViewSlide: function(model) {
+				this.addConditionView(model).slideDown(300);
+
+			},
+			addConditionViewFade: function(model) {
+				this.addConditionView(model).fadeIn(300);
 			},
 			removeCondition: function(model) {
 				if(!this.model.conditions.length) {
@@ -290,7 +302,13 @@ var CAE = CAE || {};
 			},
 			fadeRemove: function() {
 				console.log("destroy");
-				this.$el.fadeOut(600,function() {
+				this.$el.fadeOut(400,function() {
+					this.remove();
+				});
+			},
+			slideRemove: function() {
+				console.log("destroy");
+				this.$el.slideUp(400,function() {
 					this.remove();
 				});
 			}
@@ -303,7 +321,7 @@ var CAE = CAE || {};
 			},
 			initialize: function() {
 				this.render();
-				this.listenTo( this.collection, 'add', this.addGroupView );
+				this.listenTo( this.collection, 'add', this.addGroupViewNew );
 			},
 			render: function() {
 				this.collection.each(this.addGroupView,this);
@@ -323,7 +341,11 @@ var CAE = CAE || {};
 			},
 			addGroupView: function(model) {
 				var group = new CAE.Views.Group({model:model});
-				group.$el.hide().appendTo(this.$el.children("ul").first()).fadeIn(600);
+				group.$el.hide().appendTo(this.$el.children("ul").first()).fadeIn(300);
+			},
+			addGroupViewNew: function(model) {
+				var group = new CAE.Views.Group({model:model});
+				group.$el.hide().appendTo(this.$el.children("ul").first()).slideDown(400);
 			}
 		})
 
