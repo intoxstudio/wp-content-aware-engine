@@ -29,6 +29,9 @@ class WPCAModule_date extends WPCAModule_Base {
 			'date',
 			__('Dates',WPCACore::DOMAIN)
 		);
+		$this->placeholder = __("Date Archives",WPCACore::DOMAIN);
+		$this->default_value = "0000-00-00";
+		$this->type_display = true;
 	}
 
 	/**
@@ -63,9 +66,7 @@ class WPCAModule_date extends WPCAModule_Base {
 	 * @return array 
 	 */
 	protected function _get_content($args = array()) {
-		$data = array(
-			'0000-00-00' => __('Date Archives', WPCACore::DOMAIN)
-		);
+		$data = array();
 		if(isset($args['include'])) {
 			$data = array_intersect_key($data, array_flip($args['include']));
 		}
