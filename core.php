@@ -410,21 +410,27 @@ if(!class_exists("WPCACore")) {
 
 			$valid = self::get_conditions();
 
-			$post_types = array_keys(self::post_types()->get_all());
-			foreach ($post_types as $post_type) {
-				self::$post_cache[$post_type] = array();
-			}
+			self::$post_cache[$post_type] = array();
 
 			if($valid) {
 
-				$context_data = array();
-				$context_data['JOIN'][] = "INNER JOIN $wpdb->postmeta h ON h.post_id = p.ID AND h.meta_key = '".self::PREFIX."handle'";
-				$context_data['JOIN'][] = "INNER JOIN $wpdb->postmeta e ON e.post_id = p.ID AND e.meta_key = '".self::PREFIX."exposure'";
-				$context_data['WHERE'][] = "p.post_type IN ('".implode("','", $post_types)."')";
-				$context_data['WHERE'][] = "e.meta_value ".(is_archive() || is_home() ? '>' : '<')."= '1'";
-				$context_data['WHERE'][] = "p.post_status = 'publish'";
-				//$context_data['WHERE'][] = "posts.post_status ".(current_user_can('read_private_posts') ? "IN('publish','private')" : "= 'publish'")."";
-				$context_data['WHERE'][] = "p.ID IN(".implode(',',$valid).")";
+				//todo: move exposure to group, later deprecate?
+				$metas = array(
+					'exposure' => array(
+						'key' => self::PREFIX.'exposure',
+						'value'   => 1,
+						'compare' => (is_archive() || is_home() ? '>=' : '<='),
+					)
+				);
+
+				$joins = array();
+				$wheres = array();
+				$i = 0;
+				foreach ($metas as $meta) {
+					$key = "m".++$i;
+					$joins[] = "INNER JOIN $wpdb->postmeta $key ON $key.post_id = p.ID AND $key.meta_key = '{$meta["key"]}'";
+					$wheres[] = $key.'.meta_value '.$meta["compare"]." '".$meta["value"]."'";
+				}
 
 				$results = $wpdb->get_results("
 					SELECT
