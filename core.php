@@ -438,20 +438,45 @@ if(!class_exists("WPCACore")) {
 						p.post_type,
 						h.meta_value handle
 					FROM $wpdb->posts p
-					".implode(' ',$context_data['JOIN'])."
+					INNER JOIN $wpdb->postmeta h ON h.post_id = p.ID AND h.meta_key = '".self::PREFIX."handle' 
+					".implode(' ',$joins)."
 					WHERE
-					".implode(' AND ',$context_data['WHERE'])."
+					p.post_type = '".$post_type."' AND 
+					p.post_status = 'publish' AND 
+					p.ID IN(".implode(',',$valid).") AND 
+					".implode(' AND ',$wheres)."
 					ORDER BY p.menu_order ASC, h.meta_value DESC, p.post_date DESC
 				");
 
+				//diff orderby only works in WP4.0+
+				// $new_results = new WP_Query(array(
+				// 	'post_type'           => $post_type,
+				// 	'post_status'         => 'publish',
+				// 	'post__in'            => $valid,
+				// 	'ignore_sticky_posts' => true,
+				// 	'nopaging'            => true,
+				// 	'posts_per_page'      => -1,
+				// 	'orderby'  => array('menu_order' => 'ASC', 'meta_value_num' => 'DESC', 'post_date' => 'DESC' ),
+				// 	'meta_key' => self::PREFIX.'handle',
+				// 	'meta_query' => array(
+				// 		// array(
+				// 		// 	'key'     => self::PREFIX.'handle',
+				// 		// 	'value'   => 'blue',
+				// 		// 	'compare' => 'NOT LIKE',
+				// 		// ),
+				// 		array(
+				// 			'key' => self::PREFIX.'exposure',
+				// 			'value'   => 1,
+				// 			'type'    => 'numeric',
+				// 			'compare' => (is_archive() || is_home() ? '>=' : '<='),
+				// 		)
+				// 	)
+				// ));
+
 				foreach($results as $result) {
-					self::$post_cache[$result->post_type][$result->ID] = $result;
-				}
-				foreach (self::$post_cache as $post_type => $result) {
-					self::$post_cache[$post_type] = apply_filters("wpca/get/{$post_type}",$result);
+					self::$post_cache[$post_type][$result->ID] = $result;
 				}
 			}
-			
 			return self::$post_cache[$post_type];
 		}
 		
