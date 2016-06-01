@@ -131,7 +131,7 @@ class WPCAModule_post_type extends WPCAModule_Base {
 	 * @since   1.0
 	 * @return  array
 	 */
-	protected function _post_types() {
+	public function _post_types() {
 		if(!$this->_post_types) {
 			$this->_post_types = new WPCAPostTypeManager();
 			// List public post types
@@ -298,7 +298,7 @@ class WPCAModule_post_type extends WPCAModule_Base {
 	 * @param  WP_Post  $post
 	 * @return string
 	 */
-	protected function _post_states($post) {
+	public function _post_states($post) {
 		$post_states = array();
 
 		if ( !empty($post->post_password) )
