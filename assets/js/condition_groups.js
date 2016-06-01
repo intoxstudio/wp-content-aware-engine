@@ -327,9 +327,11 @@ var CAE = CAE || {};
 			initialize: function() {
 				this.render();
 				this.listenTo( this.collection, 'add', this.addGroupViewNew );
+				this.listenTo( this.collection, 'add remove', this.changeLogicText );
 			},
 			render: function() {
 				this.collection.each(this.addGroupView,this);
+				this.changeLogicText();
 				$(".js-wpca-add-or").focus();
 			},
 			addGroupModel: function(e) {
@@ -351,6 +353,9 @@ var CAE = CAE || {};
 			addGroupViewNew: function(model) {
 				var group = new CAE.Views.Group({model:model});
 				group.$el.hide().appendTo(this.$el.children("ul").first()).slideDown(300);
+			},
+			changeLogicText: function() {
+				this.$el.find("> .cas-group-sep").toggle(this.collection.length != 0);
 			}
 		})
 	};

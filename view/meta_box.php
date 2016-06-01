@@ -10,7 +10,7 @@
 <div id="cas-groups">
 	<h2><?php echo $title; ?>:</h2>
 	<ul></ul>
-	<div class="cas-group-sep">
+	<div class="cas-group-sep" style="display:none;">
 		<?php _e('Or',WPCACore::DOMAIN); ?>
 	</div>
 	<div class="cas-group-new">
