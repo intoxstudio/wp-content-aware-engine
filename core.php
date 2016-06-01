@@ -341,7 +341,7 @@ if(!class_exists("WPCACore")) {
 			$context_data['WHERE'][] = "p.post_status IN ('".implode("','", $post_status)."')";
 				
 			//Syntax changed in MySQL 5.5 and MariaDB 10.0 (reports as version 5.5)
-			$wpdb->query('SET'.(version_compare($wpdb->db_version(), '5.5', '>=') ? '' : ' OPTION').' SQL_BIG_SELECTS = 1');
+			$wpdb->query('SET'.(version_compare($wpdb->db_version(), '5.5', '>=') ? ' SESSION' : ' OPTION').' SQL_BIG_SELECTS = 1');
 
 			$groups_in_context = $wpdb->get_results(
 				"SELECT p.ID, p.post_parent ".
