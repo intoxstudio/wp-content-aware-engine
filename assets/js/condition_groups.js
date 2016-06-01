@@ -201,7 +201,8 @@ var CAE = CAE || {};
 			template: _.template($('#wpca-template-group').html()),
 			events: {
 				"change .js-wpca-add-and": "addConditionModel",
-				"click .js-wpca-save-group": "saveGroup"
+				"click .js-wpca-save-group": "saveGroup",
+				"change .js-wpca-group-status": "statusChanged"
 			},
 			initialize: function() {
 				this.render();
@@ -300,6 +301,10 @@ var CAE = CAE || {};
 					}
 				});
 			},
+			statusChanged: function(e) {
+				var negated = $(e.currentTarget).is(":checked");
+				this.$el.find(".cas-group-sep:first-child").toggleClass("wpca-group-negate",negated);
+			},
 			fadeRemove: function() {
 				console.log("destroy");
 				this.$el.fadeOut(400,function() {
@@ -345,10 +350,9 @@ var CAE = CAE || {};
 			},
 			addGroupViewNew: function(model) {
 				var group = new CAE.Views.Group({model:model});
-				group.$el.hide().appendTo(this.$el.children("ul").first()).slideDown(400);
+				group.$el.hide().appendTo(this.$el.children("ul").first()).slideDown(300);
 			}
 		})
-
 	};
 
 	var wpca_admin = {

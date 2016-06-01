@@ -10,6 +10,9 @@
 <div id="cas-groups">
 	<h2><?php echo $title; ?>:</h2>
 	<ul></ul>
+	<div class="cas-group-sep">
+		<?php _e('Or',WPCACore::DOMAIN); ?>
+	</div>
 	<div class="cas-group-new">
 		<select class="js-wpca-add-or">
 			<option value="0">-- <?php _e("Select content type",WPCACore::DOMAIN); ?> --</option>

@@ -6,6 +6,10 @@
  */
 ?>
 <script type="text/template" id="wpca-template-group">
+<div class="cas-group-sep <%= status == 'negated' ? 'wpca-group-negate' : '' %>">
+	<span class="wpca-sep-or"><?php _e('Or',WPCACore::DOMAIN); ?></span>
+	<span class="wpca-sep-not"><?php _e('Not',WPCACore::DOMAIN); ?></span>
+</div>
 <div class="cas-group-body">
 	<div class="cas-group-cell">
 		<div class="cas-content"></div>
@@ -23,14 +27,11 @@
 	<div class="cas-group-cell cas-group-options">
 
 			<div><label>
-				<input class="js-cas-group-option" type="checkbox" name="<?php echo WPCACore::PREFIX; ?>status" value="1" <%= status == 'negated' ? 'checked' : '' %> />
+				<input class="js-cas-group-option js-wpca-group-status" type="checkbox" name="<?php echo WPCACore::PREFIX; ?>status" value="1" <%= status == 'negated' ? 'checked' : '' %> />
 				<?php _e("Negate conditions",WPCACore::DOMAIN); ?>
 			</label></div>
 		<?php do_action("wpca/group/settings",$post_type); ?>
 		<input class="js-wpca-save-group button" type="button" value="<?php _e("Save Changes",WPCACore::DOMAIN); ?>" />
 	</div>
-</div>
-<div class="cas-group-sep">
-	<?php _e('Or',WPCACore::DOMAIN); ?>
 </div>
 </script>
