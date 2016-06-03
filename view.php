@@ -45,7 +45,7 @@ class WPCAView {
 	 * @param   array     $params
 	 */
 	private function __construct($path,$params = array()) {
-		$this->_path = str_replace(".", "/", $path);
+		$this->_path = $path;
 		$this->_params = $params;
 	}
 
@@ -84,7 +84,11 @@ class WPCAView {
 	 * @return  string
 	 */
 	private function resolve_path() {
-		return plugin_dir_path( __FILE__ )."view/".$this->_path.".php";
+		if(stripos(strrev($this->_path), 'php.') === 0) {
+			return $this->_path;
+		} else {
+			return plugin_dir_path( __FILE__ ).'view/'.str_replace(".", "/",$this->_path).".php";
+		}
 	}
 
 	/**
