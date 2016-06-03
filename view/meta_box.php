@@ -8,7 +8,7 @@
 <?php echo $nonce; ?>
 <input type="hidden" id="current_sidebar" value="<?php the_ID(); ?>" />
 <div id="cas-groups">
-	<h2><?php echo $title; ?>:</h2>
+	<?php do_action('wpca/meta_box/before',$post_type); ?>
 	<ul></ul>
 	<div class="cas-group-sep" style="display:none;">
 		<?php _e('Or',WPCACore::DOMAIN); ?>
@@ -24,4 +24,5 @@
 ?>
 		</select>
 	</div>
+	<?php do_action('wpca/meta_box/after',$post_type); ?>
 </div>

@@ -495,14 +495,15 @@ if(!class_exists("WPCACore")) {
 
 				$view = WPCAView::make("meta_box",array(
 					'post_type'=> $post_type,
-					'title'    => isset($post_type_obj->labels->ca_title) ? $post_type_obj->labels->ca_title : "",
 					'nonce'    => wp_nonce_field(self::PREFIX.get_the_ID(), self::NONCE, true, false),
 					'options'  => $options
 				));
 
+				$title = isset($post_type_obj->labels->ca_title) ? $post_type_obj->labels->ca_title : __('Conditional Logic', self::DOMAIN);
+
 				add_meta_box(
 					'cas-rules',
-					__('Conditional Logic', self::DOMAIN),
+					$title,
 					array($view,'render'),
 					$post_type,
 					'normal',
