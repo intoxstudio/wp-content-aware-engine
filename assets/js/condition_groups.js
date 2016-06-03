@@ -167,10 +167,10 @@ var CAE = CAE || {};
 			tagName: "div",
 			className: "cas-condition",
 			events: {
-				"click .js-wpca-condition-remove": "removeConditionModel"
+				"click .js-wpca-condition-remove": "removeModel"
 			},
 			initialize: function() {
-				this.listenTo( this.model, 'destroy', this.fadeRemove );
+				this.listenTo( this.model, 'destroy', this.remove );
 				this.template = _.template($('#wpca-template-'+this.model.get("module")).html());
 				this.render();
 			},
@@ -185,12 +185,12 @@ var CAE = CAE || {};
 					);
 				}
 			},
-			removeConditionModel: function(e) {
-				this.model.destroy();
-			},
-			fadeRemove: function() {
-				this.$el.slideUp(400,function() {
-					this.remove();
+			removeModel: function(e) {
+				console.log("cond view: removes condition model");
+				var that = this;
+				this.$el.slideUp(300,function() {
+					that.model.destroy();
+					console.log("cond view: condition model removed");
 				});
 			}
 		}),
@@ -200,14 +200,14 @@ var CAE = CAE || {};
 			className: "cas-group-single",
 			template: _.template($('#wpca-template-group').html()),
 			events: {
-				"change .js-wpca-add-and": "addConditionModel",
-				"click .js-wpca-save-group": "saveGroup",
+				"change .js-wpca-add-and":      "addConditionModel",
+				"click .js-wpca-save-group":    "saveGroup",
 				"change .js-wpca-group-status": "statusChanged"
 			},
 			initialize: function() {
 				this.render();
-				this.listenTo( this.model, 'destroy', this.slideRemove );
-				this.listenTo( this.model.conditions, 'remove', this.removeCondition );
+				this.listenTo( this.model, 'destroy', this.remove );
+				this.listenTo( this.model.conditions, 'remove', this.conditionRemoved );
 				this.listenTo( this.model.conditions, 'add', this.addConditionViewSlide );
 			},
 			render: function() {
@@ -241,14 +241,27 @@ var CAE = CAE || {};
 			addConditionViewFade: function(model) {
 				this.addConditionView(model).fadeIn(300);
 			},
-			removeCondition: function(model) {
+			conditionRemoved: function(model) {
+				console.log("group view: a condition was removed");
 				if(!this.model.conditions.length) {
 					if(this.model.get("id")) {
+						console.log("group view: save");
+						//at this point, we could skip save request
+						//and add a faster delete request
 						this.saveGroup();
 					} else {
-						this.model.destroy();
+						console.log("group view: destroy model");
+						this.removeModel();
 					}
 				}
+			},
+			removeModel: function() {
+				var that = this;
+				console.log("group view: group model removing");
+				this.$el.slideUp(400,function() {
+					that.model.destroy();
+					console.log("group view: group model removed");
+				});
 			},
 			saveGroup: function(e) {
 				var data = {
@@ -290,7 +303,7 @@ var CAE = CAE || {};
 						wpca_admin.alert.success(response.message);
 
 						if(response.removed) {
-							self.model.destroy();
+							self.removeModel();
 						}
 						else if(response.new_post_id) {
 							self.model.set("id",response.new_post_id);
@@ -305,14 +318,8 @@ var CAE = CAE || {};
 				var negated = $(e.currentTarget).is(":checked");
 				this.$el.find(".cas-group-sep:first-child").toggleClass("wpca-group-negate",negated);
 			},
-			fadeRemove: function() {
-				console.log("destroy");
-				this.$el.fadeOut(400,function() {
-					this.remove();
-				});
-			},
 			slideRemove: function() {
-				console.log("destroy");
+				console.log("group view: group model was destroyed");
 				this.$el.slideUp(400,function() {
 					this.remove();
 				});
@@ -367,15 +374,6 @@ var CAE = CAE || {};
 		alert: null,
 
 		init: function() {
-
-			// $(".cas-groups-body").on("select2-blur",".cas-group-input input", function(e) {
-				
-			// 	var select2 = $(this).data("select2");
-			// 	if(!select2.opened()) {
-			// 		console.log("can save now");
-			// 		wpca_admin.alert.success("Conditions saved automatically");
-			// 	}
-			// });
 
 			this.alert = new CAE.Views.Alert({model:new CAE.Models.Alert()});
 			
@@ -446,6 +444,13 @@ var CAE = CAE || {};
 					$elem.data("forceOpen",false);
 				}
 			});
+			// .on("select2-blur",function(e) {
+			// 	var select2 = $(this).data("select2");
+			// 	if(!select2.opened()) {
+			// 		console.log("can save now");
+			// 		wpca_admin.alert.success("Conditions saved automatically");
+			// 	}
+			// });
 			if(data) {
 				$elem.select2("data",data);
 			}
