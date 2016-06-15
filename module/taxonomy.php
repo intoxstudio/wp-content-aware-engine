@@ -103,10 +103,14 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 	 * @return array
 	 */
 	public function filter_excluded_context($posts) {
-		global $wpdb;
 		$posts = parent::filter_excluded_context($posts);
-		$obj_w_tags = $wpdb->get_col("SELECT object_id FROM $wpdb->term_relationships WHERE object_id IN (".implode(",", array_keys($posts)).") GROUP BY object_id");
-		$posts = array_diff_key($posts, array_flip($obj_w_tags));
+		if($posts) {
+			global $wpdb;
+			$obj_w_tags = $wpdb->get_col("SELECT object_id FROM $wpdb->term_relationships WHERE object_id IN (".implode(",", array_keys($posts)).") GROUP BY object_id");
+			if($obj_w_tags) {
+				$posts = array_diff_key($posts, array_flip($obj_w_tags));
+			}
+		}
 		return $posts;
 	}
 	
