@@ -384,6 +384,7 @@ var CAE = CAE || {};
 
 		createSuggestInput: function($elem,type,data) {
 			$elem.select2({
+				more: true,
 				cacheDataSource: [],
 				quietMillis: 400,
 				searchTimer: null,
@@ -400,17 +401,25 @@ var CAE = CAE || {};
 				},
 				query: function(query) {
 					var self = this,
-						cachedData = self.cacheDataSource[query.term];
-					if(cachedData) {
-						query.callback({results: cachedData});
-						return;
+						cachedData = self.cacheDataSource[query.term],
+						page = query.page;
+
+					if(cachedData && cachedData.page >= page) {
+						if(page > 1) {
+							page = cachedData.page;
+						} else {
+							query.callback({results: cachedData.items, more:self.more});
+							return;
+						}
 					}
+
 					clearTimeout(self.searchTimer);
 					self.searchTimer = setTimeout(function(){
 						$.ajax({
 								url: ajaxurl,
 								data: {
 									search: query.term,
+									paged: page,
 									action: "wpca/module/"+type,
 									sidebar_id: wpca_admin.sidebarID,
 									nonce: wpca_admin.nonce
@@ -427,8 +436,20 @@ var CAE = CAE || {};
 											});
 										}
 									}
-									self.cacheDataSource[query.term] = results;
-									query.callback({results: results});
+									if(results.length < 20) {
+										self.more = false;
+									}
+									if(cachedData) {
+										self.cacheDataSource[query.term].page = page;
+										self.cacheDataSource[query.term].items = self.cacheDataSource[query.term].items.concat(results);
+									} else {
+										self.cacheDataSource[query.term] = {
+											page: page,
+											items: results
+										};
+									}
+									//self.cacheDataSource[query.term] = results;
+									query.callback({results: results, more: self.more});
 								}
 							});
 					}, self.quietMillis);

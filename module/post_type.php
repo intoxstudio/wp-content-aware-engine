@@ -100,11 +100,12 @@ class WPCAModule_post_type extends WPCAModule_Base {
 				WHERE post_type = '%s' AND (post_title LIKE '%s' OR post_name LIKE '%s') AND post_status IN('".implode("','", $post_status)."')
 				".$exclude_query."
 				ORDER BY post_title ASC
-				LIMIT 0,20
+				LIMIT %d,20
 				",
 				$args['post_type'],
 				"%".$args['search']."%",
-				"%".$args['search']."%"
+				"%".$args['search']."%",
+				($args['paged']-1)*$args['posts_per_page']
 			));
 		} else {
 			$query = new WP_Query(array(
