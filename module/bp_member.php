@@ -14,6 +14,7 @@ if (!defined('WPCACore::VERSION')) {
 /**
  *
  * BuddyPress Member Page Module
+ * Requires BuddyPress 2.6+
  * 
  * Detects if current content is:
  * a) a specific buddypress member page
@@ -59,18 +60,19 @@ class WPCAModule_bp_member extends WPCAModule_Base {
 	protected function _get_content($args = array()) {
 		global $bp;
 
+		if($args['paged'] > 1) {
+			return array();
+		}
+
 		$content = array();
 
-		if(isset($bp->loaded_components,$bp->bp_options_nav)) {
-			$components = $bp->loaded_components;
-			unset($components['members'],$components['xprofile']);
-			$components['profile'] = 'profile';
+		if(isset($bp->members->nav)) {
 
-			foreach((array)$components as $name) {
-				$content[$name] = ucfirst($name);
-				if(isset($bp->bp_options_nav[$name])) {
-					foreach($bp->bp_options_nav[$name] as $child) {
-						$content[$name."-".$child["slug"]] = $child['name'];
+			foreach($bp->members->nav->get_item_nav() as $item) {
+				$content[$item->slug] = $item->name;
+				if($item->children) {
+					foreach ($item->children as $child_item) {
+						$content[$item->slug."-".$child_item->slug] = $child_item->name;
 					}
 				}
 			}
