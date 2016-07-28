@@ -384,6 +384,8 @@ var CAE = CAE || {};
 
 		createSuggestInput: function($elem,type,data) {
 			$elem.select2({
+				containerCssClass:'cas-select2',
+				dropdownCssClass: 'cas-select2',
 				more: true,
 				cacheDataSource: [],
 				quietMillis: 400,
