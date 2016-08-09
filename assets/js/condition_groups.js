@@ -52,6 +52,7 @@ var CAE = CAE || {};
 			initialize: function() {
 				//backbone.trackit
 				this.startTracking();
+				this.on("destroy",this.stopTracking,this);
 			},
 			sync: function () { return false; },
 			url: ""
