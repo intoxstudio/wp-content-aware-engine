@@ -41,7 +41,7 @@ var CAE = CAE || {};
 			defaults : {
 				'module' : null, 
 				'label'  : null,
-				'values' : null,
+				'values' : [],
 				'options': {}
 			},
 			sync: function () { return false; },
@@ -52,8 +52,7 @@ var CAE = CAE || {};
 			defaults : {
 				'id'        : null, 
 				'status'    : null,
-				'options'   : {},
-				'conditions': null
+				'options'   : {}
 			},
 			initialize: function() {
 				if(!this.conditions) {
@@ -171,19 +170,17 @@ var CAE = CAE || {};
 			},
 			initialize: function() {
 				this.listenTo( this.model, 'destroy', this.remove );
-				this.template = _.template($('#wpca-template-'+this.model.get("module")).html());
-				this.render();
+				var $template = $('#wpca-template-'+this.model.get("module"));
+				if($template.length) {
+					this.template = _.template($template.html());
+					this.render();
+				} else {
+					this.model.destroy();
+				}
 			},
 			render: function() {
 				this.$el.append(this.template(this.model.attributes));
-				var $suggest = this.$el.find(".js-wpca-suggest");
-				if($suggest.length) {
-					wpca_admin.createSuggestInput(
-						$suggest,
-						this.model.get("module"),
-						this.model.get("values")
-					);
-				}
+				this.createSuggestInput();
 			},
 			removeModel: function(e) {
 				console.log("cond view: removes condition model");
@@ -192,6 +189,126 @@ var CAE = CAE || {};
 					that.model.destroy();
 					console.log("cond view: condition model removed");
 				});
+			},
+			createSuggestInput: function() {
+				var $elem = this.$el.find(".js-wpca-suggest");
+				if(!$elem.length) {
+					return;
+				}
+				var model = this.model;
+				var type = this.model.get("module"),
+					data = this.model.get("values");
+
+				$elem.select2({
+					containerCssClass:'cas-select2',
+					dropdownCssClass: 'cas-select2',
+					more: true,
+					cacheDataSource: [],
+					quietMillis: 400,
+					searchTimer: null,
+					placeholder:$elem.data("wpca-placeholder"),
+					minimumInputLength: 0,
+					closeOnSelect: true,//does not work properly on false
+					allowClear:true,
+					multiple: true,
+					width:"100%",
+					formatNoMatches: WPCA.noResults,
+					formatSearching: WPCA.searching+"...",
+					nextSearchTerm: function(selected, currentTerm) {
+						return currentTerm;
+					},
+					query: function(query) {
+						var self = this,
+							cachedData = self.cacheDataSource[query.term],
+							page = query.page;
+
+						if(cachedData && cachedData.page >= page) {
+							if(page > 1) {
+								page = cachedData.page;
+							} else {
+								query.callback({
+									results: cachedData.items,
+									more:self.more
+								});
+								return;
+							}
+						}
+
+						clearTimeout(self.searchTimer);
+						self.searchTimer = setTimeout(function(){
+							$.ajax({
+								url: ajaxurl,
+								data: {
+									search: query.term,
+									paged: page,
+									action: "wpca/module/"+type,
+									sidebar_id: wpca_admin.sidebarID,
+									nonce: wpca_admin.nonce
+								},
+								dataType: 'JSON',
+								type: 'POST',
+								success: function(data) {
+									var results = [];
+									for (var key in data) {
+										if (data.hasOwnProperty(key)) {
+											results.push({
+												id:key,
+												text:data[key]
+											});
+										}
+									}
+									if(results.length < 20) {
+										self.more = false;
+									}
+									if(cachedData) {
+										self.cacheDataSource[query.term].page = page;
+										self.cacheDataSource[query.term].items = self.cacheDataSource[query.term].items.concat(results);
+									} else {
+										self.cacheDataSource[query.term] = {
+											page: page,
+											items: results
+										};
+									}
+									
+									query.callback({
+										results: results,
+										more: self.more
+									});
+								}
+							});
+						}, self.quietMillis);
+					}
+				})
+				.on("select2-selecting",function(e) {
+					$elem.data("forceOpen",true);
+				})
+				.on("select2-close",function(e) {
+					if($elem.data("forceOpen")) {
+						e.preventDefault();
+						$elem.select2("open");
+						$elem.data("forceOpen",false);
+					}
+				});
+				$elem.on("change", function(e) {
+					console.log("select2 change");
+					var values = $elem.select2("data");
+					model.set("values",values);
+				});
+				//model.set("values",[1]);
+				// .on("select2-blur",function(e) {
+				// 	var select2 = $(this).data("select2");
+				// 	if(!select2.opened()) {
+				// 		console.log("can save now");
+				// 		wpca_admin.alert.success("Conditions saved automatically");
+				// 	}
+				// });
+				if(data.length) {
+					$elem.select2("data",data);
+				}
+				// else if(!!$elem.data("wpca-default")) {
+				// 	//todo: control default val in model
+				// 	//model.trigger("change:values",model,[]);
+				// }
 			}
 		}),
 
@@ -216,7 +333,7 @@ var CAE = CAE || {};
 			},
 			addConditionModel: function(e) {
 				var $select = $(e.currentTarget);
-				if(!this.model.conditions.findWhere({module:$select.val()})) {
+				if(!!$select.val() && !this.model.conditions.findWhere({module:$select.val()})) {
 					var condition = new CAE.Models.Condition({
 						module: $select.val(),
 						label: $select.children(":selected").text()
@@ -333,7 +450,7 @@ var CAE = CAE || {};
 			},
 			initialize: function() {
 				this.render();
-				this.listenTo( this.collection, 'add', this.addGroupViewNew );
+				this.listenTo( this.collection, 'add', this.addGroupView );
 				this.listenTo( this.collection, 'add remove', this.changeLogicText );
 			},
 			render: function() {
@@ -343,13 +460,16 @@ var CAE = CAE || {};
 			},
 			addGroupModel: function(e) {
 				var $select = $(e.currentTarget);
-				var group = new CAE.Models.Group();
-				var condition = new CAE.Models.Condition({
-					module: $select.val(),
-					label: $select.children(":selected").text()
-				});
-				group.conditions.add(condition);
-				this.collection.add(group);
+
+				if(!!$select.val()) {
+					var group = new CAE.Models.Group();
+					var condition = new CAE.Models.Condition({
+						module: $select.val(),
+						label: $select.children(":selected").text()
+					});
+					this.collection.add(group);
+					group.conditions.add(condition);
+				}
 
 				$select.val(0).blur();
 			},
@@ -357,15 +477,20 @@ var CAE = CAE || {};
 				var group = new CAE.Views.Group({model:model});
 				group.$el.hide().appendTo(this.$el.children("ul").first()).fadeIn(300);
 			},
-			addGroupViewNew: function(model) {
-				var group = new CAE.Views.Group({model:model});
-				group.$el.hide().appendTo(this.$el.children("ul").first()).slideDown(300);
-			},
 			changeLogicText: function() {
-				this.$el.find("> .cas-group-sep").toggle(this.collection.length != 0);
+				this.$el.find("> .cas-group-sep").toggle(!!this.collection.length);
 			}
 		})
 	};
+
+	// window.addEventListener("beforeunload", function (e) {
+	// 	if (!wpca_admin.hasUnsavedChanges()) {
+	// 		return;
+	// 	}
+
+	// 	(e || window.event).returnValue = WPCA.unsaved; //Gecko + IE
+	// 	return WPCA.unsaved;                            //Webkit, Safari, Chrome
+	// });
 
 	var wpca_admin = {
 
@@ -375,108 +500,13 @@ var CAE = CAE || {};
 
 		init: function() {
 
-			this.alert = new CAE.Views.Alert({model:new CAE.Models.Alert()});
+			this.alert = new CAE.Views.Alert({
+				model:new CAE.Models.Alert()
+			});
 			
 			CAE.conditionGroups = new CAE.Views.GroupCollection({
 				collection:new CAE.Models.GroupCollection(WPCA.groups,{parse:true})
 			});
-		},
-
-		createSuggestInput: function($elem,type,data) {
-			$elem.select2({
-				containerCssClass:'cas-select2',
-				dropdownCssClass: 'cas-select2',
-				more: true,
-				cacheDataSource: [],
-				quietMillis: 400,
-				searchTimer: null,
-				placeholder:$elem.data("wpca-placeholder"),
-				minimumInputLength: 0,
-				closeOnSelect: true,//does not work properly on false
-				allowClear:true,
-				multiple: true,
-				width:"100%",
-				formatNoMatches: WPCA.noResults,
-				formatSearching: WPCA.searching+"...",
-				nextSearchTerm: function(selectedObject, currentSearchTerm) {
-					return currentSearchTerm;
-				},
-				query: function(query) {
-					var self = this,
-						cachedData = self.cacheDataSource[query.term],
-						page = query.page;
-
-					if(cachedData && cachedData.page >= page) {
-						if(page > 1) {
-							page = cachedData.page;
-						} else {
-							query.callback({results: cachedData.items, more:self.more});
-							return;
-						}
-					}
-
-					clearTimeout(self.searchTimer);
-					self.searchTimer = setTimeout(function(){
-						$.ajax({
-								url: ajaxurl,
-								data: {
-									search: query.term,
-									paged: page,
-									action: "wpca/module/"+type,
-									sidebar_id: wpca_admin.sidebarID,
-									nonce: wpca_admin.nonce
-								},
-								dataType: 'JSON',
-								type: 'POST',
-								success: function(data) {
-									var results = [];
-									for (var key in data) {
-										if (data.hasOwnProperty(key)) {
-											results.push({
-												id:key,
-												text:data[key]
-											});
-										}
-									}
-									if(results.length < 20) {
-										self.more = false;
-									}
-									if(cachedData) {
-										self.cacheDataSource[query.term].page = page;
-										self.cacheDataSource[query.term].items = self.cacheDataSource[query.term].items.concat(results);
-									} else {
-										self.cacheDataSource[query.term] = {
-											page: page,
-											items: results
-										};
-									}
-									//self.cacheDataSource[query.term] = results;
-									query.callback({results: results, more: self.more});
-								}
-							});
-					}, self.quietMillis);
-				}
-			})
-			.on("select2-selecting",function(e) {
-				$elem.data("forceOpen",true);
-			})
-			.on("select2-close",function(e) {
-				if($elem.data("forceOpen")) {
-					e.preventDefault();
-					$elem.select2("open");
-					$elem.data("forceOpen",false);
-				}
-			});
-			// .on("select2-blur",function(e) {
-			// 	var select2 = $(this).data("select2");
-			// 	if(!select2.opened()) {
-			// 		console.log("can save now");
-			// 		wpca_admin.alert.success("Conditions saved automatically");
-			// 	}
-			// });
-			if(data) {
-				$elem.select2("data",data);
-			}
 		}
 
 	};
