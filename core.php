@@ -671,9 +671,17 @@ if(!class_exists("WPCACore")) {
 				);
 
 				wp_register_script(
+					'backbone.trackit',
+					plugins_url('/assets/js/backbone.trackit.min.js', __FILE__),
+					array('backbone'),
+					'0.1.0',
+					true
+				);
+
+				wp_register_script(
 					self::PREFIX.'condition-groups',
-					plugins_url('/assets/js/condition_groups.min.js', __FILE__),
-					array('jquery','select2','backbone'),
+					plugins_url('/assets/js/condition_groups.js', __FILE__),
+					array('jquery','select2','backbone','backbone.trackit'),
 					self::VERSION,
 					true
 				);
@@ -694,10 +702,10 @@ if(!class_exists("WPCACore")) {
 					'remove'        => __('Remove',self::DOMAIN),
 					'searching'     => __('Searching',self::DOMAIN),
 					'noResults'     => __('No results found.',self::DOMAIN),
-					'confirmCancel' => __('The current group has unsaved changes. Do you want to continue and discard these changes?', self::DOMAIN),
 					'prefix'        => self::PREFIX,
 					'targetNegate'  => __('Target all but this context',self::DOMAIN),
 					'targetThis'    => __('Target this context',self::DOMAIN),
+					'unsaved'       => __('Conditions have unsaved changes. Do you want to continue and discard these changes?',self::DOMAIN),
 					'groups'        => $data
 				));
 				wp_enqueue_style(self::PREFIX.'condition-groups');

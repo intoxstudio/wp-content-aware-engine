@@ -38,11 +38,20 @@ var CAE = CAE || {};
 		}),
 
 		Condition: Backbone.Model.extend({
+			//backbone.trackit
+			unsaved: {
+				prompt: WPCA.unsaved,
+				unloadWindowPrompt: true
+			},
 			defaults : {
 				'module' : null, 
 				'label'  : null,
 				'values' : [],
 				'options': {}
+			},
+			initialize: function() {
+				//backbone.trackit
+				this.startTracking();
 			},
 			sync: function () { return false; },
 			url: ""
@@ -58,7 +67,13 @@ var CAE = CAE || {};
 				if(!this.conditions) {
 					this.conditions = new CAE.Models.ConditionCollection();
 				}
+				//todo: listen to group options, status changes
+				//todo: listen to condition meta changes
+				//this.conditions.on("unsavedChanges",this.testChange,this);
 			},
+			// testChange: function(hasChanges, unsavedAttrs, model) {
+
+			// },
 			parse: function(response) {
 				if (_.has(response, "conditions")) {
 					var list = [];
@@ -418,6 +433,11 @@ var CAE = CAE || {};
 					success:function(response){
 
 						wpca_admin.alert.success(response.message);
+
+						//backbone.trackit
+						self.model.conditions.each(function(model) {
+							model.restartTracking();
+						});
 
 						if(response.removed) {
 							self.removeModel();
