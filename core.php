@@ -666,7 +666,7 @@ if(!class_exists("WPCACore")) {
 					'select2',
 					plugins_url('/assets/js/select2.min.js', __FILE__),
 					array('jquery'),
-					'3.5.4',
+					'4.0.3',
 					false
 				);
 
