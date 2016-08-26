@@ -11,7 +11,7 @@
 		<%= label %>
 	</div>
 	<div class="cas-group-input">
-		<input type="hidden" data-wpca-placeholder="<?php echo $placeholder; ?>" data-wpca-default="<?php echo $default; ?>" name="cas_condition[<?php echo $id; ?>]" class="js-wpca-suggest" value="" />
+		<select class="js-wpca-suggest" multiple="multiple" name="cas_condition[<?php echo $id; ?>][]" data-wpca-placeholder="<?php echo $placeholder; ?>" data-wpca-default="<?php echo $default; ?>"></select>
 	</div>
 	<div class="cas-group-sep"><?php _e("And",WPCACore::DOMAIN); ?></div>
 </script>

@@ -216,99 +216,40 @@ var CAE = CAE || {};
 					data = this.model.get("values");
 
 				$elem.select2({
-					containerCssClass:'cas-select2',
-					dropdownCssClass: 'cas-select2',
 					more: true,
-					cacheDataSource: [],
+					cachedResults: {},
 					quietMillis: 400,
 					searchTimer: null,
+					type:type,
+					theme:'wpca',
 					placeholder:$elem.data("wpca-placeholder"),
 					minimumInputLength: 0,
-					closeOnSelect: true,//does not work properly on false
-					allowClear:true,
-					multiple: true,
+					closeOnSelect: true,//false working properly when hiding selected
 					width:"100%",
-					formatNoMatches: WPCA.noResults,
-					formatSearching: WPCA.searching+"...",
+					language: {
+						noResults:function(){
+							return WPCA.noResults;
+						},
+						searching: function(){
+							return WPCA.searching+"...";
+						}
+					},
 					nextSearchTerm: function(selected, currentTerm) {
 						return currentTerm;
 					},
-					query: function(query) {
-						var self = this,
-							cachedData = self.cacheDataSource[query.term],
-							page = query.page;
-
-						if(cachedData && cachedData.page >= page) {
-							if(page > 1) {
-								page = cachedData.page;
-							} else {
-								query.callback({
-									results: cachedData.items,
-									more:self.more
-								});
-								return;
-							}
-						}
-
-						clearTimeout(self.searchTimer);
-						self.searchTimer = setTimeout(function(){
-							$.ajax({
-								url: ajaxurl,
-								data: {
-									search: query.term,
-									paged: page,
-									action: "wpca/module/"+type,
-									sidebar_id: wpca_admin.sidebarID,
-									nonce: wpca_admin.nonce
-								},
-								dataType: 'JSON',
-								type: 'POST',
-								success: function(data) {
-									var results = [];
-									for (var key in data) {
-										if (data.hasOwnProperty(key)) {
-											results.push({
-												id:key,
-												text:data[key]
-											});
-										}
-									}
-									if(results.length < 20) {
-										self.more = false;
-									}
-									if(cachedData) {
-										self.cacheDataSource[query.term].page = page;
-										self.cacheDataSource[query.term].items = self.cacheDataSource[query.term].items.concat(results);
-									} else {
-										self.cacheDataSource[query.term] = {
-											page: page,
-											items: results
-										};
-									}
-									
-									query.callback({
-										results: results,
-										more: self.more
-									});
-								}
-							});
-						}, self.quietMillis);
-					}
+					data: data,
+					dataAdapter: wpca_admin.wpcaDataAdapter,
+					ajax:{}
 				})
-				.on("select2-selecting",function(e) {
+				.on("select2:selecting",function(e) {
 					$elem.data("forceOpen",true);
 				})
-				.on("select2-close",function(e) {
+				.on("select2:close",function(e) {
 					if($elem.data("forceOpen")) {
 						e.preventDefault();
 						$elem.select2("open");
 						$elem.data("forceOpen",false);
 					}
-				});
-				$elem.on("change", function(e) {
-					console.log("select2 change");
-					var values = $elem.select2("data");
-					model.set("values",values);
 				});
 				//model.set("values",[1]);
 				// .on("select2-blur",function(e) {
@@ -318,9 +259,19 @@ var CAE = CAE || {};
 				// 		wpca_admin.alert.success("Conditions saved automatically");
 				// 	}
 				// });
+
+				//data is set, now set selected
 				if(data.length) {
-					$elem.select2("data",data);
+					$elem.val(_.map(data,function(obj) {
+						return obj.id;
+					})).trigger('change');
 				}
+
+				$elem.on("change", function(e) {
+					console.log("select2 change");
+					var values = $elem.select2("data");
+					model.set("values",values);
+				});
 				// else if(!!$elem.data("wpca-default")) {
 				// 	//todo: control default val in model
 				// 	//model.trigger("change:values",model,[]);
@@ -406,16 +357,22 @@ var CAE = CAE || {};
 				if(this.model.get("id")) {
 					data.cas_group_id = this.model.get("id");
 				}
-				this.$el.find("input").each(function(i,obj) {
+
+				//todo: get data from model instead
+				//will require backend change
+				this.$el.find("input,select").each(function(i,obj) {
 					var $obj = $(obj);
 					var key = $obj.attr("name");
 					if(key && ($obj.attr("type") != "checkbox" || $obj.is(":checked"))) {
 						var value = $obj.val();
 						if(~key.indexOf('cas_condition')) {
 							if(!value && $obj.data("wpca-default")) {
-								value = $obj.data("wpca-default");
+								value = [$obj.data("wpca-default")];
+							} else if(!$.isArray(value)) {
+								//not pretty...
+								value = [value];
 							}
-							value = value ? value.split(",") : [];
+							//fix for post types in same group
 							if(data[key]) {
 								value = value.concat(data[key]);
 							}
@@ -513,11 +470,93 @@ var CAE = CAE || {};
 	// 	return WPCA.unsaved;                            //Webkit, Safari, Chrome
 	// });
 
+	$.fn.select2.amd.define('select2/data/wpcaAdapter', ['select2/data/array', 'select2/utils'],
+		function (ArrayAdapter, Utils) {
+			function WPCADataAdapter ($element, options) {
+				WPCADataAdapter.__super__.constructor.call(this, $element, options);
+			}
+
+			Utils.Extend(WPCADataAdapter, ArrayAdapter);
+
+			WPCADataAdapter.prototype.query = function (params, callback) {
+
+				params['term'] = params.term || '';
+
+				var self = this.options.options,
+					cachedData = self.cachedResults[params.term],
+					page = params.page || 1;
+
+				if(cachedData && cachedData.page >= page) {
+					if(page > 1) {
+						page = cachedData.page;
+					} else {
+						callback({
+							results: cachedData.items,
+							pagination:{
+								more:self.more
+							}
+						});
+						return;
+					}
+				}
+
+				clearTimeout(self.searchTimer);
+				self.searchTimer = setTimeout(function(){
+					$.ajax({
+						url: ajaxurl,
+						data: {
+							search: params.term,
+							paged: page,
+							action: "wpca/module/"+self.type,
+							sidebar_id: wpca_admin.sidebarID,
+							nonce: wpca_admin.nonce
+						},
+						dataType: 'JSON',
+						type: 'POST',
+						success: function(data) {
+							var results = [];
+							for (var key in data) {
+								if (data.hasOwnProperty(key)) {
+									results.push({
+										id:key,
+										text:data[key]
+									});
+								}
+							}
+							if(results.length < 20) {
+								self.more = false;
+							}
+							if(cachedData) {
+								self.cachedResults[params.term].page = page;
+								self.cachedResults[params.term].items = self.cachedResults[params.term].items.concat(results);
+							} else {
+								self.cachedResults[params.term] = {
+									page: page,
+									items: results
+								};
+							}
+							
+							callback({
+								results: results,
+								pagination: {
+									more:self.more
+								}
+							});
+						}
+					});
+				}, self.quietMillis);
+			};
+
+			return WPCADataAdapter;
+		}
+	);
+
 	var wpca_admin = {
 
 		nonce: $('#_ca_nonce').val(),
 		sidebarID: $('#current_sidebar').val(),
 		alert: null,
+		wpcaDataAdapter:$.fn.select2.amd.require('select2/data/wpcaAdapter'),
 
 		init: function() {
 
@@ -532,6 +571,8 @@ var CAE = CAE || {};
 
 	};
 
-	$(document).ready(function(){ wpca_admin.init(); });
+	$(document).ready(function(){
+		wpca_admin.init();
+	});
 
 })(jQuery, CAE);

@@ -11,10 +11,10 @@
 		<%= label %>
 	</div>
 	<div class="cas-group-input">
-		<input type="hidden" data-wpca-placeholder="<?php echo $placeholder; ?>" data-wpca-default="<?php echo $post_type; ?>" name="cas_condition[<?php echo $id; ?>]" class="js-wpca-suggest" value="" />
+		<select style="width:100%;" class="js-wpca-suggest" multiple="multiple" name="cas_condition[<?php echo $id; ?>][]" data-wpca-placeholder="<?php echo $placeholder; ?>" data-wpca-default="<?php echo $post_type; ?>"></select>
 		<p>
 			<label>
-				<input type="checkbox" name="cas_condition[<?php echo $id; ?>]" value="<?php echo $autoselect; ?>" <%= _.has(options,"<?php echo $autoselect; ?>") ? 'checked="checked"' : '' %> />
+				<input type="checkbox" name="cas_condition[<?php echo $id; ?>][]" value="<?php echo $autoselect; ?>" <%= _.has(options,"<?php echo $autoselect; ?>") ? 'checked="checked"' : '' %> />
 				<?php _e('Automatically add new children of a selected ancestor', WPCACore::DOMAIN); ?>
 			</label>
 		</p>
