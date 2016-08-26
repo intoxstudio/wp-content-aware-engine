@@ -680,7 +680,7 @@ if(!class_exists("WPCACore")) {
 
 				wp_register_script(
 					self::PREFIX.'condition-groups',
-					plugins_url('/assets/js/condition_groups.js', __FILE__),
+					plugins_url('/assets/js/condition_groups.min.js', __FILE__),
 					array('jquery','select2','backbone','backbone.trackit'),
 					self::VERSION,
 					true
