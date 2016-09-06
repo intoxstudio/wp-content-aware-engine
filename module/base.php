@@ -286,7 +286,18 @@ abstract class WPCAModule_Base {
 			'item_object' => $_POST["action"]
 		));
 
-		wp_send_json($response);
+		//ECMAScript has no standard to guarantee
+		//prop order in an object, send array instead
+		//todo: fix in each module
+		$fix_response = array();
+		foreach ($response as $id => $title) {
+			$fix_response[] = array(
+				'id' => $id,
+				'text' => $title
+			);
+		}
+
+		wp_send_json($fix_response);
 	}
 
 	/**

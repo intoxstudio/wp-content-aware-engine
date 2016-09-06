@@ -493,7 +493,7 @@ var CAE = CAE || {};
 						callback({
 							results: cachedData.items,
 							pagination:{
-								more:self.more
+								more:cachedData.more
 							}
 						});
 						return;
@@ -514,32 +514,45 @@ var CAE = CAE || {};
 						dataType: 'JSON',
 						type: 'POST',
 						success: function(data) {
-							var results = [];
-							for (var key in data) {
-								if (data.hasOwnProperty(key)) {
-									results.push({
-										id:key,
-										text:data[key]
-									});
-								}
-							}
+							var results = data;
+							var more = true;
+							// for (var key in data) {
+							// 	if (data.hasOwnProperty(key)) {
+							// 		results.push({
+							// 			id:key,
+							// 			text:data[key]
+							// 		});
+							// 	}
+							// }
+							// var length = data.length,
+							// 	i = 0;
+							// for(i; i < length; i++) {
+							// 	results.push({
+							// 		id: data[i].id,
+							// 		text: data[i].title
+							// 	});
+							// }
 							if(results.length < 20) {
-								self.more = false;
+								more = false;
 							}
 							if(cachedData) {
-								self.cachedResults[params.term].page = page;
-								self.cachedResults[params.term].items = self.cachedResults[params.term].items.concat(results);
+								self.cachedResults[params.term] = {
+									page: page,
+									more: more,
+									items: self.cachedResults[params.term].items.concat(results)
+								};
 							} else {
 								self.cachedResults[params.term] = {
 									page: page,
-									items: results
+									items: results,
+									more: more
 								};
 							}
 							
 							callback({
 								results: results,
 								pagination: {
-									more:self.more
+									more:more
 								}
 							});
 						}
