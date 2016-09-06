@@ -69,15 +69,19 @@ class WPCAModule_author extends WPCAModule_Base {
 		$args['number'] = 20;
 		$args['fields'] = array('ID','display_name');
 
-		if(isset($args['search'])) {
-			add_filter( 'user_search_columns', array($this,'filter_search_column'), 10, 3 );
+		if($args['search']) {
+			$args['search'] = '*'.$args['search'].'*';
+			//display_name does not seem to be recognized, add it anyway
+			$args['search_columns'] = array( 'user_nicename', 'user_login', 'display_name' );
+			add_filter( 'user_search_columns',
+				array($this,'filter_search_column'), 10, 3 );
 		}
 
 		$user_query = new WP_User_Query(  $args );
 
 		$author_list = array();
 		if($user_query->results) {
-			foreach($user_query->results as $user) {
+			foreach($user_query->get_results()  as $user) {
 				$author_list[$user->ID] = $user->display_name;
 			}
 		}
@@ -98,13 +102,11 @@ class WPCAModule_author extends WPCAModule_Base {
 			'search'         => ''
 		));
 
-		//display_name does not seem to be recognized, add it anyway
 		return $this->_get_content(array(
-			'orderby'   => 'title',
+			'orderby'   => 'display_name',
 			'order'     => 'ASC',
 			'offset'    => ($args['paged']-1)*20,
-			'search'    => '*'.$args['search'].'*',
-			'search_columns' => array( 'user_nicename', 'user_login', 'display_name' )
+			'search'    => $args['search']
 		));
 	}
 
