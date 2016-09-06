@@ -345,7 +345,8 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 		$value_var = ($taxonomy->hierarchical ? 'term_id' : 'slug');
 
 		foreach ($posts as $post) {
-			$retval[$post->$value_var] = $post->name;
+			//term names are encoded
+			$retval[$post->$value_var] = htmlspecialchars_decode($post->name);
 		}
 		return $retval;
 
