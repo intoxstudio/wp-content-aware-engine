@@ -14,6 +14,7 @@ if (!defined('WPCACore::VERSION')) {
 /**
  *
  * WPML Module
+ * Requires version 2.4.3+
  * 
  * Detects if current content is:
  * a) in specific language

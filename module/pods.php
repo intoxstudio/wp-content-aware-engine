@@ -14,6 +14,7 @@ if (!defined('WPCACore::VERSION')) {
 /**
  *
  * Pods Module
+ * Requires version 2.6+
  * 
  * Detects if current content is:
  * a) any or specific Pods Page

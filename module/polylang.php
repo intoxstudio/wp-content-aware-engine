@@ -14,6 +14,7 @@ if (!defined('WPCACore::VERSION')) {
 /**
  *
  * Polylang Module
+ * Requires version 1.7+
  * 
  * Detects if current content is:
  * a) in specific language

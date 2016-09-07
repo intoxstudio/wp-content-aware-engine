@@ -13,7 +13,8 @@ if (!defined('WPCACore::VERSION')) {
 
 /**
  *
- * qTranslate Module
+ * qTranslate X Module
+ * Requires version v3.4.6.4+
  * 
  * Detects if current content is:
  * a) in specific language

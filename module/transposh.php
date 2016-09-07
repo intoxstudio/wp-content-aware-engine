@@ -14,6 +14,7 @@ if (!defined('WPCACore::VERSION')) {
 /**
  *
  * Transposh Module
+ * Requires version 0.9.5+
  * 
  * Detects if current content is:
  * a) in specific language

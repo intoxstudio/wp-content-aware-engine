@@ -14,6 +14,7 @@ if (!defined('WPCACore::VERSION')) {
 /**
  *
  * bbPress Module
+ * Requires bbPress 2.5+
  * 
  * Detects if current content is:
  * a) any or specific bbpress user profile
