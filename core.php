@@ -26,6 +26,7 @@ if(!class_exists("WPCACore")) {
 		
 		/**
 		 * Engine version
+		 * TODO: remove in favor of WPCA_VERSION
 		 */
 		const VERSION              = '2.0';
 
