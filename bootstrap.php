@@ -1,7 +1,6 @@
 <?php
 /**
  * @package WP Content Aware Engine
- * @version 3.0
  * @copyright Joachim Jensen <jv@intox.dk>
  * @license GPLv3
  */
@@ -16,7 +15,7 @@ if (!defined('ABSPATH')) {
  * Version of this WPCA
  * @var string
  */
-$this_wpca_version = '3.0';
+$this_wpca_version = '3.0.1';
 
 /**
  * Class to make sure the latest
@@ -69,6 +68,7 @@ if(!class_exists('WPCALoader')) {
 					include($file);
 					define('WPCA_VERSION',$version);
 					WPCACore::init();
+					do_action('wpca/loaded');
 					break;
 				}
 			}
@@ -86,7 +86,7 @@ if(!class_exists('WPCALoader')) {
 		}
 
 	}
-	add_action('plugins_loaded',array('WPCALoader','load'));
+	add_action('plugins_loaded',array('WPCALoader','load'),-1);
 }
 WPCALoader::add(plugin_dir_path( __FILE__ ),$this_wpca_version);
 
