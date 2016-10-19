@@ -488,6 +488,9 @@ if(!class_exists("WPCACore")) {
 				foreach($results as $result) {
 					self::$post_cache[$post_type][$result->ID] = $result;
 				}
+				foreach(self::$post_cache as $post_type => $cache) {
+					self::$post_cache[$post_type] = apply_filters("wpca/posts/{$post_type}",$cache);
+				}
 			}
 			return self::$post_cache[$post_type];
 		}
