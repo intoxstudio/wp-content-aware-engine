@@ -10,7 +10,7 @@
 <div id="cas-groups">
 	<?php do_action('wpca/meta_box/before',$post_type); ?>
 	<ul></ul>
-	<div class="cas-group-sep" style="display:none;">
+	<div class="cas-group-sep">
 		<?php _e('Or',WPCACore::DOMAIN); ?>
 	</div>
 	<div class="cas-group-new">

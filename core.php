@@ -45,6 +45,12 @@ if(!class_exists("WPCACore")) {
 		const STATUS_NEGATED       = 'negated';
 		const STATUS_PUBLISHED     = 'publish';
 
+		/**
+		 * Exposures for condition groups
+		 */
+		const EXP_SINGULAR         = 0;
+		const EXP_SINGULAR_ARCHIVE = 1;
+		const EXP_ARCHIVE          = 2;
 
 		/**
 		 * Language domain
@@ -339,6 +345,9 @@ if(!class_exists("WPCACore")) {
 			);
 
 			$context_data['WHERE'][] = "p.post_status IN ('".implode("','", $post_status)."')";
+
+			//exposure
+			$context_data['WHERE'][] = "p.menu_order ".(is_archive() || is_home() ? '>=' : '<=')." 1";
 				
 			//Syntax changed in MySQL 5.5 and MariaDB 10.0 (reports as version 5.5)
 			$wpdb->query('SET'.(version_compare($wpdb->db_version(), '5.5', '>=') ? ' SESSION' : ' OPTION').' SQL_BIG_SELECTS = 1');
@@ -415,13 +424,14 @@ if(!class_exists("WPCACore")) {
 			if($valid) {
 
 				//todo: move exposure to group, later deprecate?
-				$metas = array(
-					'exposure' => array(
-						'key' => self::PREFIX.'exposure',
-						'value'   => 1,
-						'compare' => (is_archive() || is_home() ? '>=' : '<='),
-					)
-				);
+				$metas = array();
+				//$metas = array(
+				// 	'exposure' => array(
+				// 		'key' => self::PREFIX.'exposure',
+				// 		'value'   => 1,
+				// 		'compare' => (is_archive() || is_home() ? '>=' : '<='),
+				// 	)
+				// );
 
 				$joins = array();
 				$wheres = array();
@@ -439,14 +449,16 @@ if(!class_exists("WPCACore")) {
 						h.meta_value handle
 					FROM $wpdb->posts p
 					INNER JOIN $wpdb->postmeta h ON h.post_id = p.ID AND h.meta_key = '".self::PREFIX."handle' 
-					".implode(' ',$joins)."
+					
 					WHERE
 					p.post_type = '".$post_type."' AND 
 					p.post_status = 'publish' AND 
-					p.ID IN(".implode(',',$valid).") AND 
-					".implode(' AND ',$wheres)."
+					p.ID IN(".implode(',',$valid).") 
+					
 					ORDER BY p.menu_order ASC, h.meta_value DESC, p.post_date DESC
 				");
+				//".implode(' ',$joins)."
+				//AND ".implode(' AND ',$wheres)."
 
 				//diff orderby only works in WP4.0+
 				// $new_results = new WP_Query(array(
@@ -544,6 +556,7 @@ if(!class_exists("WPCACore")) {
 
 			return wp_insert_post(array(
 				'post_status' => self::STATUS_PUBLISHED, 
+				'menu_order'  => self::EXP_SINGULAR_ARCHIVE,
 				'post_type'   => self::TYPE_CONDITION_GROUP,
 				'post_author' => $post->post_author,
 				'post_parent' => $post->ID,
@@ -616,7 +629,8 @@ if(!class_exists("WPCACore")) {
 
 					wp_update_post(array(
 						'ID' => $post_id,
-						'post_status' => isset($_POST[self::PREFIX.'status']) ? self::STATUS_NEGATED : self::STATUS_PUBLISHED
+						'post_status' => $_POST[self::PREFIX.'status'] == self::STATUS_NEGATED ? self::STATUS_NEGATED : self::STATUS_PUBLISHED,
+						'menu_order' => (int)$_POST[self::PREFIX.'exposure']
 					));
 
 					do_action('wpca/modules/save-data',$post_id);

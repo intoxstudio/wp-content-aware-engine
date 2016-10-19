@@ -59,22 +59,29 @@ var CAE = CAE || {};
 		}),
 
 		Group: Backbone.Model.extend({
+			//backbone.trackit
+			unsaved: {
+				prompt: WPCA.unsaved,
+				unloadWindowPrompt: true
+			},
 			defaults : {
 				'id'        : null, 
-				'status'    : null,
+				'status'    : 'publish',
+				'exposure'  : 1,
 				'options'   : {}
 			},
 			initialize: function() {
 				if(!this.conditions) {
 					this.conditions = new CAE.Models.ConditionCollection();
 				}
-				//todo: listen to group options, status changes
+				//backbone.trackit
+				this.startTracking();
+				this.on("destroy",this.stopTracking,this);
+				//todo: listen to group options
 				//todo: listen to condition meta changes
 				//this.conditions.on("unsavedChanges",this.testChange,this);
 			},
 			// testChange: function(hasChanges, unsavedAttrs, model) {
-
-			// },
 			parse: function(response) {
 				if (_.has(response, "conditions")) {
 					var list = [];
@@ -126,7 +133,7 @@ var CAE = CAE || {};
 	};
 
 	/**
-	 * Backbone Views
+	 * Backbone.Epoxy.View.
 	 * 
 	 * @type {Object}
 	 */
@@ -178,7 +185,7 @@ var CAE = CAE || {};
 			}
 		}),
 
-		Condition: Backbone.View.extend({
+		Condition: Backbone.Epoxy.View.extend({
 			tagName: "div",
 			className: "cas-condition",
 			events: {
@@ -211,8 +218,7 @@ var CAE = CAE || {};
 				if(!$elem.length) {
 					return;
 				}
-				var model = this.model;
-				var type = this.model.get("module"),
+				var model = this.model,
 					data = this.model.get("values");
 
 				$elem.select2({
@@ -220,7 +226,7 @@ var CAE = CAE || {};
 					cachedResults: {},
 					quietMillis: 400,
 					searchTimer: null,
-					type:type,
+					type:this.model.get('module'),
 					theme:'wpca',
 					placeholder:$elem.data("wpca-placeholder"),
 					minimumInputLength: 0,
@@ -279,14 +285,15 @@ var CAE = CAE || {};
 			}
 		}),
 
-		Group: Backbone.View.extend({
+		Group: Backbone.Epoxy.View.extend({
+			bindings: "data-vm", //wp conflict with data-bind
+			model: CAE.Models.Group,
 			tagName: "li",
 			className: "cas-group-single",
 			template: _.template($('#wpca-template-group').html()),
 			events: {
 				"change .js-wpca-add-and":      "addConditionModel",
 				"click .js-wpca-save-group":    "saveGroup",
-				"change .js-wpca-group-status": "statusChanged"
 			},
 			initialize: function() {
 				this.render();
@@ -297,6 +304,41 @@ var CAE = CAE || {};
 			render: function() {
 				this.$el.append(this.template(this.model.attributes));
 				this.model.conditions.each(this.addConditionViewFade,this);
+			},
+			computeds: {
+				statusNegated: {
+					deps: ["status"],
+					get: function( status ) {
+						return status == 'negated';
+					},
+					set: function( bool ) {
+						var valid = bool ? 'negated' : 'publish';
+						this.setBinding("status", valid);
+					}
+				},
+				//ensure exposure number and state
+				exposureSingular: {
+					deps: ["exposure"],
+					get: function(exposure) {
+						return exposure <= 1;
+					},
+					set: function( bool ) {
+						var isArchive = this.getBinding('exposureArchive'),
+							val = !(bool && isArchive) ? 2 : (isArchive ? 1 : 0);
+						this.setBinding("exposure",val);
+					}
+				},
+				exposureArchive: {
+					deps: ["exposure"],
+					get: function(exposure) {
+						return exposure >= 1;
+					},
+					set: function( bool ) {
+						var isSingular = this.getBinding('exposureSingular'),
+							val = !(bool && isSingular) ? 0 : (isSingular ? 1 : 2);
+						this.setBinding("exposure",val);
+					}
+				}
 			},
 			addConditionModel: function(e) {
 				var $select = $(e.currentTarget);
@@ -358,8 +400,11 @@ var CAE = CAE || {};
 					data.cas_group_id = this.model.get("id");
 				}
 
+				data['_ca_status'] = this.model.get('status');
+				data['_ca_exposure'] = this.model.get('exposure');
+
 				//todo: get data from model instead
-				//will require backend change
+				//will require backend change?
 				this.$el.find("input,select").each(function(i,obj) {
 					var $obj = $(obj);
 					var key = $obj.attr("name");
@@ -383,6 +428,26 @@ var CAE = CAE || {};
 					}
 					
 				});
+
+				// data['cas_condition2'] = {};
+
+				// this.model.conditions.each(function(model) {
+				// 	var key = model.get('module').split('-');
+				// 	key = key[0];
+
+				// 	var ids = _.map(model.get('values'),function(val) {
+				// 		return val.id;
+				// 	});
+
+				// 	if(data.cas_condition2[key]) {
+				// 		ids = ids.concat(data.cas_condition2[key]);
+				// 	}
+
+				// 	data.cas_condition2[key] = ids;
+				// });
+
+				// console.log(data);
+
 				$.ajax({
 					url: ajaxurl,
 					data:data,
@@ -393,6 +458,7 @@ var CAE = CAE || {};
 						wpca_admin.alert.success(response.message);
 
 						//backbone.trackit
+						self.model.restartTracking();
 						self.model.conditions.each(function(model) {
 							model.restartTracking();
 						});
@@ -409,10 +475,6 @@ var CAE = CAE || {};
 					}
 				});
 			},
-			statusChanged: function(e) {
-				var negated = $(e.currentTarget).is(":checked");
-				this.$el.find(".cas-group-sep:first-child").toggleClass("wpca-group-negate",negated);
-			},
 			slideRemove: function() {
 				console.log("group view: group model was destroyed");
 				this.$el.slideUp(400,function() {
@@ -422,14 +484,17 @@ var CAE = CAE || {};
 		}),
 
 		GroupCollection: Backbone.View.extend({
+			//bindings: "data-vm", //wp conflict with data-bind
 			el: "#cas-groups",
+			collection: CAE.Models.GroupCollection,
 			events: {
 				"change .js-wpca-add-or": "addGroupModel"
 			},
 			initialize: function() {
-				this.render();
+				
 				this.listenTo( this.collection, 'add', this.addGroupView );
 				this.listenTo( this.collection, 'add remove', this.changeLogicText );
+				this.render();
 			},
 			render: function() {
 				this.collection.each(this.addGroupView,this);
