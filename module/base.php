@@ -83,10 +83,10 @@ abstract class WPCAModule_Base {
 		if(is_admin()) {
 			add_action('wpca/modules/save-data',
 				array($this,'save_data'));
-			add_action('admin_footer-post.php',
-				array($this,'template_condition'),1);
-			add_action('admin_footer-post-new.php',
-				array($this,'template_condition'),1);
+			// add_action('admin_footer-post.php',
+			// 	array($this,'template_condition'),1);
+			// add_action('admin_footer-post-new.php',
+			// 	array($this,'template_condition'),1);
 			add_action('wp_ajax_wpca/module/'.$this->id,
 				array($this,'ajax_print_content'));
 

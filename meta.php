@@ -1,7 +1,6 @@
 <?php
 /**
  * @package WP Content Aware Engine
- * @version 1.0
  * @copyright Joachim Jensen <jv@intox.dk>
  * @license GPLv3
  */
