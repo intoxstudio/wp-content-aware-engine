@@ -69,7 +69,7 @@ class WPCAModule_author extends WPCAModule_Base {
 		$args['number'] = 20;
 		$args['fields'] = array('ID','display_name');
 
-		if($args['search']) {
+		if(isset($args['search']) && $args['search']) {
 			$args['search'] = '*'.$args['search'].'*';
 			//display_name does not seem to be recognized, add it anyway
 			$args['search_columns'] = array( 'user_nicename', 'user_login', 'display_name' );
