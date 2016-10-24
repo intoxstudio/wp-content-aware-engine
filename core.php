@@ -714,9 +714,9 @@ if(!class_exists("WPCACore")) {
 
 			wp_register_script(
 				self::PREFIX.'condition-groups',
-				plugins_url('/assets/js/condition_groups.js', __FILE__),
+				plugins_url('/assets/js/condition_groups.min.js', __FILE__),
 				array('jquery','select2','backbone','backbone.trackit','backbone.epoxy'),
-				self::VERSION,
+				WPCA_VERSION,
 				true
 			);
 			
@@ -724,7 +724,7 @@ if(!class_exists("WPCACore")) {
 				self::PREFIX.'condition-groups',
 				plugins_url('/assets/css/condition_groups.css', __FILE__),
 				array(),
-				self::VERSION
+				WPCA_VERSION
 			);
 
 			wp_enqueue_script(self::PREFIX.'condition-groups');

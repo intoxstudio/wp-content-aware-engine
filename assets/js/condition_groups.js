@@ -71,17 +71,22 @@ var CAE = CAE || {};
 				'options'   : {}
 			},
 			initialize: function() {
-				if(!this.conditions) {
-					this.conditions = new CAE.Models.ConditionCollection();
-				}
 				//backbone.trackit
 				this.startTracking();
 				this.on("destroy",this.stopTracking,this);
+
+				if(!this.conditions) {
+					this.conditions = new CAE.Models.ConditionCollection();
+				}
 				//todo: listen to group options
 				//todo: listen to condition meta changes
 				//this.conditions.on("unsavedChanges",this.testChange,this);
+				//this.on("unsavedChanges",this.testChange,this);
 			},
 			// testChange: function(hasChanges, unsavedAttrs, model) {
+			// 	console.log(hasChanges);
+			// 	console.log(unsavedAttrs);
+			// },
 			parse: function(response) {
 				if (_.has(response, "conditions")) {
 					var list = [];
@@ -457,17 +462,19 @@ var CAE = CAE || {};
 
 						wpca_admin.alert.success(response.message);
 
-						//backbone.trackit
-						self.model.restartTracking();
-						self.model.conditions.each(function(model) {
-							model.restartTracking();
-						});
-
 						if(response.removed) {
 							self.removeModel();
 						}
 						else if(response.new_post_id) {
 							self.model.set("id",response.new_post_id);
+						}
+
+						if(!response.removed) {
+							//backbone.trackit
+							self.model.restartTracking();
+							self.model.conditions.each(function(model) {
+								model.restartTracking();
+							});
 						}
 					},
 					error: function(xhr, desc, e) {
