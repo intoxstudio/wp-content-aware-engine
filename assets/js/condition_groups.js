@@ -416,8 +416,10 @@ var CAE = CAE || {};
 					if(key && ($obj.attr("type") != "checkbox" || $obj.is(":checked"))) {
 						var value = $obj.val();
 						if(~key.indexOf('cas_condition')) {
-							if(!value && $obj.data("wpca-default")) {
-								value = [$obj.data("wpca-default")];
+							if(!value) {
+								if($obj.data("wpca-default") !== '') {
+									value = [$obj.data("wpca-default")];
+								}
 							} else if(!$.isArray(value)) {
 								//not pretty...
 								value = [value];
