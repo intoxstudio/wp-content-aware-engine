@@ -31,7 +31,6 @@ class WPCAModule_date extends WPCAModule_Base {
 		);
 		$this->placeholder = __("Date Archives",WPCACore::DOMAIN);
 		$this->default_value = "0000-00-00";
-		$this->type_display = true;
 	}
 
 	/**

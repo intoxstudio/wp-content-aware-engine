@@ -47,7 +47,6 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 	 */
 	public function __construct() {
 		parent::__construct('taxonomy',__('Taxonomies',WPCACore::DOMAIN));
-		$this->type_display = true;
 	}
 
 	public function initiate() {
@@ -292,10 +291,8 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 	public function template_condition() {
 		if(WPCACore::post_types()->has(get_post_type())) {
 			foreach($this->_get_taxonomies() as $taxonomy) {
-				if($this->type_display) {
-					$placeholder = "/".sprintf(__("%s Archives",WPCACore::DOMAIN),$taxonomy->labels->singular_name);
-					$placeholder = $taxonomy->labels->all_items.$placeholder;
-				}
+				$placeholder = "/".sprintf(__("%s Archives",WPCACore::DOMAIN),$taxonomy->labels->singular_name);
+				$placeholder = $taxonomy->labels->all_items.$placeholder;
 				echo WPCAView::make("module/condition_".$this->id."_template",array(
 					'id'          => $this->id,
 					'placeholder' => $placeholder,

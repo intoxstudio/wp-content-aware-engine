@@ -48,16 +48,12 @@ abstract class WPCAModule_Base {
 
 	/**
 	 * Default condition value
+	 * Use to target any condition content
+	 * 
 	 * @var string
 	 */
 	protected $default_value = "";
 
-	/**
-	 * Enable display for all content of type
-	 * 
-	 * @var boolean
-	 */
-	protected $type_display = false;
 	
 	/**
 	 * Constructor

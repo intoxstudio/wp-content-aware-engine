@@ -34,7 +34,6 @@ class WPCAModule_static extends WPCAModule_Base {
 	 */
 	public function __construct() {
 		parent::__construct('static',__('Static Pages',WPCACore::DOMAIN));
-		$this->type_display = false;
 	}
 	
 	/**
