@@ -32,9 +32,9 @@ class WPCAModule_bp_member extends WPCAModule_Base {
 	 * Constructor
 	 */
 	public function __construct() {
-		parent::__construct('bp_member',__('BuddyPress Members',WPCACore::DOMAIN));
-		
-		
+		parent::__construct('bp_member',__('BuddyPress Profiles',WPCACore::DOMAIN));
+		$this->default_value = 0;
+		$this->placeholder = __('All Sections',WPCACore::DOMAIN);
 	}
 
 	/**
@@ -60,7 +60,7 @@ class WPCAModule_bp_member extends WPCAModule_Base {
 	protected function _get_content($args = array()) {
 		global $bp;
 
-		if($args['paged'] > 1) {
+		if(isset($args['paged']) && $args['paged'] > 1) {
 			return array();
 		}
 
@@ -121,7 +121,7 @@ class WPCAModule_bp_member extends WPCAModule_Base {
 	 */
 	public function get_context_data() {
 		global $bp;
-		$data = array();
+		$data = array($this->default_value);
 		if(isset($bp->current_component)) {
 			$data[] = $bp->current_component;
 			if(isset($bp->current_action)) {
@@ -156,6 +156,7 @@ class WPCAModule_bp_member extends WPCAModule_Base {
 	 * @return boolean          
 	 */
 	public function static_is_content($content) {
+		//TODO: test if deprecated
 		return $content && !$this->in_context();
 	}
 	
