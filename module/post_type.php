@@ -28,6 +28,12 @@ class WPCAModule_post_type extends WPCAModule_Base {
 	 * @var array
 	 */
 	private $_post_types;
+
+	/**
+	 * Conditions to inherit from post ancestors
+	 * @var array
+	 */
+	private $_post_ancestor_conditions;
 	
 	/**
 	 * Constructor
@@ -46,7 +52,7 @@ class WPCAModule_post_type extends WPCAModule_Base {
 		parent::initiate();
 
 		add_action('transition_post_status',
-			array(&$this,'post_ancestry_check'),10,3);
+			array($this,'post_ancestry_check'),10,3);
 
 		foreach ($this->_post_types()->get_all() as $post_type) {
 			add_action('wp_ajax_wpca/module/'.$this->id.'-'.$post_type->name,array($this,'ajax_print_content'));
@@ -331,7 +337,7 @@ class WPCAModule_post_type extends WPCAModule_Base {
 
 	
 	/**
-	 * Automatically select child of selected parent
+	 * Check if post ancestors have sidebar conditions
 	 *
 	 * @since  1.0
 	 * @param  string  $new_status 
@@ -341,41 +347,64 @@ class WPCAModule_post_type extends WPCAModule_Base {
 	 */
 	public function post_ancestry_check($new_status, $old_status, $post) {
 		
-		if(!WPCACore::post_types()->has($post->post_type) && $post->post_type != WPCACore::TYPE_CONDITION_GROUP) {
-			
-			$status = array('publish','private','future');
+		if(!WPCACore::post_types()->has($post->post_type) && $post->post_type != WPCACore::TYPE_CONDITION_GROUP && $post->post_parent) {
+
+			$status = array(
+				'publish' => 1,
+				'private' => 1,
+				'future'  => 1
+			);
 			// Only new posts are relevant
-			if(!in_array($old_status,$status) && in_array($new_status,$status)) {
-				
+			if(!isset($status[$old_status]) && isset($status[$new_status])) {
+
 				$post_type = get_post_type_object($post->post_type);
-				if($post_type->hierarchical && $post_type->public && $post->post_parent) {
-				
+				if($post_type->hierarchical && $post_type->public) {
+
 					// Get sidebars with post ancestor wanting to auto-select post
 					$query = new WP_Query(array(
-						'post_type'				=> WPCACore::TYPE_CONDITION_GROUP,
-						'meta_query'			=> array(
-							'relation'			=> 'AND',
+						'post_type'  => WPCACore::TYPE_CONDITION_GROUP,
+						'meta_query' => array(
+						'relation'   => 'AND',
 							array(
-								'key'			=> WPCACore::PREFIX . $this->id,
-								'value'			=> WPCACore::PREFIX.'sub_' . $post->post_type,
-								'compare'		=> '='
+								'key'     => WPCACore::PREFIX . $this->id,
+								'value'   => WPCACore::PREFIX.'sub_' . $post->post_type,
+								'compare' => '='
 							),
 							array(
-								'key'			=> WPCACore::PREFIX . $this->id,
-								'value'			=> get_ancestors($post->ID,$post->post_type),
-								'type'			=> 'numeric',
-								'compare'		=> 'IN'
+								'key'     => WPCACore::PREFIX . $this->id,
+								'value'   => get_ancestors($post->ID,$post->post_type),
+								'type'    => 'numeric',
+								'compare' => 'IN'
 							)
 						)
 					));
+					
 					if($query && $query->found_posts) {
-						foreach($query->posts as $sidebar) {
-							add_post_meta($sidebar->ID, WPCACore::PREFIX.$this->id, $post->ID);
-						}
+						//Add conditions after Quick Select
+						//otherwise they will be removed there
+						$this->_post_ancestor_conditions = $query->posts;
+						add_action('save_post_'.$post->post_type,
+							array($this,'post_ancestry_add'),99,2);
 					}
 				}
-			}	
-		}	
+			}
+		}
+	}
+
+	/**
+	 * Add sidebar conditions from post ancestors
+	 *
+	 * @since  3.1.1
+	 * @param  int      $post_id
+	 * @param  WP_Post  $post
+	 * @return void
+	 */
+	public function post_ancestry_add($post_id, $post) {
+		if($this->_post_ancestor_conditions) {
+			foreach($this->_post_ancestor_conditions as $condition) {
+				add_post_meta($condition->ID, WPCACore::PREFIX.$this->id, $post_id);
+			}
+		}
 	}
 
 }
