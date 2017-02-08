@@ -24,28 +24,34 @@
 			</select>
 		</div>
 	</div>
-
-	<div class="cas-group-cell cas-group-options">
-		<div>
-			<label class="cae-toggle">
-				<input data-vm="checked:statusNegated" class="js-cas-group-option js-wpca-group-status" type="checkbox" name="<?php echo WPCACore::PREFIX; ?>status" value="negated" />
-				<div class="cae-toggle-bar"></div><?php _e("Negate conditions",WPCACore::DOMAIN); ?>
-			</label>
-		</div>
-		<div>
+	<ul class="cas-group-options hide-if-js">
+		<li>
 			<label class="cae-toggle">
 				<input data-vm="checked:exposureSingular" class="js-cas-option-exposure" type="checkbox" value="0" />
 				<div class="cae-toggle-bar"></div><?php _e("Singulars",WPCACore::DOMAIN); ?>
 			</label>
-		</div>
-		<div>
+		</li>
+		<li>
 			<label class="cae-toggle">
 				<input data-vm="checked:exposureArchive" class="js-cas-option-exposure" type="checkbox" value="2" />
 				<div class="cae-toggle-bar"></div><?php _e("Archives",WPCACore::DOMAIN); ?>
 			</label>
-		</div>
+		</li>
+		<li>
+			<label class="cae-toggle">
+				<input data-vm="checked:statusNegated" class="js-cas-group-option js-wpca-group-status" type="checkbox" name="<?php echo WPCACore::PREFIX; ?>status" value="negated" />
+				<div class="cae-toggle-bar"></div><?php _e("Negate conditions",WPCACore::DOMAIN); ?>
+			</label>
+		</li>
 		<?php do_action("wpca/group/settings",$post_type); ?>
-		<input class="js-wpca-save-group button" type="button" value="<?php _e("Save Changes",WPCACore::DOMAIN); ?>" />
+	</ul>
+	<div class="cas-group-actions">
+		<div class="alignleft">
+			<span class="spinner"></span>
+			<button class="js-wpca-save-group button button-small hide-if-js" type="button"><?php _e("Save Changes",WPCACore::DOMAIN); ?></button>
+		</div>
+		<?php do_action("wpca/group/actions",$post_type); ?>
+		<button type="button" class="button button-small js-wpca-options"><span class="dashicons dashicons-admin-generic"></span> <?php _e('Settings',WPCACore::DOMAIN) ?></button>
 	</div>
 </div>
 </script>

@@ -163,7 +163,7 @@ class WPCAModule_post_type extends WPCAModule_Base {
 			foreach($this->_post_types()->get_all() as $post_type) {
 				$data = $this->_get_content(array('include' => $ids, 'posts_per_page' => -1, 'post_type' => $post_type->name, 'orderby' => 'title', 'order' => 'ASC'));
 
-				if($data || isset($lookup[$post_type->name]) || isset($lookup[WPCACore::PREFIX.'sub_' . $post_type->name])) {
+				if($data || isset($lookup[$post_type->name])) {
 					$group_data[$this->id."-".$post_type->name] = array(
 						"label" => $post_type->label,
 						"default_value" => $post_type->name
@@ -175,12 +175,6 @@ class WPCAModule_post_type extends WPCAModule_Base {
 							$posts[$post->ID] = $post->post_title.$this->_post_states($post);
 						}
 						$group_data[$this->id."-".$post_type->name]["data"] = $posts;
-					}
-
-					if(isset($lookup[WPCACore::PREFIX.'sub_' . $post_type->name])) {
-						$group_data[$this->id."-".$post_type->name]["options"] = array(
-							WPCACore::PREFIX.'sub_' . $post_type->name => true
-						);
 					}
 				}
 			}
@@ -293,8 +287,7 @@ class WPCAModule_post_type extends WPCAModule_Base {
 				echo WPCAView::make("module/condition_".$this->id."_template",array(
 					'id'          => $this->id,
 					'placeholder' => $placeholder,
-					'post_type'   => $post_type->name,
-					'autoselect'  => WPCACore::PREFIX.'sub_'.$post_type->name
+					'post_type'   => $post_type->name
 				))->render();
 			}
 		}
@@ -370,8 +363,8 @@ class WPCAModule_post_type extends WPCAModule_Base {
 						'meta_query' => array(
 						'relation'   => 'AND',
 							array(
-								'key'     => WPCACore::PREFIX . $this->id,
-								'value'   => WPCACore::PREFIX.'sub_' . $post->post_type,
+								'key'     => WPCACore::PREFIX . 'autoselect',
+								'value'   => 1,
 								'compare' => '='
 							),
 							array(

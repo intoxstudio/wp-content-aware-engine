@@ -138,10 +138,6 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 		//In more recent WP versions, term_id = term_tax_id
 		//but term_tax_id has always been unique
 		if(is_singular()) {
-			// Append sub options
-			foreach($this->post_taxonomies as $taxonomy) {  
-				$this->post_taxonomies[] = WPCACore::PREFIX."sub_".$taxonomy;
-			}
 			$terms = array();
 			foreach($this->post_terms as $term) {
 				$terms[] = $term->term_taxonomy_id;
@@ -152,7 +148,7 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 		}
 		$term = get_queried_object();
 
-		return "(term.term_taxonomy_id IS NULL OR term.term_taxonomy_id = '".$term->term_taxonomy_id."') AND (taxonomy.meta_value IS NULL OR taxonomy.meta_value IN ('".$term->taxonomy."','".WPCACore::PREFIX."sub_".$term->taxonomy."'))";
+		return "(term.term_taxonomy_id IS NULL OR term.term_taxonomy_id = '".$term->term_taxonomy_id."') AND (taxonomy.meta_value IS NULL OR taxonomy.meta_value = '".$term->taxonomy."')";
 	}
 
 	/**
@@ -238,7 +234,7 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 
 			$posts = isset($terms_by_tax[$taxonomy->name]) ? $terms_by_tax[$taxonomy->name] : 0;
 
-			if($posts || isset($ids[$taxonomy->name]) || isset($ids[WPCACore::PREFIX.'sub_' . $taxonomy->name])) {
+			if($posts || isset($ids[$taxonomy->name])) {
 				
 				$group_data[$this->id."-".$taxonomy->name] = array(
 						"label" => $taxonomy->label,
@@ -256,12 +252,6 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 						$retval[$post->$value_var] = $post->name;
 					}
 					$group_data[$this->id."-".$taxonomy->name]["data"] = $retval;
-				}
-
-				if(isset($ids[WPCACore::PREFIX.'sub_' . $taxonomy->name])) {
-					$group_data[$this->id."-".$taxonomy->name]["options"] = array(
-						WPCACore::PREFIX.'sub_' . $taxonomy->name => true
-					);
 				}
 			}
 		}
@@ -300,8 +290,7 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 				echo WPCAView::make("module/condition_".$this->id."_template",array(
 					'id'          => $this->id,
 					'placeholder' => $placeholder,
-					'taxonomy'    => $taxonomy->name,
-					'autoselect'  => WPCACore::PREFIX.'sub_'.$taxonomy->name
+					'taxonomy'    => $taxonomy->name
 				))->render();
 			}
 		}
@@ -370,34 +359,25 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 		//Loop through each public taxonomy
 		foreach($this->_get_taxonomies() as $taxonomy) {
 
-			$special = array(
-				$taxonomy->name,
-				WPCACore::PREFIX.'sub_'.$taxonomy->name
-			);
-
 			//If no terms, maybe delete old ones
 			if(!isset($tax_input[$taxonomy->name])) {
 				$terms = array();
-				foreach ($special as $key) {
-					if(isset($old[$key])) {
-						delete_post_meta($post_id, $meta_key, $key);
-					}
+				if(isset($old[$taxonomy->name])) {
+					delete_post_meta($post_id, $meta_key, $taxonomy->name);
 				}
 			} else {
 				$terms = $tax_input[$taxonomy->name];
 
-				foreach ($special as $key) {
-					$found_key = array_search($key, $terms);
-					//If special key found maybe add it
-					if($found_key !== false) {
-						if(!isset($old[$key])) {
-							add_post_meta($post_id, $meta_key, $key);
-						}
-						unset($terms[$found_key]);
-					//Otherwise maybe delete it
-					} else if(isset($old[$key])) {
-						delete_post_meta($post_id, $meta_key, $key);
+				$found_key = array_search($taxonomy->name, $terms);
+				//If meta key found maybe add it
+				if($found_key !== false) {
+					if(!isset($old[$taxonomy->name])) {
+						add_post_meta($post_id, $meta_key, $taxonomy->name);
 					}
+					unset($terms[$found_key]);
+				//Otherwise maybe delete it
+				} else if(isset($old[$taxonomy->name])) {
+					delete_post_meta($post_id, $meta_key, $taxonomy->name);
 				}
 
 				//Hierarchical taxonomies use ids instead of slugs
@@ -433,8 +413,8 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 					'post_type'  => WPCACore::TYPE_CONDITION_GROUP,
 					'meta_query' => array(
 						array(
-							'key'     => WPCACore::PREFIX . $this->id,
-							'value'   => WPCACore::PREFIX.'sub_' . $taxonomy,
+							'key'     => WPCACore::PREFIX . 'autoselect',
+							'value'   => 1,
 							'compare' => '='
 						)
 					),
