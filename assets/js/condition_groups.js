@@ -476,23 +476,16 @@ var CAE = CAE || {};
 			}
 		}),
 
-		GroupCollection: Backbone.View.extend({
-			//bindings: "data-vm", //wp conflict with data-bind
+		GroupCollection: Backbone.Epoxy.View.extend({
+			bindings: "data-vm", //wp conflict with data-bind
 			el: "#cas-groups",
 			collection: CAE.Models.GroupCollection,
 			events: {
-				"change .js-wpca-add-or": "addGroupModel"
+				"change .js-wpca-add-or": "addGroupModel",
+				"click .js-wpca-save": "saveAll"
 			},
-			initialize: function() {
-				
-				this.listenTo( this.collection, 'add', this.addGroupView );
-				this.listenTo( this.collection, 'add remove', this.changeLogicText );
-				this.render();
-			},
-			render: function() {
-				this.collection.each(this.addGroupView,this);
-				this.changeLogicText();
-				$(".js-wpca-add-or").focus();
+			itemView: function(obj) {
+				return new CAE.Views.Group(obj);
 			},
 			addGroupModel: function(e) {
 				var $select = $(e.currentTarget);
@@ -510,13 +503,6 @@ var CAE = CAE || {};
 				}
 
 				$select.val(0).blur();
-			},
-			addGroupView: function(model) {
-				var group = new CAE.Views.Group({model:model});
-				group.$el.hide().appendTo(this.$el.children("ul").first()).fadeIn(300);
-			},
-			changeLogicText: function() {
-				this.$el.find("> .cas-group-sep").toggle(!!this.collection.length);
 			}
 		})
 	};
