@@ -615,7 +615,7 @@ if(!class_exists("WPCACore")) {
 				//Make sure some rules are sent
 				if(!isset($_POST['cas_condition'])) {
 					//Otherwise we delete group
-					if(isset($_POST['cas_group_id']) && wp_delete_post(intval($_POST['cas_group_id']), true) === false) {
+					if($_POST['id'] && wp_delete_post(intval($_POST['id']), true) === false) {
 						$response = __('Could not delete conditions',self::DOMAIN);
 						throw new Exception("Internal Server Error",500);
 					}
@@ -623,24 +623,24 @@ if(!class_exists("WPCACore")) {
 				}
 				if(!isset($response['removed'])) {
 					//If ID was not sent at this point, it is a new group
-					if(!isset($_POST['cas_group_id'])) {
+					if(!$_POST['id']) {
 						$post_id = self::add_condition_group(intval($_POST['current_id']));
 						$response['new_post_id'] = $post_id;
 					} else {
-						$post_id = intval($_POST['cas_group_id']);
+						$post_id = intval($_POST['id']);
 					}
 
 					wp_update_post(array(
 						'ID' => $post_id,
-						'post_status' => $_POST[self::PREFIX.'status'] == self::STATUS_NEGATED ? self::STATUS_NEGATED : self::STATUS_PUBLISHED,
-						'menu_order' => (int)$_POST[self::PREFIX.'exposure']
+						'post_status' => $_POST['status'] == self::STATUS_NEGATED ? self::STATUS_NEGATED : self::STATUS_PUBLISHED,
+						'menu_order' => (int)$_POST['exposure']
 					));
 
 					do_action('wpca/modules/save-data',$post_id);
 				}
 
 				$response['message'] = __('Conditions updated',self::DOMAIN);
-
+				
 				wp_send_json($response);
 				
 			} catch(Exception $e) {

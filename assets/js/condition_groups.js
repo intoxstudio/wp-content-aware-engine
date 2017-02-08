@@ -274,20 +274,19 @@ var CAE = CAE || {};
 			model: CAE.Models.Group,
 			tagName: "li",
 			className: "cas-group-single",
-			template: _.template($('#wpca-template-group').html()),
+			template: $('#wpca-template-group').html(),
+			itemView: function(obj) {
+				if(CAE.Views[obj.model.get("module")]) {
+					var condition = new CAE.Views[obj.model.get("module")](obj);
+				} else {
+					var condition = new CAE.Views.Condition(obj);
+				}
+				return condition;
+			},
 			events: {
 				"change .js-wpca-add-and":      "addConditionModel",
 				"click .js-wpca-save-group":    "saveGroup",
-			},
-			initialize: function() {
-				this.render();
-				this.listenTo( this.model, 'destroy', this.remove );
-				this.listenTo( this.model.conditions, 'remove', this.conditionRemoved );
-				this.listenTo( this.model.conditions, 'add', this.addConditionViewSlide );
-			},
-			render: function() {
-				this.$el.append(this.template(this.model.attributes));
-				this.model.conditions.each(this.addConditionViewFade,this);
+				"click .js-wpca-options":       "showOptions"
 			},
 			computeds: {
 				statusNegated: {
@@ -324,35 +323,55 @@ var CAE = CAE || {};
 					}
 				}
 			},
+			bindingFilters: {
+				//epoxy integer filter seems broken
+				int: {
+					get: function( value ) {
+						return value ? 1 : 0;
+					},
+					set: function( value ) {
+						return value ? 1 : 0;
+					}
 				}
-				$select.val(0).blur();
 			},
-			addConditionView: function(model) {
-				if(CAE.Views[model.get("module")]) {
-					var condition = new CAE.Views[model.get("module")]({model:model});
+			initialize: function() {
+				this.collection = this.model.conditions;
+				this.$el.hide().html(this.template).fadeIn(300);
+				this.listenTo( this.model, 'destroy', this.remove );
+				this.listenTo( this.model, 'unsavedChanges', this.saveChanges);
+				this.listenTo( this.model.conditions, 'unsavedChanges', this.saveChanges);
+				this.listenTo( this.model.conditions, 'add remove', this.saveAddRemove);
+			},
+			showOptions: function(e) {
+				$(e.delegateTarget).find('.cas-group-options').slideToggle(200);
+				$(e.currentTarget).toggleClass('active');
+			},
+			saveChanges: function(hasChanges, unsavedAttrs) {
+				if(hasChanges) {
+					console.log("group view: has changes");
+					AutoSaver.start(this);
 				} else {
-					var condition = new CAE.Views.Condition({model:model});
+					AutoSaver.clear(this);
 				}
-				return condition.$el
-				.hide().appendTo(this.$el.find(".cas-content"));
 			},
-			addConditionViewSlide: function(model) {
-				this.addConditionView(model).slideDown(300);
-
-			},
-			addConditionViewFade: function(model) {
-				this.addConditionView(model).fadeIn(300);
-			},
-			conditionRemoved: function(model) {
-				console.log("group view: a condition was removed");
-				if(!this.model.conditions.length) {
+			saveAddRemove: function(model, collection, options) {
+				console.log("group view: a condition was added or removed");
+				if(collection.length) {
+					if(options.add) {
+						//save only on default value
+						if(model.get('default_value')) {
+							AutoSaver.start(this);
+						}
+					} else if(this.model.get("id")) {
+						AutoSaver.start(this);
+					}
+				} else {
+					AutoSaver.clear(this);
 					if(this.model.get("id")) {
-						console.log("group view: save");
 						//at this point, we could skip save request
 						//and add a faster delete request
 						this.saveGroup();
 					} else {
-						console.log("group view: destroy model");
 						this.removeModel();
 					}
 				}
@@ -379,25 +398,25 @@ var CAE = CAE || {};
 				});
 			},
 			saveGroup: function(e) {
-				var data = {
-					action    : "wpca/add-rule",
-					token     : wpca_admin.nonce,
-					current_id: wpca_admin.sidebarID
-				};
-				var self = this;
-				if(this.model.get("id")) {
-					data.cas_group_id = this.model.get("id");
-				}
+				console.log("group view: save");
+				var $spinner = this.$el.find('.spinner'),
+					$save = this.$el.find('.js-wpca-save-group'),
+					self = this;
 
-				data['_ca_status'] = this.model.get('status');
-				data['_ca_exposure'] = this.model.get('exposure');
+				$save.attr("disabled",true);
+				$spinner.addClass('is-active');
+
+				var data = _.clone(this.model.attributes);
+				data.action = "wpca/add-rule";
+				data.token = wpca_admin.nonce;
+				data.current_id = wpca_admin.sidebarID;
 
 				//todo: get data from model instead
 				//will require backend change?
-				this.$el.find("input,select").each(function(i,obj) {
+				this.$el.find("select").each(function(i,obj) {
 					var $obj = $(obj);
 					var key = $obj.attr("name");
-					if(key && ($obj.attr("type") != "checkbox" || $obj.is(":checked"))) {
+					if(key) {
 						var value = $obj.val();
 						if(~key.indexOf('cas_condition')) {
 							if(!value) {
@@ -417,27 +436,7 @@ var CAE = CAE || {};
 							data[key] = value;
 						}
 					}
-					
 				});
-
-				// data['cas_condition2'] = {};
-
-				// this.model.conditions.each(function(model) {
-				// 	var key = model.get('module').split('-');
-				// 	key = key[0];
-
-				// 	var ids = _.map(model.get('values'),function(val) {
-				// 		return val.id;
-				// 	});
-
-				// 	if(data.cas_condition2[key]) {
-				// 		ids = ids.concat(data.cas_condition2[key]);
-				// 	}
-
-				// 	data.cas_condition2[key] = ids;
-				// });
-
-				// console.log(data);
 
 				$.ajax({
 					url: ajaxurl,
@@ -446,16 +445,20 @@ var CAE = CAE || {};
 					type: 'POST',
 					success:function(response){
 
+						console.log("group view: saved");
+
 						wpca_admin.alert.success(response.message);
 
 						if(response.removed) {
 							self.removeModel();
 						}
 						else if(response.new_post_id) {
-							self.model.set("id",response.new_post_id);
+							self.model.set("id",response.new_post_id,{silent:true});
 						}
 
 						if(!response.removed) {
+							$save.hide();
+							$spinner.removeClass('is-active');
 							//backbone.trackit
 							self.model.restartTracking();
 							self.model.conditions.each(function(model) {
@@ -464,6 +467,8 @@ var CAE = CAE || {};
 						}
 					},
 					error: function(xhr, desc, e) {
+						$save.attr("disabled",false).show();
+						$spinner.removeClass('is-active');
 						wpca_admin.alert.failure(xhr.responseText);
 					}
 				});

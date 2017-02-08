@@ -12,7 +12,7 @@
 </div>
 <div class="cas-group-body">
 	<div class="cas-group-cell">
-		<div class="cas-content"></div>
+		<div class="cas-content" data-vm="collection:$collection"></div>
 		<div>
 			<select class="js-wpca-add-and">
 				<option value="0">-- <?php _e("Select content type",WPCACore::DOMAIN); ?> --</option>
