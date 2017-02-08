@@ -644,6 +644,30 @@ var CAE = CAE || {};
 		}
 	);
 
+	var AutoSaver = {
+		treshold: 3000,
+		timerQueue: {},
+		start: function(view) {
+			console.log("autosave: start " + view.cid);
+			this.clear(view);
+			var self = this;
+			this.timerQueue[view.cid] = window.setTimeout(function() {
+				self.set(view);
+			}, this.treshold)
+		},
+		set: function(view) {
+			console.log("autosave: save " + view.cid);
+			view.saveGroup();
+			//this.last = null;
+		},
+		clear: function(view) {
+			if(view && this.timerQueue[view.cid]) {
+				console.log("autosave: clear " + view.cid);
+				window.clearInterval(this.timerQueue[view.cid]);
+			}
+		}
+	};
+
 	var wpca_admin = {
 
 		nonce: $('#_ca_nonce').val(),
