@@ -1,6 +1,5 @@
 /*!
  * @package WP Content Aware Engine
- * @version 2.0
  * @copyright Joachim Jensen <jv@intox.dk>
  * @license GPLv3
  */
@@ -28,7 +27,7 @@ var CAE = CAE || {};
 		Alert: Backbone.Model.extend({
 			defaults: {
 				text    : "",
-				cssClass: "updated"
+				success : true
 			},
 			sync: function () { return false; },
 			url: "",
@@ -149,43 +148,41 @@ var CAE = CAE || {};
 		 * @author  Joachim Jensen <jv@intox.dk>
 		 * @version 1.0
 		 */
-		Alert: Backbone.View.extend({
+		Alert: Backbone.Epoxy.View.extend({
+			bindings: "data-vm", //wp conflict with data-bind
 			tagName: 'div',
 			className: 'wpca-alert',
-			template: _.template('<div class="<%= cssClass %>"><%= text %></div>'),
+			template: '<div data-vm="classes:{\'wpca-success\':success,\'wpca-error\':not(success)},text:text"></div>',
 			timer: 4000,
 			success: function(text) {
 				this.model.set({
 					text: text,
-					cssClass: "wpca-success"
+					success: true
 				});
 			},
 			failure: function(text) {
 				this.model.set({
 					text: text,
-					cssClass: "wpca-error"
+					success: false
 				});
 			},
 			dismiss: function() {
-				this.model.reset();
+				var self = this;
+				this.$el.fadeOut('slow',function() {
+					self.model.reset();
+				});
 			},
 			initialize: function() {
-				this.listenTo(this.model, "change", this.render);
-				this.$el.appendTo('body');
+				this.listenTo(this.model, "change:text", this.show);
+				this.$el.appendTo('body').hide().html(this.template);
 			},
-			render: function() {
+			show: function() {
 				if(this.model.get('text') !== "") {
+					this.$el.fadeIn('slow');
 					var self = this;
-					this.$el
-					.hide()
-					.html(this.template(this.model.attributes))
-					.fadeIn('slow');
 					setTimeout(function() {
-						self.$el.fadeOut('slow');
 						self.dismiss();
 					},this.timer);
-				} else {
-					this.$el.fadeOut('slow');
 				}
 			}
 		}),
@@ -655,7 +652,6 @@ var CAE = CAE || {};
 				collection:new CAE.Models.GroupCollection(WPCA.groups,{parse:true})
 			});
 		}
-
 	};
 
 	$(document).ready(function(){
