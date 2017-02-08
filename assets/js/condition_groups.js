@@ -188,6 +188,8 @@ var CAE = CAE || {};
 		}),
 
 		Condition: Backbone.Epoxy.View.extend({
+			bindings: "data-vm", //wp conflict with data-bind
+			model: CAE.Models.Condition,
 			tagName: "div",
 			className: "cas-condition",
 			events: {
@@ -197,15 +199,12 @@ var CAE = CAE || {};
 				this.listenTo( this.model, 'destroy', this.remove );
 				var $template = $('#wpca-template-'+this.model.get("module"));
 				if($template.length) {
-					this.template = _.template($template.html());
-					this.render();
+					this.template = $template.html();
+					this.$el.append(this.template);
+					this.createSuggestInput();
 				} else {
 					this.model.destroy();
 				}
-			},
-			render: function() {
-				this.$el.append(this.template(this.model.attributes));
-				this.createSuggestInput();
 			},
 			removeModel: function(e) {
 				console.log("cond view: removes condition model");
@@ -232,7 +231,7 @@ var CAE = CAE || {};
 					theme:'wpca',
 					placeholder:$elem.data("wpca-placeholder"),
 					minimumInputLength: 0,
-					closeOnSelect: true,//false working properly when hiding selected
+					closeOnSelect: true,//false not working properly when hiding selected
 					width:"100%",
 					language: {
 						noResults:function(){
