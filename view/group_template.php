@@ -18,7 +18,7 @@
 				<option value="0">-- <?php _e("Select content type",WPCACore::DOMAIN); ?> --</option>
 				<?php
 					foreach ($options as $key => $value) {
-						echo '<option value="'.$key.'">'.$value.'</option>';
+						echo '<option data-default="'.$value['default_value'].'" value="'.$key.'">'.$value['name'].'</option>';
 					}
 				?>
 			</select>

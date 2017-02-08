@@ -43,10 +43,10 @@ var CAE = CAE || {};
 				unloadWindowPrompt: true
 			},
 			defaults : {
-				'module' : null, 
-				'label'  : null,
-				'values' : [],
-				'options': {}
+				'module'       : null,
+				'label'        : '',
+				'values'       : [],
+				'default_value': null
 			},
 			initialize: function() {
 				//backbone.trackit
@@ -77,35 +77,27 @@ var CAE = CAE || {};
 				if(!this.conditions) {
 					this.conditions = new CAE.Models.ConditionCollection();
 				}
-				//todo: listen to group options
-				//todo: listen to condition meta changes
-				//this.conditions.on("unsavedChanges",this.testChange,this);
-				//this.on("unsavedChanges",this.testChange,this);
 			},
-			// testChange: function(hasChanges, unsavedAttrs, model) {
-			// 	console.log(hasChanges);
-			// 	console.log(unsavedAttrs);
-			// },
 			parse: function(response) {
 				if (_.has(response, "conditions")) {
 					var list = [];
-
 					for(var key in response.conditions) {
 						if(response.conditions.hasOwnProperty(key)) {
-							var values = [];
-							for(var key2 in response.conditions[key].data) {
-								if(response.conditions[key].data.hasOwnProperty(key2)) {
+							var values = [],
+								model = response.conditions[key];
+							for(var key2 in model.data) {
+								if(model.data.hasOwnProperty(key2)) {
 									values.push({
-										text: response.conditions[key].data[key2],
+										text: model.data[key2],
 										id: key2
 									});
 								}
 							}
 							list.push({
-								label  : response.conditions[key].label,
+								label  : model.label,
 								module : key,
 								values : values,
-								options: response.conditions[key].options || {}
+								default_value : model.default_value
 							});
 						}
 					}
@@ -341,14 +333,6 @@ var CAE = CAE || {};
 					}
 				}
 			},
-			addConditionModel: function(e) {
-				var $select = $(e.currentTarget);
-				if(!!$select.val() && !this.model.conditions.findWhere({module:$select.val()})) {
-					var condition = new CAE.Models.Condition({
-						module: $select.val(),
-						label: $select.children(":selected").text()
-					});
-					this.model.conditions.add(condition);
 				}
 				$select.val(0).blur();
 			},
@@ -381,6 +365,19 @@ var CAE = CAE || {};
 						this.removeModel();
 					}
 				}
+			},
+			addConditionModel: function(e) {
+				var $select = $(e.currentTarget);
+				if(!!$select.val() && !this.model.conditions.findWhere({module:$select.val()})) {
+					var $selected = $select.children(":selected");
+					var condition = new CAE.Models.Condition({
+						module: $select.val(),
+						label: $selected.text(),
+						default_value: $selected.data('default')
+					});
+					this.model.conditions.add(condition);
+				}
+				$select.val(0).blur();
 			},
 			removeModel: function() {
 				var that = this;
@@ -511,9 +508,11 @@ var CAE = CAE || {};
 
 				if(!!$select.val()) {
 					var group = new CAE.Models.Group();
+					var $selected = $select.children(":selected");
 					var condition = new CAE.Models.Condition({
 						module: $select.val(),
-						label: $select.children(":selected").text()
+						label: $selected.text(),
+						default_value: $selected.data('default')
 					});
 					this.collection.add(group);
 					group.conditions.add(condition);

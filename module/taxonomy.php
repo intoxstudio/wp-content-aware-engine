@@ -241,7 +241,8 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 			if($posts || isset($ids[$taxonomy->name]) || isset($ids[WPCACore::PREFIX.'sub_' . $taxonomy->name])) {
 				
 				$group_data[$this->id."-".$taxonomy->name] = array(
-						"label" => $taxonomy->label
+						"label" => $taxonomy->label,
+						"default_value" => $taxonomy->name
 				);
 
 				if($posts) {
@@ -276,7 +277,10 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 	 */
 	public function list_module($list) {
 		foreach($this->_get_taxonomies() as $taxonomy) {
-			$list[$this->id."-".$taxonomy->name] = $taxonomy->label;
+			$list[$this->id."-".$taxonomy->name] = array(
+				'name' => $taxonomy->label,
+				'default_value' => $taxonomy->name
+			);
 		}
 		return $list;
 	}

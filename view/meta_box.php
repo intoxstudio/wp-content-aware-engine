@@ -17,9 +17,9 @@
 		<select class="js-wpca-add-or">
 			<option value="0">-- <?php _e("Select content type",WPCACore::DOMAIN); ?> --</option>
 <?php
-				foreach ($options as $key => $value) {
-					echo '<option value="'.$key.'">'.$value.'</option>';
-				}
+			foreach ($options as $key => $value) {
+				echo '<option data-default="'.$value['default_value'].'" value="'.$key.'">'.$value['name'].'</option>';
+			}
 
 ?>
 		</select>

@@ -104,7 +104,11 @@ abstract class WPCAModule_Base {
 	 * @return array
 	 */
 	public function list_module($list) {
-		$list[$this->id] = $this->name;
+		//TODO: remove in favor of backbone objects
+		$list[$this->id] = array(
+			'name' => $this->name,
+			'default_value' => $this->default_value
+		);
 		return $list;
 	}
 
@@ -175,7 +179,8 @@ abstract class WPCAModule_Base {
 		if($data) {
 			$group_data[$this->id] = array(
 				"label" => $this->name,
-				"data" => $this->_get_content(array('include' => $data))
+				"data" => $this->_get_content(array('include' => $data)),
+				"default_value" => $this->default_value
 			);
 		}
 		return $group_data;

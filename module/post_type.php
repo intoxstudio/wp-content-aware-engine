@@ -165,7 +165,8 @@ class WPCAModule_post_type extends WPCAModule_Base {
 
 				if($data || isset($lookup[$post_type->name]) || isset($lookup[WPCACore::PREFIX.'sub_' . $post_type->name])) {
 					$group_data[$this->id."-".$post_type->name] = array(
-						"label" => $post_type->label
+						"label" => $post_type->label,
+						"default_value" => $post_type->name
 					);
 
 					if($data) {
@@ -266,7 +267,10 @@ class WPCAModule_post_type extends WPCAModule_Base {
 	 */
 	public function list_module($list) {
 		foreach($this->_post_types()->get_all() as $post_type) {
-			$list[$this->id."-".$post_type->name] = $post_type->label;
+			$list[$this->id."-".$post_type->name] = array(
+				'name' => $post_type->label,
+				'default_value' => $post_type->name
+			);
 		}
 		return $list;
 	}
