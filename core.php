@@ -573,28 +573,24 @@ if(!class_exists("WPCACore")) {
 		/**
 		 * Get condition groups for a post type
 		 * Uses current post per default
-		 * Creates the first group if necessary
 		 * 
 		 * @since  1.0
 		 * @param  WP_Post|int    $post_id
-		 * @param  boolean        $create_first
 		 * @return array
 		 */
-		private static function _get_condition_groups($post_id = null, $create_first = false) {
+		private static function _get_condition_groups($post_id = null) {
 			$post = get_post($post_id);
+			$groups = array();
 
-			$groups = get_posts(array(
-				'posts_per_page'   => -1,
-				'post_type'        => self::TYPE_CONDITION_GROUP,
-				'post_parent'      => $post->ID,
-				'post_status'      => array(self::STATUS_PUBLISHED,self::STATUS_NEGATED),
-				'order'            => 'ASC'
-			));
-			if($groups == null && $create_first) {
-				$group = self::add_condition_group($post);
-				$groups[] = get_post($group);
+			if($post) {
+				$groups = get_posts(array(
+					'posts_per_page'   => -1,
+					'post_type'        => self::TYPE_CONDITION_GROUP,
+					'post_parent'      => $post->ID,
+					'post_status'      => array(self::STATUS_PUBLISHED,self::STATUS_NEGATED),
+					'order'            => 'ASC'
+				));
 			}
-
 			return $groups;
 
 		}
