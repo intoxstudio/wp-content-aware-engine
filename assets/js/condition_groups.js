@@ -63,11 +63,13 @@ var CAE = CAE || {};
 				prompt: WPCA.unsaved,
 				unloadWindowPrompt: true
 			},
-			defaults : {
-				'id'        : null, 
-				'status'    : 'publish',
-				'exposure'  : 1,
-				'options'   : {}
+			//TODO: remove function
+			defaults: function() {
+				var defaults = WPCA.meta_default;
+				defaults.id = null;
+				defaults.status = 'publish';
+				defaults.exposure = 1;
+				return defaults;
 			},
 			initialize: function() {
 				//backbone.trackit
@@ -243,21 +245,12 @@ var CAE = CAE || {};
 				.on("select2:selecting",function(e) {
 					$elem.data("forceOpen",true);
 				})
-				.on("select2:close",function(e) {
+				.on("select2:closing",function(e) {
 					if($elem.data("forceOpen")) {
 						e.preventDefault();
-						$elem.select2("open");
 						$elem.data("forceOpen",false);
 					}
 				});
-				//model.set("values",[1]);
-				// .on("select2-blur",function(e) {
-				// 	var select2 = $(this).data("select2");
-				// 	if(!select2.opened()) {
-				// 		console.log("can save now");
-				// 		wpca_admin.alert.success("Conditions saved automatically");
-				// 	}
-				// });
 
 				//data is set, now set selected
 				if(data.length) {
@@ -267,14 +260,12 @@ var CAE = CAE || {};
 				}
 
 				$elem.on("change", function(e) {
+					//fix for closeOnSelect
+					//$elem.resize();
 					console.log("select2 change");
 					var values = $elem.select2("data");
 					model.set("values",values);
 				});
-				// else if(!!$elem.data("wpca-default")) {
-				// 	//todo: control default val in model
-				// 	//model.trigger("change:values",model,[]);
-				// }
 			}
 		}),
 
@@ -538,6 +529,26 @@ var CAE = CAE || {};
 	// 	(e || window.event).returnValue = WPCA.unsaved; //Gecko + IE
 	// 	return WPCA.unsaved;                            //Webkit, Safari, Chrome
 	// });
+	// 
+	
+	//remove tag completely on backspace
+	$.fn.select2.amd.require(['select2/selection/search'], function (Search) {
+		Search.prototype.searchRemoveChoice = function (decorated, item) {
+			this.trigger('unselect', {
+				data: item
+			});
+
+			this.$search.val('');
+			this.handleSearch();
+		};
+	}, null, true);
+
+	//don't scroll to top on select
+	$.fn.select2.amd.require(['select2/results'], function (Results) {
+		Results.prototype.ensureHighlightVisible = function () {
+			this.$results.resize();
+		};
+	}, null, true);
 
 	$.fn.select2.amd.define('select2/data/wpcaAdapter', ['select2/data/array', 'select2/utils'],
 		function (ArrayAdapter, Utils) {
