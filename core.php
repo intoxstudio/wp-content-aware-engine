@@ -12,6 +12,12 @@ if (!defined('ABSPATH')) {
 }
 
 if(!class_exists("WPCACore")) {
+
+	// $domain = explode('/',plugin_basename( __FILE__ ));
+	//define('WPCA_DOMAIN',$domain[0]);
+	define('WPCA_DOMAIN','wp-content-aware-engine');
+	define('WPCA_PATH',plugin_dir_path(__FILE__));
+
 	/**
 	 * Core for WordPress Content Aware Engine
 	 */
@@ -194,7 +200,7 @@ if(!class_exists("WPCACore")) {
 		 * @return  void
 		 */
 		public static function load_textdomain() {
-			load_plugin_textdomain(self::DOMAIN, false, dirname(plugin_basename(__FILE__)).'/lang/');
+			load_plugin_textdomain(WPCA_DOMAIN, false, dirname(plugin_basename(__FILE__)).'/lang/');
 		}
 		
 		/**
@@ -218,8 +224,8 @@ if(!class_exists("WPCACore")) {
 			
 			register_post_type(self::TYPE_CONDITION_GROUP,array(
 				'labels'       => array(
-					'name'               => __('Condition Groups', self::DOMAIN),
-					'singular_name'      => __('Condition Group', self::DOMAIN),
+					'name'               => __('Condition Groups', WPCA_DOMAIN),
+					'singular_name'      => __('Condition Group', WPCA_DOMAIN),
 				),
 				'capabilities' => $capabilities,
 				'public'              => false,
@@ -239,7 +245,7 @@ if(!class_exists("WPCACore")) {
 			));
 
 			register_post_status( self::STATUS_NEGATED, array(
-				'label'                     => _x( 'Negated', 'condition status', self::DOMAIN ),
+				'label'                     => _x( 'Negated', 'condition status', WPCA_DOMAIN ),
 				'public'                    => false,
 				'exclude_from_search'       => true,
 				'show_in_admin_all_list'    => false,
@@ -522,7 +528,7 @@ if(!class_exists("WPCACore")) {
 					'options'  => $options
 				));
 
-				$title = isset($post_type_obj->labels->ca_title) ? $post_type_obj->labels->ca_title : __('Conditional Logic', self::DOMAIN);
+				$title = isset($post_type_obj->labels->ca_title) ? $post_type_obj->labels->ca_title : __('Conditional Logic', WPCA_DOMAIN);
 
 				add_meta_box(
 					'cas-rules',
@@ -608,7 +614,7 @@ if(!class_exists("WPCACore")) {
 			try {
 				if(!isset($_POST['current_id']) || 
 					!check_ajax_referer(self::PREFIX.$_POST['current_id'],'token',false)) {
-					$response = __('Unauthorized request',self::DOMAIN);
+					$response = __('Unauthorized request',WPCA_DOMAIN);
 					throw new Exception("Forbidden",403);
 				}
 
@@ -616,7 +622,7 @@ if(!class_exists("WPCACore")) {
 				if(!isset($_POST['cas_condition'])) {
 					//Otherwise we delete group
 					if($_POST['id'] && wp_delete_post(intval($_POST['id']), true) === false) {
-						$response = __('Could not delete conditions',self::DOMAIN);
+						$response = __('Could not delete conditions',WPCA_DOMAIN);
 						throw new Exception("Internal Server Error",500);
 					}
 					$response['removed'] = true;
@@ -639,7 +645,7 @@ if(!class_exists("WPCACore")) {
 					do_action('wpca/modules/save-data',$post_id);
 				}
 
-				$response['message'] = __('Conditions updated',self::DOMAIN);
+				$response['message'] = __('Conditions updated',WPCA_DOMAIN);
 				
 				wp_send_json($response);
 				
@@ -689,7 +695,7 @@ if(!class_exists("WPCACore")) {
 			echo '<li>';
 			echo '<label class="cae-toggle">';
 			echo '<input data-vm="checked:int(_ca_autoselect)" type="checkbox" />';
-			echo '<div class="cae-toggle-bar"></div>'._e("Auto-select new children of selected items",self::DOMAIN);
+			echo '<div class="cae-toggle-bar"></div>'._e("Auto-select new children of selected items",WPCA_DOMAIN);
 			echo '</label>';
 			echo '</li>';
 		}
@@ -796,10 +802,10 @@ if(!class_exists("WPCACore")) {
 
 			wp_enqueue_script(self::PREFIX.'condition-groups');
 			wp_localize_script(self::PREFIX.'condition-groups', 'WPCA', array(
-				'searching'     => __('Searching',self::DOMAIN),
-				'noResults'     => __('No results found.',self::DOMAIN),
-				'targetNegate'  => __('Target all but this context',self::DOMAIN),
-				'unsaved'       => __('Conditions have unsaved changes. Do you want to continue and discard these changes?',self::DOMAIN),
+				'searching'     => __('Searching',WPCA_DOMAIN),
+				'noResults'     => __('No results found.',WPCA_DOMAIN),
+				'targetNegate'  => __('Target all but this context',WPCA_DOMAIN),
+				'unsaved'       => __('Conditions have unsaved changes. Do you want to continue and discard these changes?',WPCA_DOMAIN),
 				'groups'        => $data,
 				'meta_default'  => $group_meta
 			));
@@ -821,13 +827,11 @@ if(!class_exists("WPCACore")) {
 		 * @return  void
 		 */
 		private static function _autoload_class_files($class) {
-			$path = plugin_dir_path( __FILE__ );
-
-			if(strpos($class, self::CLASS_PREFIX) !== false) {
-				$class = str_replace(self::CLASS_PREFIX, "", $class);
-				$class = self::str_replace_first("_", "/", $class);
+			if(strpos($class, self::CLASS_PREFIX) === 0) {
+				$class = str_replace(self::CLASS_PREFIX, '', $class);
+				$class = self::str_replace_first('_', '/', $class);
 				$class = strtolower($class);
-				$file = $path . $class . ".php";
+				$file = WPCA_PATH . $class . ".php";
 				if(file_exists($file)) {
 					include($file);
 				}

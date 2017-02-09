@@ -33,7 +33,7 @@ class WPCAModule_static extends WPCAModule_Base {
 	 * Constructor
 	 */
 	public function __construct() {
-		parent::__construct('static',__('Static Pages',WPCACore::DOMAIN));
+		parent::__construct('static',__('Static Pages',WPCA_DOMAIN));
 	}
 	
 	/**
@@ -45,9 +45,9 @@ class WPCAModule_static extends WPCAModule_Base {
 	 */
 	protected function _get_content($args = array()) {
 		$static = array(
-			'front-page' => __('Front Page', WPCACore::DOMAIN),
-			'search'     => __('Search Results', WPCACore::DOMAIN),
-			'404'        => __('404 Page', WPCACore::DOMAIN)
+			'front-page' => __('Front Page', WPCA_DOMAIN),
+			'search'     => __('Search Results', WPCA_DOMAIN),
+			'404'        => __('404 Page', WPCA_DOMAIN)
 		);
 
 		if(isset($args['include'])) {

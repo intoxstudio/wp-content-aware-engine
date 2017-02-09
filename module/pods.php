@@ -26,8 +26,8 @@ class WPCAModule_pods extends WPCAModule_Base {
 	 * Constructor
 	 */
 	public function __construct() {
-		parent::__construct('pods',__('Pods Pages',WPCACore::DOMAIN));
-		$this->placeholder = __("All Pods Pages",WPCACore::DOMAIN);
+		parent::__construct('pods',__('Pods Pages',WPCA_DOMAIN));
+		$this->placeholder = __("All Pods Pages",WPCA_DOMAIN);
 		$this->default_value = $this->id;
 	}
 	

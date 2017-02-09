@@ -26,7 +26,7 @@ class WPCAModule_qtranslate extends WPCAModule_Base {
 	 * Constructor
 	 */
 	public function __construct() {
-		parent::__construct('language',__('Languages',WPCACore::DOMAIN));
+		parent::__construct('language',__('Languages',WPCA_DOMAIN));
 	}
 
 	public function initiate() {

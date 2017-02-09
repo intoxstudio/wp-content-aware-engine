@@ -87,7 +87,7 @@ class WPCAView {
 		if(stripos(strrev($this->_path), 'php.') === 0) {
 			return $this->_path;
 		} else {
-			return plugin_dir_path( __FILE__ ).'view/'.str_replace(".", "/",$this->_path).".php";
+			return WPCA_PATH.'view/'.str_replace(".", "/",$this->_path).".php";
 		}
 	}
 

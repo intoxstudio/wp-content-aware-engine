@@ -32,8 +32,8 @@ class WPCAModule_page_template extends WPCAModule_Base {
 	 * Constructor
 	 */
 	public function __construct() {
-		parent::__construct('page_template',__('Page Templates',WPCACore::DOMAIN));
-		$this->placeholder = __("All Templates",WPCACore::DOMAIN);
+		parent::__construct('page_template',__('Page Templates',WPCA_DOMAIN));
+		$this->placeholder = __("All Templates",WPCA_DOMAIN);
 		$this->default_value = $this->id;
 	}
 	

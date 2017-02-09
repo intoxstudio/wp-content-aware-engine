@@ -11,11 +11,11 @@
 	<?php do_action('wpca/meta_box/before',$post_type); ?>
 	<ul data-vm="collection:$collection"></ul>
 	<div class="cas-group-sep" data-vm="toggle:length($collection)">
-		<?php _e('Or',WPCACore::DOMAIN); ?>
+		<?php _e('Or',WPCA_DOMAIN); ?>
 	</div>
 	<div class="cas-group-new">
 		<select class="js-wpca-add-or">
-			<option value="0">-- <?php _e("Select content type",WPCACore::DOMAIN); ?> --</option>
+			<option value="0">-- <?php _e("Select content type",WPCA_DOMAIN); ?> --</option>
 <?php
 			foreach ($options as $key => $value) {
 				echo '<option data-default="'.$value['default_value'].'" value="'.$key.'">'.$value['name'].'</option>';

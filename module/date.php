@@ -27,9 +27,9 @@ class WPCAModule_date extends WPCAModule_Base {
 	public function __construct() {
 		parent::__construct(
 			'date',
-			__('Dates',WPCACore::DOMAIN)
+			__('Dates',WPCA_DOMAIN)
 		);
-		$this->placeholder = __("Date Archives",WPCACore::DOMAIN);
+		$this->placeholder = __("Date Archives",WPCA_DOMAIN);
 		$this->default_value = "0000-00-00";
 	}
 

@@ -39,7 +39,7 @@ class WPCAModule_post_type extends WPCAModule_Base {
 	 * Constructor
 	 */
 	public function __construct() {
-		parent::__construct('post_type',__('Post Types',WPCACore::DOMAIN));
+		parent::__construct('post_type',__('Post Types',WPCA_DOMAIN));
 	}
 
 	/**
@@ -280,8 +280,8 @@ class WPCAModule_post_type extends WPCAModule_Base {
 		if(WPCACore::post_types()->has(get_post_type())) {
 			foreach($this->_post_types()->get_all() as $post_type) {
 
-				$placeholder = $post_type->has_archive ? "/".sprintf(__("%s Archives",WPCACore::DOMAIN),$post_type->labels->singular_name) : "";
-				$placeholder = $post_type->name == "post" ? "/".__("Blog Page",WPCACore::DOMAIN) : $placeholder;
+				$placeholder = $post_type->has_archive ? "/".sprintf(__("%s Archives",WPCA_DOMAIN),$post_type->labels->singular_name) : "";
+				$placeholder = $post_type->name == "post" ? "/".__("Blog Page",WPCA_DOMAIN) : $placeholder;
 				$placeholder = $post_type->labels->all_items.$placeholder;
 
 				echo WPCAView::make("module/condition_".$this->id."_template",array(
