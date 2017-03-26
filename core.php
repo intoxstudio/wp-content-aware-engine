@@ -679,6 +679,13 @@ if(!class_exists("WPCACore")) {
 		public static function add_group_script_styles($hook) {
 			$current_screen = get_current_screen();
 
+			wp_register_style(
+				self::PREFIX.'condition-groups',
+				plugins_url('/assets/css/condition_groups.css', __FILE__),
+				array(),
+				WPCA_VERSION
+			);
+
 			if(self::post_types()->has($current_screen->post_type) && $current_screen->base == 'post') {
 				self::enqueue_scripts_styles($hook);
 			}
@@ -791,13 +798,6 @@ if(!class_exists("WPCACore")) {
 				array('jquery','select2','backbone','backbone.trackit','backbone.epoxy'),
 				WPCA_VERSION,
 				true
-			);
-			
-			wp_register_style(
-				self::PREFIX.'condition-groups',
-				plugins_url('/assets/css/condition_groups.css', __FILE__),
-				array(),
-				WPCA_VERSION
 			);
 
 			wp_enqueue_script(self::PREFIX.'condition-groups');
