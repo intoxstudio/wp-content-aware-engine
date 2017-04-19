@@ -13,5 +13,5 @@
 	<div class="cas-group-input">
 		<select class="js-wpca-suggest" multiple="multiple" name="cas_condition[<?php echo $id; ?>][<?php echo $taxonomy; ?>][]" data-wpca-placeholder="<?php echo $placeholder; ?>" data-wpca-default="<?php echo $taxonomy; ?>"></select>
 	</div>
-	<div class="cas-group-sep"><?php _e("And",WPCACore::DOMAIN); ?></div>
+	<div class="cas-group-sep"><?php _e("And",WPCA_DOMAIN); ?></div>
 </script>

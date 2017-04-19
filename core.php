@@ -13,9 +13,9 @@ if (!defined('ABSPATH')) {
 
 if(!class_exists("WPCACore")) {
 
-	// $domain = explode('/',plugin_basename( __FILE__ ));
-	//define('WPCA_DOMAIN',$domain[0]);
-	define('WPCA_DOMAIN','wp-content-aware-engine');
+	$domain = explode('/',plugin_basename( __FILE__ ));
+	define('WPCA_DOMAIN',$domain[0]);
+	//define('WPCA_DOMAIN','wp-content-aware-engine');
 	define('WPCA_PATH',plugin_dir_path(__FILE__));
 
 	/**
@@ -57,11 +57,6 @@ if(!class_exists("WPCACore")) {
 		const EXP_SINGULAR         = 0;
 		const EXP_SINGULAR_ARCHIVE = 1;
 		const EXP_ARCHIVE          = 2;
-
-		/**
-		 * Language domain
-		 */
-		const DOMAIN               = 'wp-content-aware-engine';
 
 		/**
 		 * Capability to manage sidebars
@@ -127,8 +122,6 @@ if(!class_exists("WPCACore")) {
 			}
 
 			add_action('init',
-				array(__CLASS__,'load_textdomain'),9);
-			add_action('init',
 				array(__CLASS__,'set_modules'),9);
 			add_action('init',
 				array(__CLASS__,'add_group_post_type'),99);
@@ -193,15 +186,6 @@ if(!class_exists("WPCACore")) {
 			}
 		}
 
-		/**
-		 * Load textdomain
-		 * 
-		 * @since   1.0
-		 * @return  void
-		 */
-		public static function load_textdomain() {
-			load_plugin_textdomain(WPCA_DOMAIN, false, dirname(plugin_basename(__FILE__)).'/lang/');
-		}
 		
 		/**
 		 * Register group post type
