@@ -18,7 +18,7 @@
 			<option value="0">-- <?php _e("Select content type",WPCA_DOMAIN); ?> --</option>
 <?php
 			foreach ($options as $key => $value) {
-				echo '<option data-default="'.$value['default_value'].'" value="'.$key.'">'.$value['name'].'</option>';
+				echo '<option data-placeholder="'.$value['placeholder'].'" data-default="'.$value['default_value'].'" value="'.$key.'">'.$value['name'].'</option>';
 			}
 
 ?>

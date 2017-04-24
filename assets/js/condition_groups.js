@@ -45,6 +45,7 @@ var CAE = CAE || {};
 			defaults : {
 				'module'       : null,
 				'label'        : '',
+				'placeholder'  : '',
 				'values'       : [],
 				'default_value': null
 			},
@@ -97,6 +98,7 @@ var CAE = CAE || {};
 							}
 							list.push({
 								label  : model.label,
+								placeholder: model.placeholder,
 								module : key,
 								values : values,
 								default_value : model.default_value
@@ -221,9 +223,9 @@ var CAE = CAE || {};
 					cachedResults: {},
 					quietMillis: 400,
 					searchTimer: null,
-					type:this.model.get('module'),
+					type:model.get('module'),
 					theme:'wpca',
-					placeholder:$elem.data("wpca-placeholder"),
+					placeholder:model.get('placeholder'),
 					minimumInputLength: 0,
 					closeOnSelect: true,//false not working properly when hiding selected
 					width:"100%",
@@ -383,6 +385,7 @@ var CAE = CAE || {};
 					var condition = new CAE.Models.Condition({
 						module: $select.val(),
 						label: $selected.text(),
+						placeholder: $selected.data('placeholder'),
 						default_value: $selected.data('default')
 					});
 					this.model.conditions.add(condition);
@@ -501,6 +504,7 @@ var CAE = CAE || {};
 					var condition = new CAE.Models.Condition({
 						module: $select.val(),
 						label: $selected.text(),
+						placeholder: $selected.data('placeholder'),
 						default_value: $selected.data('default')
 					});
 					this.collection.add(group);

@@ -164,8 +164,14 @@ class WPCAModule_post_type extends WPCAModule_Base {
 				$data = $this->_get_content(array('include' => $ids, 'posts_per_page' => -1, 'post_type' => $post_type->name, 'orderby' => 'title', 'order' => 'ASC'));
 
 				if($data || isset($lookup[$post_type->name])) {
+
+					$placeholder = $post_type->has_archive ? "/".sprintf(__("%s Archives",WPCA_DOMAIN),$post_type->labels->singular_name) : "";
+					$placeholder = $post_type->name == "post" ? "/".__("Blog Page",WPCA_DOMAIN) : $placeholder;
+					$placeholder = $post_type->labels->all_items.$placeholder;
+
 					$group_data[$this->id."-".$post_type->name] = array(
 						"label" => $post_type->label,
+						'placeholder' => $placeholder,
 						"default_value" => $post_type->name
 					);
 
@@ -261,8 +267,12 @@ class WPCAModule_post_type extends WPCAModule_Base {
 	 */
 	public function list_module($list) {
 		foreach($this->_post_types()->get_all() as $post_type) {
+			$placeholder = $post_type->has_archive ? "/".sprintf(__("%s Archives",WPCA_DOMAIN),$post_type->labels->singular_name) : "";
+			$placeholder = $post_type->name == "post" ? "/".__("Blog Page",WPCA_DOMAIN) : $placeholder;
+			$placeholder = $post_type->labels->all_items.$placeholder;
 			$list[$this->id."-".$post_type->name] = array(
 				'name' => $post_type->label,
+				'placeholder' => $placeholder,
 				'default_value' => $post_type->name
 			);
 		}

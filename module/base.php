@@ -107,6 +107,7 @@ abstract class WPCAModule_Base {
 		//TODO: remove in favor of backbone objects
 		$list[$this->id] = array(
 			'name' => $this->name,
+			'placeholder' => $this->placeholder,
 			'default_value' => $this->default_value
 		);
 		return $list;
@@ -178,8 +179,9 @@ abstract class WPCAModule_Base {
 		$data = get_post_custom_values(WPCACore::PREFIX . $this->id, $post_id);
 		if($data) {
 			$group_data[$this->id] = array(
-				"label" => $this->name,
-				"data" => $this->_get_content(array('include' => $data)),
+				"label"         => $this->name,
+				"placeholder"   => $this->placeholder,
+				"data"          => $this->_get_content(array('include' => $data)),
 				"default_value" => $this->default_value
 			);
 		}

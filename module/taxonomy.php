@@ -235,9 +235,13 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 			$posts = isset($terms_by_tax[$taxonomy->name]) ? $terms_by_tax[$taxonomy->name] : 0;
 
 			if($posts || isset($ids[$taxonomy->name])) {
+
+				$placeholder = "/".sprintf(__("%s Archives",WPCA_DOMAIN),$taxonomy->labels->singular_name);
+				$placeholder = $taxonomy->labels->all_items.$placeholder;
 				
 				$group_data[$this->id."-".$taxonomy->name] = array(
 						"label" => $taxonomy->label,
+						'placeholder' => $placeholder,
 						"default_value" => $taxonomy->name
 				);
 
@@ -267,8 +271,11 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 	 */
 	public function list_module($list) {
 		foreach($this->_get_taxonomies() as $taxonomy) {
+			$placeholder = "/".sprintf(__("%s Archives",WPCA_DOMAIN),$taxonomy->labels->singular_name);
+			$placeholder = $taxonomy->labels->all_items.$placeholder;
 			$list[$this->id."-".$taxonomy->name] = array(
 				'name' => $taxonomy->label,
+				'placeholder' => $placeholder,
 				'default_value' => $taxonomy->name
 			);
 		}
