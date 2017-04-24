@@ -311,13 +311,7 @@ abstract class WPCAModule_Base {
 	 * @return void
 	 */
 	public function template_condition() {
-		if(WPCACore::post_types()->has(get_post_type())) {
-			echo WPCAView::make("module/condition_template",array(
-				'id'          => $this->id,
-				'placeholder' => $this->placeholder,
-				'default'     => $this->default_value
-			))->render();
-		}
+
 	}
 	
 }

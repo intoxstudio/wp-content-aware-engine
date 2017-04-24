@@ -188,12 +188,13 @@ var CAE = CAE || {};
 			model: CAE.Models.Condition,
 			tagName: "div",
 			className: "cas-condition",
+			templateName: '#wpca-template-condition',
 			events: {
 				"click .js-wpca-condition-remove": "removeModel"
 			},
 			initialize: function() {
 				this.listenTo( this.model, 'destroy', this.remove );
-				var $template = $('#wpca-template-'+this.model.get("module"));
+				var $template = $(this.templateName);
 				if($template.length) {
 					this.template = $template.html();
 					this.$el.append(this.template);

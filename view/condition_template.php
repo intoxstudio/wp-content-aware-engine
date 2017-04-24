@@ -11,7 +11,7 @@
 		<span data-vm="text:label"></span>
 	</div>
 	<div class="cas-group-input">
-		<select class="js-wpca-suggest" multiple="multiple" name="cas_condition[<?php echo $id; ?>][]" data-wpca-placeholder="<?php echo $placeholder; ?>" data-wpca-default="<?php echo $default; ?>"></select>
+		<select class="js-wpca-suggest" multiple="multiple" data-test="yo"></select>
 	</div>
 	<div class="cas-group-sep"><?php _e("And",WPCA_DOMAIN); ?></div>
 </script>

@@ -521,8 +521,13 @@ if(!class_exists("WPCACore")) {
 					'post_type'=> $post->post_type,
 					'options'  => $options
 				));
-
 				add_action("admin_footer",array($template,"render"));
+
+				$template = WPCAView::make("condition_template",array(
+					'id'=> 'condition'
+				));
+				add_action("admin_footer",array($template,"render"));
+
 			}
 		}
 
