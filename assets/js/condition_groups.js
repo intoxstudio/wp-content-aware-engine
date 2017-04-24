@@ -362,7 +362,7 @@ var CAE = CAE || {};
 				if(collection.length) {
 					if(options.add) {
 						//save only on default value
-						if(model.get('default_value')) {
+						if(model.get('default_value') !== '') {
 							AutoSaver.start(this);
 						}
 					} else if(this.model.get("id")) {
@@ -414,31 +414,15 @@ var CAE = CAE || {};
 				data.action = "wpca/add-rule";
 				data.token = wpca_admin.nonce;
 				data.current_id = wpca_admin.sidebarID;
+				data.conditions = {};
 
-				//todo: get data from model instead
-				//will require backend change?
-				this.$el.find("select").each(function(i,obj) {
-					var $obj = $(obj);
-					var key = $obj.attr("name");
-					if(key) {
-						var value = $obj.val();
-						if(~key.indexOf('cas_condition')) {
-							if(!value) {
-								if($obj.data("wpca-default") !== '') {
-									value = [$obj.data("wpca-default")];
-								}
-							} else if(!$.isArray(value)) {
-								//not pretty...
-								value = [value];
-							}
-							//fix for post types in same group
-							if(data[key]) {
-								value = value.concat(data[key]);
-							}
-						}
-						if(value) {
-							data[key] = value;
-						}
+				this.model.conditions.each(function(model) {
+					if(model.get('values').length) {
+						data.conditions[model.get('module')] = model.get('values').map(function(model) {
+							return model.id;
+						});
+					} else if(model.get('default_value') !== '') {
+						data.conditions[model.get('module')] = [model.get('default_value')];
 					}
 				});
 

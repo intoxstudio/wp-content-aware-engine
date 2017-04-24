@@ -349,20 +349,20 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 		//parent::save_data($post_id);
 		$meta_key = WPCACore::PREFIX . $this->id;
 		$old = array_flip(get_post_meta($post_id, $meta_key, false));
-		$tax_input = isset($_POST['cas_condition'][$this->id]) ? $_POST['cas_condition'][$this->id] : array();
+		$tax_input = $_POST['conditions'];
 
 		//Save terms
 		//Loop through each public taxonomy
 		foreach($this->_get_taxonomies() as $taxonomy) {
 
 			//If no terms, maybe delete old ones
-			if(!isset($tax_input[$taxonomy->name])) {
+			if(!isset($tax_input[$this->id.'-'.$taxonomy->name])) {
 				$terms = array();
 				if(isset($old[$taxonomy->name])) {
 					delete_post_meta($post_id, $meta_key, $taxonomy->name);
 				}
 			} else {
-				$terms = $tax_input[$taxonomy->name];
+				$terms = $tax_input[$this->id.'-'.$taxonomy->name];
 
 				$found_key = array_search($taxonomy->name, $terms);
 				//If meta key found maybe add it

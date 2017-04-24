@@ -144,8 +144,8 @@ abstract class WPCAModule_Base {
 	 */
 	public function save_data($post_id) {
 		$meta_key = WPCACore::PREFIX . $this->id;
-		$new = isset($_POST['cas_condition'][$this->id]) ? $_POST['cas_condition'][$this->id] : '';
 		$old = array_flip(get_post_meta($post_id, $meta_key, false));
+		$new = isset($_POST['conditions'][$this->id]) ? $_POST['conditions'][$this->id] : '';
 
 		if (is_array($new)) {
 			//$new = array_unique($new);

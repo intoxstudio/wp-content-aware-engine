@@ -602,7 +602,7 @@ if(!class_exists("WPCACore")) {
 				}
 
 				//Make sure some rules are sent
-				if(!isset($_POST['cas_condition'])) {
+				if(!isset($_POST['conditions'])) {
 					//Otherwise we delete group
 					if($_POST['id'] && wp_delete_post(intval($_POST['id']), true) === false) {
 						$response = __('Could not delete conditions',WPCA_DOMAIN);

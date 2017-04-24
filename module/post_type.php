@@ -328,7 +328,45 @@ class WPCAModule_post_type extends WPCAModule_Base {
 		return $post_states ? " (".implode(", ", $post_states).")" : "";
 	}
 
-	
+	/**
+	 * Save data on POST
+	 *
+	 * @since  1.0
+	 * @param  int  $post_id
+	 * @return void
+	 */
+	public function save_data($post_id) {
+		$meta_key = WPCACore::PREFIX . $this->id;
+		$old = array_flip(get_post_meta($post_id, $meta_key, false));
+		$new = array();
+
+		foreach($this->_post_types()->get_all() as $post_type) {
+			$id = $this->id.'-'.$post_type->name;
+			if(isset($_POST['conditions'][$id])) {
+				$new = array_merge($new,$_POST['conditions'][$id]);
+			}
+		}
+
+		if ($new) {
+			//$new = array_unique($new);
+			// Skip existing data or insert new data
+			foreach ($new as $new_single) {
+				if (isset($old[$new_single])) {
+					unset($old[$new_single]);
+				} else {
+					add_post_meta($post_id, $meta_key, $new_single);
+				}
+			}
+			// Remove existing data that have not been skipped
+			foreach ($old as $old_key => $old_value) {
+				delete_post_meta($post_id, $meta_key, $old_key);
+			}
+		} elseif (!empty($old)) {
+			// Remove any old values when $new is empty
+			delete_post_meta($post_id, $meta_key);
+		}
+	}
+
 	/**
 	 * Check if post ancestors have sidebar conditions
 	 *
