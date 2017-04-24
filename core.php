@@ -28,12 +28,6 @@ if(!class_exists("WPCACore")) {
 		 * for PHP5.2 compatibility
 		 */
 		const CLASS_PREFIX         = "WPCA";
-		
-		/**
-		 * Engine version
-		 * TODO: remove in favor of WPCA_VERSION
-		 */
-		const VERSION              = '2.0';
 
 		/**
 		 * Prefix for data (keys) stored in database
