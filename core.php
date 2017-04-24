@@ -546,6 +546,7 @@ if(!class_exists("WPCACore")) {
 			if($post->post_status == 'auto-draft') {
 				wp_update_post( array(
 					'ID'          => $post->ID,
+					'post_title'  => '',
 					'post_status' => 'draft'
 				));
 			}
