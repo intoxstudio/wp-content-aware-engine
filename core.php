@@ -102,8 +102,6 @@ if(!class_exists("WPCACore")) {
 					array(__CLASS__,'sync_group_untrashed'));
 				add_action('add_meta_boxes',
 					array(__CLASS__,'add_group_meta_box'),10,2);
-				add_action("wpca/group/settings",
-					array(__CLASS__,"render_condition_options"),-1,2);
 				add_action("wpca/modules/save-data",
 					array(__CLASS__,"save_condition_options"));
 			
@@ -664,22 +662,6 @@ if(!class_exists("WPCACore")) {
 			if(self::$type_manager->has($current_screen->post_type) && $current_screen->base == 'post') {
 				self::enqueue_scripts_styles($hook);
 			}
-		}
-
-		/**
-		 * Display extra options for condition group
-		 *
-		 * @since  3.2
-		 * @param  string  $post_type
-		 * @return void
-		 */
-		public static function render_condition_options($post_type) {
-			echo '<li>';
-			echo '<label class="cae-toggle">';
-			echo '<input data-vm="checked:int(_ca_autoselect)" type="checkbox" />';
-			echo '<div class="cae-toggle-bar"></div>'._e("Auto-select new children of selected items",WPCA_DOMAIN);
-			echo '</label>';
-			echo '</li>';
 		}
 
 		/**
