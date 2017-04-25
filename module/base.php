@@ -65,6 +65,8 @@ abstract class WPCAModule_Base {
 		$this->name = $title;
 		$this->description = $description;
 		$this->placeholder = $placeholder;
+
+		$this->initiate();
 	}
 
 	/**
@@ -75,23 +77,9 @@ abstract class WPCAModule_Base {
 	 */
 	public function initiate() {
 		if(is_admin()) {
-			add_action('wpca/modules/save-data',
-				array($this,'save_data'));
-			// add_action('admin_footer-post.php',
-			// 	array($this,'template_condition'),1);
-			// add_action('admin_footer-post-new.php',
-			// 	array($this,'template_condition'),1);
 			add_action('wp_ajax_wpca/module/'.$this->id,
 				array($this,'ajax_print_content'));
-
-			add_filter('wpca/modules/list',
-				array($this,'list_module'));
-			add_filter('wpca/modules/group-data',
-				array($this,'get_group_data'),10,2);
 		}
-		
-		add_filter('wpca/modules/context-data',
-			array($this,'parse_context_data'));
 	}
 
 	/**
@@ -212,32 +200,6 @@ abstract class WPCAModule_Base {
 	abstract public function get_context_data();
 
 	/**
-	 * Parse context data to sql query
-	 *
-	 * @since   1.0
-	 * @param   array|string    $data
-	 * @return  array
-	 */
-	final public function parse_context_data($data) {
-		if(apply_filters("wpca/module/{$this->id}/in-context", $this->in_context())) {
-			$data['JOIN'][$this->id] = apply_filters("wpca/module/{$this->id}/db-join", $this->db_join());
-
-			$context_data = $this->get_context_data();
-
-			if(is_array($context_data)) {
-				$context_data = "({$this->id}.meta_value IS NULL OR {$this->id}.meta_value IN ('".implode("','",$context_data) ."'))";
-			}
-			$data['WHERE'][$this->id] = apply_filters("wpca/module/{$this->id}/db-where", $context_data);
-
-		} else {
-			add_filter("wpca/modules/exclude-context",
-				array($this,"filter_excluded_context"));
-			$data['EXCLUDE'][] = $this->id;
-		}
-		return $data;
-	}
-
-	/**
 	 * Remove posts if they have data from
 	 * other contexts (meaning conditions arent met)
 	 *
@@ -311,7 +273,18 @@ abstract class WPCAModule_Base {
 	public function template_condition() {
 
 	}
-	
+
+	/**
+	 * Destructor
+	 *
+	 * @since 4.0
+	 */
+	public function __destruct() {
+		if(is_admin()) {
+			remove_action('wp_ajax_wpca/module/'.$this->id,
+				array($this,'ajax_print_content'));
+		}
+	}
 }
 
 //eol

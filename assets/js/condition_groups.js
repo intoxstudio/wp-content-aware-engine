@@ -414,6 +414,7 @@ var CAE = CAE || {};
 				data.action = "wpca/add-rule";
 				data.token = wpca_admin.nonce;
 				data.current_id = wpca_admin.sidebarID;
+				data.post_type = WPCA.post_type;
 				data.conditions = {};
 
 				this.model.conditions.each(function(model) {
