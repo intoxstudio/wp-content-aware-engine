@@ -67,6 +67,7 @@ if(!class_exists("WPCACore")) {
 		 * @var WPCAPostTypeManager
 		 */
 		private static $post_type_manager;
+		private static $type_manager;
 
 		/**
 		 * Conditions retrieved from database
@@ -81,17 +82,13 @@ if(!class_exists("WPCACore")) {
 		private static $post_cache  = array();
 
 		/**
-		 * Modules for specific content or cases
-		 * @var WPCAModuleManager
-		 */
-		private static $module_manager;
-
-		/**
 		 * Constructor
 		 */
 		public static function init() {
 
 			spl_autoload_register(array(__CLASS__,"_autoload_class_files"));
+
+			self::$type_manager = new WPCATypeManager();
 
 			if(is_admin()) {
 
@@ -116,8 +113,6 @@ if(!class_exists("WPCACore")) {
 			}
 
 			add_action('init',
-				array(__CLASS__,'set_modules'),9);
-			add_action('init',
 				array(__CLASS__,'add_group_post_type'),99);
 			
 		}
@@ -129,58 +124,23 @@ if(!class_exists("WPCACore")) {
 		 * @return  WPCAPostTypeManager
 		 */
 		public static function post_types() {
+			//deprecated
 			if(!self::$post_type_manager) {
-				self::$post_type_manager = new WPCAPostTypeManager();
+				self::$post_type_manager = new WPCATypeManager();
 			}
 			return self::$post_type_manager;
 		}
 
 		/**
-		 * Get module manager
-		 *
-		 * @since   1.0
-		 * @return  WPCAModuleManager
-		 */
-		public static function modules() {
-			if(!self::$module_manager) {
-				self::$module_manager = new WPCAModuleManager();
-			}
-			return self::$module_manager;
-		}
-
-		/**
-		 * Set initial modules
+		 * Get type manager
 		 * 
-		 * @since   1.0
-		 * @return  void
+		 * @since   4.0
+		 * @return  WPCAPostTypeManager
 		 */
-		public static function set_modules() {
-			$modules = array(
-				'static'        => true,
-				'post_type'     => true,
-				'author'        => true,
-				'page_template' => true,
-				'taxonomy'      => true,
-				'date'          => true,
-				'bbpress'       => function_exists('bbp_get_version'),	// bbPress
-				'bp_member'     => defined('BP_VERSION'),				// BuddyPress
-				'pods'          => defined("PODS_DIR"),
-				'polylang'      => defined('POLYLANG_VERSION'),			// Polylang
-				'qtranslate'    => defined('QTX_VERSION'),				// qTranslate
-				'transposh'     => defined('TRANSPOSH_PLUGIN_VER'),		// Transposh Translation Filter
-				'wpml'          => class_exists('SitePress')			// WPML Multilingual Blog/CMS
-			);
-
-			foreach($modules as $name => $bool) {
-				if($bool) {
-					$class_name = self::CLASS_PREFIX."Module_".$name;
-					$class = new $class_name();
-					self::modules()->add($class,$name);
-				}
-			}
+		public static function types() {
+			return self::$type_manager;
 		}
 
-		
 		/**
 		 * Register group post type
 		 *
@@ -239,7 +199,7 @@ if(!class_exists("WPCACore")) {
 		 * @return  array
 		 */
 		private static function get_group_ids_by_parent($parent_id) {
-			if (!self::post_types()->has(get_post_type($parent_id)))
+			if (!self::$type_manager->has(get_post_type($parent_id)))
 				return array();
 
 			global $wpdb;
@@ -403,7 +363,7 @@ if(!class_exists("WPCACore")) {
 				return self::$post_cache[$post_type];
 			}
 
-			if(!self::post_types()->has($post_type) || (!$wp_query->query && !$post) || is_admin() || post_password_required())
+			if(!self::$type_manager->has($post_type) || (!$wp_query->query && !$post) || is_admin() || post_password_required())
 				return false;
 
 			$valid = self::get_conditions();
@@ -412,16 +372,7 @@ if(!class_exists("WPCACore")) {
 
 			if($valid) {
 
-				//todo: move exposure to group, later deprecate?
 				$metas = array();
-				//$metas = array(
-				// 	'exposure' => array(
-				// 		'key' => self::PREFIX.'exposure',
-				// 		'value'   => 1,
-				// 		'compare' => (is_archive() || is_home() ? '>=' : '<='),
-				// 	)
-				// );
-
 				$joins = array();
 				$wheres = array();
 				$i = 0;
@@ -463,13 +414,7 @@ if(!class_exists("WPCACore")) {
 				// 		// 	'key'     => self::PREFIX.'handle',
 				// 		// 	'value'   => 'blue',
 				// 		// 	'compare' => 'NOT LIKE',
-				// 		// ),
-				// 		array(
-				// 			'key' => self::PREFIX.'exposure',
-				// 			'value'   => 1,
-				// 			'type'    => 'numeric',
-				// 			'compare' => (is_archive() || is_home() ? '>=' : '<='),
-				// 		)
+				// 		// )
 				// 	)
 				// ));
 
@@ -495,7 +440,8 @@ if(!class_exists("WPCACore")) {
 		}
 
 		public static function render_group_meta_box($post,$screen,$context = 'normal',$priority = 'default') {
-			if(self::post_types()->has($post->post_type)) {
+			
+			if(self::$type_manager->has($post->post_type)) {
 
 				$post_type_obj = self::post_types()->get($post->post_type);
 				$options = apply_filters("wpca/modules/list",array());
@@ -670,7 +616,7 @@ if(!class_exists("WPCACore")) {
 				WPCA_VERSION
 			);
 
-			if(self::post_types()->has($current_screen->post_type) && $current_screen->base == 'post') {
+			if(self::$type_manager->has($current_screen->post_type) && $current_screen->base == 'post') {
 				self::enqueue_scripts_styles($hook);
 			}
 		}
@@ -795,8 +741,7 @@ if(!class_exists("WPCACore")) {
 			));
 			wp_enqueue_style(self::PREFIX.'condition-groups');
 
-			//todo: manage modules per post type, only load necessary ones
-			foreach(self::$module_manager->get_all() as $module) {
+			foreach (self::$type_manager->get(get_post_type())->get_all() as $module) {
 				add_action('admin_footer',
 					array($module,'template_condition'),1);
 			}

@@ -160,7 +160,7 @@ class WPCAModule_post_type extends WPCAModule_Base {
 			$lookup = array_flip((array)$ids);
 			foreach($this->_post_types() as $post_type) {
 				$post_type_obj = get_post_type_object($post_type);
-				$data = $this->_get_content(array('include' => $ids, 'posts_per_page' => -1, 'post_type' => $post_type->name, 'orderby' => 'title', 'order' => 'ASC'));
+				$data = $this->_get_content(array('include' => $ids, 'posts_per_page' => -1, 'post_type' => $post_type, 'orderby' => 'title', 'order' => 'ASC'));
 
 				if($data || isset($lookup[$post_type])) {
 
