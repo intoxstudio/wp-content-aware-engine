@@ -52,8 +52,9 @@ class WPCAModule_post_type extends WPCAModule_Base {
 		add_action('transition_post_status',
 			array($this,'post_ancestry_check'),10,3);
 
-		foreach ($this->_post_types()->get_all() as $post_type) {
-			add_action('wp_ajax_wpca/module/'.$this->id.'-'.$post_type->name,array($this,'ajax_print_content'));
+		foreach ($this->_post_types() as $post_type) {
+			add_action('wp_ajax_wpca/module/'.$this->id.'-'.$post_type,
+				array($this,'ajax_print_content'));
 		}
 	}
 
@@ -137,10 +138,9 @@ class WPCAModule_post_type extends WPCAModule_Base {
 	 */
 	public function _post_types() {
 		if(!$this->_post_types) {
-			$this->_post_types = new WPCAPostTypeManager();
 			// List public post types
-			foreach (get_post_types(array('public' => true), 'objects') as $post_type) {
-				$this->_post_types->add($post_type);
+			foreach (get_post_types(array('public' => true), 'names') as $post_type) {
+				$this->_post_types[$post_type] = $post_type;
 			}
 		}
 		return $this->_post_types;
@@ -158,19 +158,20 @@ class WPCAModule_post_type extends WPCAModule_Base {
 		$ids = get_post_custom_values(WPCACore::PREFIX . $this->id, $post_id);
 		if($ids) {
 			$lookup = array_flip((array)$ids);
-			foreach($this->_post_types()->get_all() as $post_type) {
+			foreach($this->_post_types() as $post_type) {
+				$post_type_obj = get_post_type_object($post_type);
 				$data = $this->_get_content(array('include' => $ids, 'posts_per_page' => -1, 'post_type' => $post_type->name, 'orderby' => 'title', 'order' => 'ASC'));
 
-				if($data || isset($lookup[$post_type->name])) {
+				if($data || isset($lookup[$post_type])) {
 
-					$placeholder = $post_type->has_archive ? "/".sprintf(__("%s Archives",WPCA_DOMAIN),$post_type->labels->singular_name) : "";
-					$placeholder = $post_type->name == "post" ? "/".__("Blog Page",WPCA_DOMAIN) : $placeholder;
-					$placeholder = $post_type->labels->all_items.$placeholder;
+					$placeholder = $post_type_obj->has_archive ? "/".sprintf(__("%s Archives",WPCA_DOMAIN),$post_type_obj->labels->singular_name) : "";
+					$placeholder = $post_type == "post" ? "/".__("Blog Page",WPCA_DOMAIN) : $placeholder;
+					$placeholder = $post_type_obj->labels->all_items.$placeholder;
 
-					$group_data[$this->id."-".$post_type->name] = array(
-						"label" => $post_type->label,
+					$group_data[$this->id."-".$post_type] = array(
+						"label" => $post_type_obj->label,
 						'placeholder' => $placeholder,
-						"default_value" => $post_type->name
+						"default_value" => $post_type
 					);
 
 					if($data) {
@@ -178,7 +179,7 @@ class WPCAModule_post_type extends WPCAModule_Base {
 						foreach ($data as $post) {
 							$posts[$post->ID] = $post->post_title.$this->_post_states($post);
 						}
-						$group_data[$this->id."-".$post_type->name]["data"] = $posts;
+						$group_data[$this->id."-".$post_type]["data"] = $posts;
 					}
 				}
 			}
@@ -264,14 +265,15 @@ class WPCAModule_post_type extends WPCAModule_Base {
 	 * @return array
 	 */
 	public function list_module($list) {
-		foreach($this->_post_types()->get_all() as $post_type) {
-			$placeholder = $post_type->has_archive ? "/".sprintf(__("%s Archives",WPCA_DOMAIN),$post_type->labels->singular_name) : "";
-			$placeholder = $post_type->name == "post" ? "/".__("Blog Page",WPCA_DOMAIN) : $placeholder;
-			$placeholder = $post_type->labels->all_items.$placeholder;
-			$list[$this->id."-".$post_type->name] = array(
-				'name' => $post_type->label,
+		foreach($this->_post_types() as $post_type) {
+			$post_type_obj = get_post_type_object($post_type);
+			$placeholder = $post_type_obj->has_archive ? "/".sprintf(__("%s Archives",WPCA_DOMAIN),$post_type_obj->labels->singular_name) : "";
+			$placeholder = $post_type == "post" ? "/".__("Blog Page",WPCA_DOMAIN) : $placeholder;
+			$placeholder = $post_type_obj->labels->all_items.$placeholder;
+			$list[$this->id."-".$post_type] = array(
+				'name' => $post_type_obj->label,
 				'placeholder' => $placeholder,
-				'default_value' => $post_type->name
+				'default_value' => $post_type
 			);
 		}
 		return $list;
@@ -338,8 +340,8 @@ class WPCAModule_post_type extends WPCAModule_Base {
 		$old = array_flip(get_post_meta($post_id, $meta_key, false));
 		$new = array();
 
-		foreach($this->_post_types()->get_all() as $post_type) {
-			$id = $this->id.'-'.$post_type->name;
+		foreach($this->_post_types() as $post_type) {
+			$id = $this->id.'-'.$post_type;
 			if(isset($_POST['conditions'][$id])) {
 				$new = array_merge($new,$_POST['conditions'][$id]);
 			}
