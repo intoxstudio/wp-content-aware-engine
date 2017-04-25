@@ -5,9 +5,7 @@
  * @license GPLv3
  */
 
-if (!defined('WPCA_VERSION')) {
-	header('Status: 403 Forbidden');
-	header('HTTP/1.1 403 Forbidden');
+if (!defined('ABSPATH')) {
 	exit;
 }
 
