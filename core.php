@@ -124,7 +124,7 @@ if(!class_exists("WPCACore")) {
 		public static function post_types() {
 			//deprecated
 			if(!self::$post_type_manager) {
-				self::$post_type_manager = new WPCATypeManager();
+				self::$post_type_manager = new WPCAPostTypeManager();
 			}
 			return self::$post_type_manager;
 		}
@@ -819,9 +819,6 @@ if(!class_exists("WPCACore")) {
 			return $subject;
 		}
 	}
-
-	WPCACore::init();
-
 }
 
 //eol
