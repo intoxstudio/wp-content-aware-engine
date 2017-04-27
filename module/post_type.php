@@ -25,6 +25,7 @@ class WPCAModule_post_type extends WPCAModule_Base {
 	 * 
 	 * @var array
 	 */
+	private $_post_types_obj;
 	private $_post_types;
 
 	/**
@@ -52,7 +53,7 @@ class WPCAModule_post_type extends WPCAModule_Base {
 		add_action('transition_post_status',
 			array($this,'post_ancestry_check'),10,3);
 
-		foreach ($this->_post_types() as $post_type) {
+		foreach ($this->post_types() as $post_type) {
 			add_action('wp_ajax_wpca/module/'.$this->id.'-'.$post_type,
 				array($this,'ajax_print_content'));
 		}
@@ -132,11 +133,30 @@ class WPCAModule_post_type extends WPCAModule_Base {
 
 	/**
 	 * Get registered public post types
+	 * Content Aware Sidebars 3.5.2 relies on this
 	 *
+	 * @deprecated 4.0
 	 * @since   1.0
 	 * @return  array
 	 */
 	public function _post_types() {
+		if(!$this->_post_types_obj) {
+			// List public post types
+			$this->_post_types_obj = new WPCAObjectManager();
+			foreach (get_post_types(array('public' => true), 'objects') as $post_type) {
+				$this->_post_types_obj->add($post_type,$post_type->name);
+			}
+		}
+		return $this->_post_types_obj;
+	}
+
+	/**
+	 * Get registered public post types
+	 *
+	 * @since   4.0
+	 * @return  array
+	 */
+	public function post_types() {
 		if(!$this->_post_types) {
 			// List public post types
 			foreach (get_post_types(array('public' => true), 'names') as $post_type) {
@@ -158,7 +178,7 @@ class WPCAModule_post_type extends WPCAModule_Base {
 		$ids = get_post_custom_values(WPCACore::PREFIX . $this->id, $post_id);
 		if($ids) {
 			$lookup = array_flip((array)$ids);
-			foreach($this->_post_types() as $post_type) {
+			foreach($this->post_types() as $post_type) {
 				$post_type_obj = get_post_type_object($post_type);
 				$data = $this->_get_content(array('include' => $ids, 'posts_per_page' => -1, 'post_type' => $post_type, 'orderby' => 'title', 'order' => 'ASC'));
 
@@ -265,7 +285,7 @@ class WPCAModule_post_type extends WPCAModule_Base {
 	 * @return array
 	 */
 	public function list_module($list) {
-		foreach($this->_post_types() as $post_type) {
+		foreach($this->post_types() as $post_type) {
 			$post_type_obj = get_post_type_object($post_type);
 			$placeholder = $post_type_obj->has_archive ? "/".sprintf(__("%s Archives",WPCA_DOMAIN),$post_type_obj->labels->singular_name) : "";
 			$placeholder = $post_type == "post" ? "/".__("Blog Page",WPCA_DOMAIN) : $placeholder;
@@ -340,7 +360,7 @@ class WPCAModule_post_type extends WPCAModule_Base {
 		$old = array_flip(get_post_meta($post_id, $meta_key, false));
 		$new = array();
 
-		foreach($this->_post_types() as $post_type) {
+		foreach($this->post_types() as $post_type) {
 			$id = $this->id.'-'.$post_type;
 			if(isset($_POST['conditions'][$id])) {
 				$new = array_merge($new,$_POST['conditions'][$id]);

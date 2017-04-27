@@ -115,16 +115,26 @@ if(!class_exists("WPCACore")) {
 
 		/**
 		 * Get post type manager
-		 * 
+		 *
+		 * @deprecated 4.0
 		 * @since   1.0
 		 * @return  WPCAPostTypeManager
 		 */
 		public static function post_types() {
-			//deprecated
 			if(!self::$post_type_manager) {
 				self::$post_type_manager = new WPCAPostTypeManager();
 			}
 			return self::$post_type_manager;
+		}
+
+		/**
+		 * Content Aware Sidebars 3.5.2 rely on this
+		 *
+		 * @deprecated  4.0
+		 * @return WPTypeManager
+		 */
+		public static function modules() {
+			return self::$type_manager->get('sidebar');
 		}
 
 		/**
