@@ -494,7 +494,7 @@ if(!class_exists("WPCACore")) {
 
 				$template = WPCAView::make("group_template",array(
 					'post_type'=> $post->post_type,
-					'options'  => $options
+					'options'  => apply_filters('wpca/modules/list',$options)
 				));
 				add_action("admin_footer",array($template,"render"));
 
