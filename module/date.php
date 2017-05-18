@@ -27,8 +27,8 @@ class WPCAModule_date extends WPCAModule_Base {
 			'date',
 			__('Dates',WPCA_DOMAIN)
 		);
-		$this->placeholder = __("Date Archives",WPCA_DOMAIN);
-		$this->default_value = "0000-00-00";
+		$this->placeholder = __('Date Archives',WPCA_DOMAIN);
+		$this->default_value = '0000-00-00';
 	}
 
 	/**
@@ -52,7 +52,7 @@ class WPCAModule_date extends WPCAModule_Base {
 		global $wpdb;
 		return $wpdb->prepare(
 			"(date.meta_value IS NULL OR '%s' = date.meta_value)",
-			"0000-00-00"
+			'0000-00-00'
 		);
 	}
 

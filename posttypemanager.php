@@ -9,7 +9,7 @@ if (!defined('ABSPATH')) {
 	exit;
 }
 
-if(!class_exists("WPCAPostTypeManager")) {
+if(!class_exists('WPCAPostTypeManager')) {
 	/**
 	 * Manage module objects
 	 */

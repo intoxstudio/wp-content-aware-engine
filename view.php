@@ -68,7 +68,7 @@ class WPCAView {
 	 * @return  mixed
 	 */
 	public function __call($method,$args) {
-		if(substr($method,0,3) == "set" && count($args) == 1) {
+		if(substr($method,0,3) == 'set' && count($args) == 1) {
 			$this->_params[strtolower(substr($method,2))] = $args[0];
 			return $this;
 		}
@@ -85,7 +85,7 @@ class WPCAView {
 		if(stripos(strrev($this->_path), 'php.') === 0) {
 			return $this->_path;
 		} else {
-			return WPCA_PATH.'view/'.str_replace(".", "/",$this->_path).".php";
+			return WPCA_PATH.'view/'.str_replace('.', '/',$this->_path).'.php';
 		}
 	}
 

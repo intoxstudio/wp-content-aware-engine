@@ -31,7 +31,7 @@ class WPCAModule_page_template extends WPCAModule_Base {
 	 */
 	public function __construct() {
 		parent::__construct('page_template',__('Page Templates',WPCA_DOMAIN));
-		$this->placeholder = __("All Templates",WPCA_DOMAIN);
+		$this->placeholder = __('All Templates',WPCA_DOMAIN);
 		$this->default_value = $this->id;
 	}
 	
@@ -74,9 +74,9 @@ class WPCAModule_page_template extends WPCAModule_Base {
 		if(isset($args['include'])) {
 			$templates = array_intersect_key($templates,array_flip($args['include']));
 		}
-		if(isset($args["search"]) && $args["search"]) {
-			$this->search_string = $args["search"];
-			$templates = array_filter($templates,array($this,"_filter_search"));
+		if(isset($args['search']) && $args['search']) {
+			$this->search_string = $args['search'];
+			$templates = array_filter($templates,array($this,'_filter_search'));
 		}
 		return $templates;
 	}

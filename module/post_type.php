@@ -85,8 +85,8 @@ class WPCAModule_post_type extends WPCAModule_Base {
 		}
 
 		$post_status = array('publish','private','future','draft');
-		if($args["post_type"] == "attachment") {
-			$post_status = "inherit";
+		if($args['post_type'] == 'attachment') {
+			$post_status = 'inherit';
 		}
 
 		//WordPress searches in title and content by default
@@ -184,14 +184,14 @@ class WPCAModule_post_type extends WPCAModule_Base {
 
 				if($data || isset($lookup[$post_type])) {
 
-					$placeholder = $post_type_obj->has_archive ? "/".sprintf(__("%s Archives",WPCA_DOMAIN),$post_type_obj->labels->singular_name) : "";
-					$placeholder = $post_type == "post" ? "/".__("Blog Page",WPCA_DOMAIN) : $placeholder;
+					$placeholder = $post_type_obj->has_archive ? '/'.sprintf(__('%s Archives',WPCA_DOMAIN),$post_type_obj->labels->singular_name) : '';
+					$placeholder = $post_type == 'post' ? '/'.__('Blog Page',WPCA_DOMAIN) : $placeholder;
 					$placeholder = $post_type_obj->labels->all_items.$placeholder;
 
-					$group_data[$this->id."-".$post_type] = array(
-						"label" => $post_type_obj->label,
+					$group_data[$this->id.'-'.$post_type] = array(
+						'label' => $post_type_obj->label,
 						'placeholder' => $placeholder,
-						"default_value" => $post_type
+						'default_value' => $post_type
 					);
 
 					if($data) {
@@ -199,7 +199,7 @@ class WPCAModule_post_type extends WPCAModule_Base {
 						foreach ($data as $post) {
 							$posts[$post->ID] = $post->post_title.$this->_post_states($post);
 						}
-						$group_data[$this->id."-".$post_type]["data"] = $posts;
+						$group_data[$this->id.'-'.$post_type]['data'] = $posts;
 					}
 				}
 			}
@@ -252,7 +252,7 @@ class WPCAModule_post_type extends WPCAModule_Base {
 			'search'         => ''
 		));
 
-		preg_match('/post_type-(.+)$/i', $args["item_object"], $matches);
+		preg_match('/post_type-(.+)$/i', $args['item_object'], $matches);
 		$args['item_object'] = isset($matches[1]) ? $matches[1] : "";
 
 		$post_type = get_post_type_object($args['item_object']);
@@ -287,10 +287,10 @@ class WPCAModule_post_type extends WPCAModule_Base {
 	public function list_module($list) {
 		foreach($this->post_types() as $post_type) {
 			$post_type_obj = get_post_type_object($post_type);
-			$placeholder = $post_type_obj->has_archive ? "/".sprintf(__("%s Archives",WPCA_DOMAIN),$post_type_obj->labels->singular_name) : "";
-			$placeholder = $post_type == "post" ? "/".__("Blog Page",WPCA_DOMAIN) : $placeholder;
+			$placeholder = $post_type_obj->has_archive ? '/'.sprintf(__('%s Archives',WPCA_DOMAIN),$post_type_obj->labels->singular_name) : '';
+			$placeholder = $post_type == 'post' ? '/'.__('Blog Page',WPCA_DOMAIN) : $placeholder;
 			$placeholder = $post_type_obj->labels->all_items.$placeholder;
-			$list[$this->id."-".$post_type] = array(
+			$list[$this->id.'-'.$post_type] = array(
 				'name' => $post_type_obj->label,
 				'placeholder' => $placeholder,
 				'default_value' => $post_type

@@ -51,9 +51,9 @@ class WPCAModule_static extends WPCAModule_Base {
 		if(isset($args['include'])) {
 			$static = array_intersect_key($static, array_flip($args['include']));
 		}
-		if(isset($args["search"]) && $args["search"]) {
-			$this->search_string = $args["search"];
-			$static = array_filter($static,array($this,"_filter_search"));
+		if(isset($args['search']) && $args['search']) {
+			$this->search_string = $args['search'];
+			$static = array_filter($static,array($this,'_filter_search'));
 		}
 		return $static;
 	}

@@ -9,7 +9,7 @@ if (!defined('ABSPATH')) {
 	exit;
 }
 
-if(!class_exists("WPCAObjectManager")) {
+if(!class_exists('WPCAObjectManager')) {
 	/**
 	 * Manage a list of objects nicely
 	 */

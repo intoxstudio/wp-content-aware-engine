@@ -32,11 +32,11 @@ class WPCAModule_qtranslate extends WPCAModule_Base {
 		if(is_admin()) {
 			global $q_config;
 			//Disable multilanguage
-			if(is_array($q_config["post_type_excluded"])) {
+			if(is_array($q_config['post_type_excluded'])) {
 				foreach (WPCACore::post_types()->get_all() as $name => $post_type) {
-					$q_config["post_type_excluded"][] = $name;
+					$q_config['post_type_excluded'][] = $name;
 				}
-				$q_config["post_type_excluded"][] = WPCACore::TYPE_CONDITION_GROUP;
+				$q_config['post_type_excluded'][] = WPCACore::TYPE_CONDITION_GROUP;
 			}
 		}
 	}

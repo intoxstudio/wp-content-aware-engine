@@ -25,7 +25,7 @@ class WPCAModule_pods extends WPCAModule_Base {
 	 */
 	public function __construct() {
 		parent::__construct('pods',__('Pods Pages',WPCA_DOMAIN));
-		$this->placeholder = __("All Pods Pages",WPCA_DOMAIN);
+		$this->placeholder = __('All Pods Pages',WPCA_DOMAIN);
 		$this->default_value = $this->id;
 	}
 	
@@ -49,9 +49,9 @@ class WPCAModule_pods extends WPCAModule_Base {
 		$data = array(
 			$this->id
 		);
-		if(function_exists("pod_page_exists")) {
+		if(function_exists('pod_page_exists')) {
 			$pod_page = pod_page_exists();
-			$data[] = $pod_page["id"];
+			$data[] = $pod_page['id'];
 		}
 		return $data;
 	}
@@ -70,19 +70,19 @@ class WPCAModule_pods extends WPCAModule_Base {
 			'limit'          => -1,
 			'search'         => ''
 		));
-		$args["ids"] = $args["include"];
-		unset($args["include"]);
+		$args['ids'] = $args['include'];
+		unset($args['include']);
 
 		$pods = array();
-		if(function_exists("pods_api")) {
+		if(function_exists('pods_api')) {
 			$results = pods_api()->load_pages($args);
 			foreach ($results as $result) {
-				$pods[$result["id"]] = $result["name"];
+				$pods[$result['id']] = $result['name'];
 			}
 		}
-		if(isset($args["search"]) && $args["search"]) {
-			$this->search_string = $args["search"];
-			$pods = array_filter($pods,array($this,"_filter_search"));
+		if(isset($args['search']) && $args['search']) {
+			$this->search_string = $args['search'];
+			$pods = array_filter($pods,array($this,'_filter_search'));
 		}
 
 		return $pods;

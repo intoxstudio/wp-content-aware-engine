@@ -9,7 +9,7 @@ if (!defined('ABSPATH')) {
 	exit;
 }
 
-if(!class_exists("WPCAModuleManager")) {
+if(!class_exists('WPCAModuleManager')) {
 	/**
 	 * Manage module objects
 	 */

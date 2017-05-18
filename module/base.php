@@ -60,7 +60,7 @@ abstract class WPCAModule_Base {
 	 * @param   string    $title
 	 * @param   string    $description
 	 */
-	public function __construct($id, $title, $description = "", $placeholder = "") {
+	public function __construct($id, $title, $description = '', $placeholder = '') {
 		$this->id = $id;
 		$this->name = $title;
 		$this->description = $description;
@@ -165,10 +165,10 @@ abstract class WPCAModule_Base {
 		$data = get_post_custom_values(WPCACore::PREFIX . $this->id, $post_id);
 		if($data) {
 			$group_data[$this->id] = array(
-				"label"         => $this->name,
-				"placeholder"   => $this->placeholder,
-				"data"          => $this->_get_content(array('include' => $data)),
-				"default_value" => $this->default_value
+				'label'         => $this->name,
+				'placeholder'   => $this->placeholder,
+				'data'          => $this->_get_content(array('include' => $data)),
+				'default_value' => $this->default_value
 			);
 		}
 		return $group_data;
@@ -246,7 +246,7 @@ abstract class WPCAModule_Base {
 		$response = $this->ajax_get_content(array(
 			'paged' => $paged,
 			'search' => $search,
-			'item_object' => $_POST["action"]
+			'item_object' => $_POST['action']
 		));
 
 		//ECMAScript has no standard to guarantee

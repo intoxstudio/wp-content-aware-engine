@@ -27,7 +27,7 @@ class WPCAModule_bbpress extends WPCAModule_author {
 		parent::__construct();
 		$this->id = 'bb_profile';
 		$this->name = __('bbPress User Profiles',WPCA_DOMAIN);
-		$this->placeholder = __("All Profiles",WPCA_DOMAIN);
+		$this->placeholder = __('All Profiles',WPCA_DOMAIN);
 		$this->default_value = $this->id;
 		
 		}

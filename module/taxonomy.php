@@ -198,7 +198,7 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 			}
 			//Polylang module should later take advantage of taxonomy
 			if(defined('POLYLANG_VERSION')) {
-				unset($this->taxonomy_objects["language"]);
+				unset($this->taxonomy_objects['language']);
 			}
 		}
 		return $this->taxonomy_objects;
@@ -234,13 +234,13 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 
 			if($posts || isset($ids[$taxonomy->name])) {
 
-				$placeholder = "/".sprintf(__("%s Archives",WPCA_DOMAIN),$taxonomy->labels->singular_name);
+				$placeholder = '/'.sprintf(__('%s Archives',WPCA_DOMAIN),$taxonomy->labels->singular_name);
 				$placeholder = $taxonomy->labels->all_items.$placeholder;
 				
-				$group_data[$this->id."-".$taxonomy->name] = array(
-						"label" => $taxonomy->label,
+				$group_data[$this->id.'-'.$taxonomy->name] = array(
+						'label' => $taxonomy->label,
 						'placeholder' => $placeholder,
-						"default_value" => $taxonomy->name
+						'default_value' => $taxonomy->name
 				);
 
 				if($posts) {
@@ -253,7 +253,7 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 					foreach ($posts as $post) {
 						$retval[$post->$value_var] = $post->name;
 					}
-					$group_data[$this->id."-".$taxonomy->name]["data"] = $retval;
+					$group_data[$this->id.'-'.$taxonomy->name]['data'] = $retval;
 				}
 			}
 		}
@@ -269,9 +269,9 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 	 */
 	public function list_module($list) {
 		foreach($this->_get_taxonomies() as $taxonomy) {
-			$placeholder = "/".sprintf(__("%s Archives",WPCA_DOMAIN),$taxonomy->labels->singular_name);
+			$placeholder = '/'.sprintf(__('%s Archives',WPCA_DOMAIN),$taxonomy->labels->singular_name);
 			$placeholder = $taxonomy->labels->all_items.$placeholder;
-			$list[$this->id."-".$taxonomy->name] = array(
+			$list[$this->id.'-'.$taxonomy->name] = array(
 				'name' => $taxonomy->label,
 				'placeholder' => $placeholder,
 				'default_value' => $taxonomy->name
@@ -305,7 +305,7 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 			'search'         => ''
 		));
 
-		preg_match('/taxonomy-(.+)$/i', $args["item_object"], $matches);
+		preg_match('/taxonomy-(.+)$/i', $args['item_object'], $matches);
 		$args['item_object'] = isset($matches[1]) ? $matches[1] : "";
 
 		$taxonomy = get_taxonomy($args['item_object']);

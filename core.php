@@ -9,7 +9,7 @@ if (!defined('ABSPATH')) {
 	exit;
 }
 
-if(!class_exists("WPCACore")) {
+if(!class_exists('WPCACore')) {
 
 	$domain = explode('/',plugin_basename( __FILE__ ));
 	define('WPCA_DOMAIN',$domain[0]);
@@ -25,7 +25,7 @@ if(!class_exists("WPCACore")) {
 		 * Using class prefix instead of namespace
 		 * for PHP5.2 compatibility
 		 */
-		const CLASS_PREFIX         = "WPCA";
+		const CLASS_PREFIX         = 'WPCA';
 
 		/**
 		 * Prefix for data (keys) stored in database
@@ -84,7 +84,7 @@ if(!class_exists("WPCACore")) {
 		 */
 		public static function init() {
 
-			spl_autoload_register(array(__CLASS__,"_autoload_class_files"));
+			spl_autoload_register(array(__CLASS__,'_autoload_class_files'));
 
 			self::$type_manager = new WPCATypeManager();
 
@@ -100,8 +100,8 @@ if(!class_exists("WPCACore")) {
 					array(__CLASS__,'sync_group_untrashed'));
 				add_action('add_meta_boxes',
 					array(__CLASS__,'add_group_meta_box'),10,2);
-				add_action("wpca/modules/save-data",
-					array(__CLASS__,"save_condition_options"));
+				add_action('wpca/modules/save-data',
+					array(__CLASS__,'save_condition_options'));
 			
 				add_action('wp_ajax_wpca/add-rule',
 					array(__CLASS__,'ajax_update_group'));
@@ -417,7 +417,7 @@ if(!class_exists("WPCACore")) {
 				$wheres = array();
 				$i = 0;
 				foreach ($metas as $meta) {
-					$key = "m".++$i;
+					$key = 'm'.++$i;
 					$joins[] = "INNER JOIN $wpdb->postmeta $key ON $key.post_id = p.ID AND $key.meta_key = '{$meta["key"]}'";
 					$wheres[] = $key.'.meta_value '.$meta["compare"]." '".$meta["value"]."'";
 				}
@@ -489,21 +489,21 @@ if(!class_exists("WPCACore")) {
 				}
 				$post_type_obj = get_post_type_object($post->post_type);
 
-				$template = WPCAView::make("condition_options");
-				add_action("wpca/group/settings",array($template,'render'),-1,2);
+				$template = WPCAView::make('condition_options');
+				add_action('wpca/group/settings',array($template,'render'),-1,2);
 
-				$template = WPCAView::make("group_template",array(
+				$template = WPCAView::make('group_template',array(
 					'post_type'=> $post->post_type,
 					'options'  => apply_filters('wpca/modules/list',$options)
 				));
-				add_action("admin_footer",array($template,"render"));
+				add_action('admin_footer',array($template,'render'));
 
-				$template = WPCAView::make("condition_template",array(
+				$template = WPCAView::make('condition_template',array(
 					'id'=> 'condition'
 				));
-				add_action("admin_footer",array($template,"render"));
+				add_action('admin_footer',array($template,'render'));
 
-				$view = WPCAView::make("meta_box",array(
+				$view = WPCAView::make('meta_box',array(
 					'post_type'=> $post->post_type,
 					'nonce'    => wp_nonce_field(self::PREFIX.$post->ID, self::NONCE, true, false),
 					'options'  => $options
@@ -591,7 +591,7 @@ if(!class_exists("WPCACore")) {
 				if(!isset($_POST['current_id']) || 
 					!check_ajax_referer(self::PREFIX.$_POST['current_id'],'token',false)) {
 					$response = __('Unauthorized request',WPCA_DOMAIN);
-					throw new Exception("Forbidden",403);
+					throw new Exception('Forbidden',403);
 				}
 
 				//Make sure some rules are sent
@@ -599,7 +599,7 @@ if(!class_exists("WPCACore")) {
 					//Otherwise we delete group
 					if($_POST['id'] && wp_delete_post(intval($_POST['id']), true) === false) {
 						$response = __('Could not delete conditions',WPCA_DOMAIN);
-						throw new Exception("Internal Server Error",500);
+						throw new Exception('Internal Server Error',500);
 					}
 					$response['removed'] = true;
 				}
@@ -631,7 +631,7 @@ if(!class_exists("WPCACore")) {
 				wp_send_json($response);
 				
 			} catch(Exception $e) {
-				header("HTTP/1.1 ".$e->getCode()." ".$e->getMessage());
+				header('HTTP/1.1 '.$e->getCode().' '.$e->getMessage());
 				echo $response;
 				wp_die();
 			}
@@ -683,7 +683,7 @@ if(!class_exists("WPCACore")) {
 			$group_meta = array(
 				'_ca_autoselect' => 0
 			);
-			return apply_filters("wpca/condition/meta",$group_meta,$post_type);
+			return apply_filters('wpca/condition/meta',$group_meta,$post_type);
 		}
 
 		/**
@@ -705,9 +705,9 @@ if(!class_exists("WPCACore")) {
 			$i = 0;
 			foreach ($groups as $group) {
 				$data[$i] = array(
-					"id"         => $group->ID,
-					"status"     => $group->post_status,
-					"exposure"   => $group->menu_order,
+					'id'         => $group->ID,
+					'status'     => $group->post_status,
+					'exposure'   => $group->menu_order,
 					'conditions' => array()
 				);
 
@@ -733,8 +733,8 @@ if(!class_exists("WPCACore")) {
 			}
 
 			//Make sure to use packaged version
-			if(wp_script_is("select2","registered")) {
-				wp_deregister_script("select2");
+			if(wp_script_is('select2','registered')) {
+				wp_deregister_script('select2');
 			}
 
 			//Add to head to take priority
@@ -802,7 +802,7 @@ if(!class_exists("WPCACore")) {
 				$class = str_replace(self::CLASS_PREFIX, '', $class);
 				$class = self::str_replace_first('_', '/', $class);
 				$class = strtolower($class);
-				$file = WPCA_PATH . $class . ".php";
+				$file = WPCA_PATH . $class . '.php';
 				if(file_exists($file)) {
 					include($file);
 				}

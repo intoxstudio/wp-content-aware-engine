@@ -15,7 +15,7 @@
 	</div>
 	<div class="cas-group-new">
 		<select class="js-wpca-add-or">
-			<option value="0">-- <?php _e("Select content type",WPCA_DOMAIN); ?> --</option>
+			<option value="0">-- <?php _e('Select content type',WPCA_DOMAIN); ?> --</option>
 <?php
 			foreach ($options as $key => $value) {
 				echo '<option data-placeholder="'.$value['placeholder'].'" data-default="'.$value['default_value'].'" value="'.$key.'">'.$value['name'].'</option>';
