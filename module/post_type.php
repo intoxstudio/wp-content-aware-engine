@@ -130,7 +130,7 @@ class WPCAModule_post_type extends WPCAModule_Base {
 
 		$retval = array();
 		foreach ($posts as $post) {
-			$retval[$post->ID] = $post->post_title.$this->_post_states($post);
+			$retval[$post->ID] = $this->post_title($post);
 		}
 
 		return $retval;
@@ -185,7 +185,11 @@ class WPCAModule_post_type extends WPCAModule_Base {
 			$lookup = array_flip((array)$ids);
 			foreach($this->post_types() as $post_type) {
 				$post_type_obj = get_post_type_object($post_type);
-				$data = $this->_get_content(array('include' => $ids, 'posts_per_page' => -1, 'post_type' => $post_type, 'orderby' => 'title', 'order' => 'ASC'));
+				$data = $this->_get_content(array(
+					'include'        => $ids,
+					'posts_per_page' => -1,
+					'post_type'      => $post_type
+				));
 
 				if($data || isset($lookup[$post_type])) {
 
@@ -291,52 +295,43 @@ class WPCAModule_post_type extends WPCAModule_Base {
 	}
 
 	/**
-	 * Create module Backbone template
-	 * for administration
+	 * Get post title and state
 	 *
-	 * @since  2.0
-	 * @return void
-	 */
-	public function template_condition() {
-	}
-
-	/**
-	 * Get post states
-	 *
-	 * @since  1.0
-	 * @see    _post_states()
+	 * @since  3.7
 	 * @param  WP_Post  $post
 	 * @return string
 	 */
-	public function _post_states($post) {
+	public function post_title($post) {
 		$post_states = array();
 
-		if ( !empty($post->post_password) )
+		if ( !empty($post->post_password) ) {
 			$post_states['protected'] = __('Password protected');
-		if ( 'private' == $post->post_status)
-			$post_states['private'] = __('Private');
-		if ( 'draft' == $post->post_status)
-			$post_states['draft'] = __('Draft');
-		if ( 'pending' == $post->post_status)
-			/* translators: post state */
-			$post_states['pending'] = _x('Pending', 'post state');
-		if ( is_sticky($post->ID) )
-			$post_states['sticky'] = __('Sticky');
-		if ( 'future' === $post->post_status ) {
-			$post_states['scheduled'] = __( 'Scheduled' );
 		}
- 
-		/**
-		 * Filter the default post display states used in the posts list table.
-		 *
-		 * @since 2.8.0
-		 *
-		 * @param array $post_states An array of post display states.
-		 * @param int   $post        The post ID.
-		 */
+
+		if ( is_sticky($post->ID) ) {
+			$post_states['sticky'] = __('Sticky');
+		}
+
+		switch($post->post_status) {
+			case 'private':
+				$post_states['private'] = __('Private');
+				break;
+			case 'draft':
+				$post_states['draft'] = __('Draft');
+				break;
+			case 'pending':
+				/* translators: post state */
+				$post_states['pending'] = _x('Pending', 'post state');
+				break;
+			case 'scheduled':
+				$post_states['scheduled'] = __( 'Scheduled' );
+				break;
+		}
+
+		$post_title = $post->post_title ? $post->post_title : __('(no title)');
 		$post_states = apply_filters( 'display_post_states', $post_states, $post );
 
-		return $post_states ? " (".implode(", ", $post_states).")" : "";
+		return $post_title . ' ' . ($post_states ? " (".implode(", ", $post_states).")" : "");
 	}
 
 	/**
