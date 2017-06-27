@@ -224,7 +224,12 @@ abstract class WPCAModule_Base {
 	 * @return  string
 	 */
 	public function ajax_get_content($args) {
-		return '';
+		$args = wp_parse_args($args, array(
+			'paged'          => 1,
+			'search'         => ''
+		));
+
+		return $this->_get_content($args);
 	}
 
 	/**

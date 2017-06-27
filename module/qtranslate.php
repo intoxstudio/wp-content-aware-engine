@@ -92,19 +92,4 @@ class WPCAModule_qtranslate extends WPCAModule_Base {
 		return $langs;
 	}
 
-	/**
-	 * Get content in JSON
-	 *
-	 * @since  2.0
-	 * @param  array  $args
-	 * @return array
-	 */
-	public function ajax_get_content($args) {
-		$args = wp_parse_args($args, array(
-			'paged'          => 1,
-			'search'         => ''
-		));
-
-		return $this->_get_content($args);
-	}
 }

@@ -80,7 +80,7 @@ class WPCAModule_pods extends WPCAModule_Base {
 				$pods[$result['id']] = $result['name'];
 			}
 		}
-		if(isset($args['search']) && $args['search']) {
+		if($args['search']) {
 			$this->search_string = $args['search'];
 			$pods = array_filter($pods,array($this,'_filter_search'));
 		}
@@ -97,22 +97,6 @@ class WPCAModule_pods extends WPCAModule_Base {
 	 */
 	protected function _filter_search($value) {
 		return mb_stripos($value, $this->search_string) !== false;
-	}
-
-	/**
-	 * Get content in JSON
-	 *
-	 * @since  2.0
-	 * @param  array  $args
-	 * @return array
-	 */
-	public function ajax_get_content($args) {
-		$args = wp_parse_args($args, array(
-			'paged'          => 1,
-			'search'         => $args['search']
-		));
-
-		return $this->_get_content($args);
 	}
 
 }

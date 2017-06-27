@@ -128,7 +128,12 @@ class WPCAModule_post_type extends WPCAModule_Base {
 			$posts = $query->posts;
 		}
 
-		return $posts;
+		$retval = array();
+		foreach ($posts as $post) {
+			$retval[$post->ID] = $post->post_title.$this->_post_states($post);
+		}
+
+		return $retval;
 	}
 
 	/**
@@ -195,11 +200,7 @@ class WPCAModule_post_type extends WPCAModule_Base {
 					);
 
 					if($data) {
-						$posts = array();
-						foreach ($data as $post) {
-							$posts[$post->ID] = $post->post_title.$this->_post_states($post);
-						}
-						$group_data[$this->id.'-'.$post_type]['data'] = $posts;
+						$group_data[$this->id.'-'.$post_type]['data'] = $data;
 					}
 				}
 			}
@@ -260,20 +261,10 @@ class WPCAModule_post_type extends WPCAModule_Base {
 		if(!$post_type) {
 			return false;
 		}
+		$args['post_type'] = $post_type->name;
+		unset($args['item_object']);
 
-		$posts = $this->_get_content(array(
-			'post_type' => $post_type->name,
-			'orderby'   => 'title',
-			'order'     => 'ASC',
-			'paged'     => $args['paged'],
-			'search'    => $args['search']
-		));
-
-		$retval = array();
-		foreach ($posts as $post) {
-			$retval[$post->ID] = $post->post_title.$this->_post_states($post);
-		}
-		return $retval;
+		return $this->_get_content($args);
 
 	}
 

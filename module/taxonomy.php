@@ -158,30 +158,39 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 	 */
 	protected function _get_content($args = array()) {
 		$args = wp_parse_args($args, array(
-			'include'  => '',
-			'taxonomy' => 'category',
-			'number'   => 20,
-			'orderby'  => 'name',
-			'order'    => 'ASC',
-			'offset'   => 0,
-			'search'   => ''
+			'include'                => '',
+			'taxonomy'               => 'category',
+			'number'                 => 20,
+			'orderby'                => 'name',
+			'order'                  => 'ASC',
+			'paged'                  => 1,
+			'search'                 => '',
+			'hide_empty'             => false,
+			'update_term_meta_cache' => false
 		));
-		extract($args);
-		$total_items = wp_count_terms($taxonomy,array('hide_empty'=>false));
-		$terms = array();
+
+		$args['offset'] = ($args['paged']-1)*$args['number'];
+		unset($args['paged']);
+
+		$total_items = wp_count_terms($args['taxonomy'],array(
+			'hide_empty' => $args['hide_empty']
+		));
+
+		$retval = array();
 		if($total_items) {
-			$terms = get_terms($taxonomy, array(
-				'number'     => $number,
-				'hide_empty' => false,
-				'include'    => $include,
-				'offset'     => ($offset*$number),
-				'orderby'    => $orderby,
-				'order'      => $order,
-				'search'     => $args['search'],
-				'update_term_meta_cache' => false
-			));
+			$terms = get_terms($args['taxonomy'],$args);
+			$taxonomy = get_taxonomy($args['taxonomy']);
+
+			//Hierarchical taxonomies use ids instead of slugs
+			//see http://codex.wordpress.org/Function_Reference/wp_set_post_objects
+			$value_var = ($taxonomy->hierarchical ? 'term_id' : 'slug');
+
+			foreach ($terms as $term) {
+				//term names are encoded
+				$retval[$term->$value_var] = htmlspecialchars_decode($term->name);
+			}
 		}
-		return $terms;
+		return $retval;
 	}
 
 	/**
@@ -304,26 +313,10 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 			return false;
 		}
 
-		$posts = $this->_get_content(array(
-			'taxonomy' => $args['item_object'],
-			'orderby'  => 'name',
-			'order'    => 'ASC',
-			'offset'   => $args['paged']-1,
-			'search'   => $args['search']
-		));
+		$args['taxonomy'] = $args['item_object'];
+		unset($args['item_object']);
 
-		$retval = array();
-
-		//Hierarchical taxonomies use ids instead of slugs
-		//see http://codex.wordpress.org/Function_Reference/wp_set_post_objects
-		$value_var = ($taxonomy->hierarchical ? 'term_id' : 'slug');
-
-		foreach ($posts as $post) {
-			//term names are encoded
-			$retval[$post->$value_var] = htmlspecialchars_decode($post->name);
-		}
-		return $retval;
-
+		return $this->_get_content($args);
 	}
 
 	/**
