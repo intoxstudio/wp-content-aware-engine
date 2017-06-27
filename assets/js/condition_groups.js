@@ -217,7 +217,10 @@ var CAE = CAE || {};
 					return;
 				}
 				var model = this.model,
-					data = this.model.get("values");
+					data = this.model.get("values"),
+					//some post type/taxonomy translations use special entities
+					//todo:consider decoding in backend
+					placeholder = $('<div></div>').html(model.get('placeholder')).text();
 
 				$elem.select2({
 					more: true,
@@ -226,7 +229,7 @@ var CAE = CAE || {};
 					searchTimer: null,
 					type:model.get('module'),
 					theme:'wpca',
-					placeholder:model.get('placeholder'),
+					placeholder:placeholder,
 					minimumInputLength: 0,
 					closeOnSelect: true,//false not working properly when hiding selected
 					width:"100%",
