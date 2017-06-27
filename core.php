@@ -101,7 +101,7 @@ if(!class_exists('WPCACore')) {
 				add_action('add_meta_boxes',
 					array(__CLASS__,'add_group_meta_box'),10,2);
 				add_action('wpca/modules/save-data',
-					array(__CLASS__,'save_condition_options'));
+					array(__CLASS__,'save_condition_options'),10,3);
 			
 				add_action('wp_ajax_wpca/add-rule',
 					array(__CLASS__,'ajax_update_group'));
@@ -645,8 +645,8 @@ if(!class_exists('WPCACore')) {
 		 * @param  int  $group_id
 		 * @return void
 		 */
-		public static function save_condition_options($group_id) {
-			$meta_keys = self::get_condition_meta_keys(get_post_type($group_id));
+		public static function save_condition_options($group_id,$post_type) {
+			$meta_keys = self::get_condition_meta_keys($post_type);
 			foreach ($meta_keys as $key => $default_value) {
 				$value = isset($_POST[$key]) ? $_POST[$key] : false;
 				if($value) {
