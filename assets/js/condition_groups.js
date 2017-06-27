@@ -229,6 +229,7 @@ var CAE = CAE || {};
 					searchTimer: null,
 					type:model.get('module'),
 					theme:'wpca',
+					dir:WPCA.text_direction,
 					placeholder:placeholder,
 					minimumInputLength: 0,
 					closeOnSelect: true,//false not working properly when hiding selected

@@ -779,7 +779,8 @@ if(!class_exists('WPCACore')) {
 				'unsaved'       => __('Conditions have unsaved changes. Do you want to continue and discard these changes?',WPCA_DOMAIN),
 				'groups'        => $data,
 				'meta_default'  => $group_meta,
-				'post_type'     => $post_type
+				'post_type'     => $post_type,
+				'text_direction' => is_rtl() ? 'rtl' : 'ltr'
 			));
 			wp_enqueue_style(self::PREFIX.'condition-groups');
 
