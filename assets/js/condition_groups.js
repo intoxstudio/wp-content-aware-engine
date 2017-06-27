@@ -656,7 +656,7 @@ var CAE = CAE || {};
 	var wpca_admin = {
 
 		nonce: $('#_ca_nonce').val(),
-		sidebarID: $('#current_sidebar').val(),
+		sidebarID: $('#post_ID').val(),
 		alert: null,
 		wpcaDataAdapter:$.fn.select2.amd.require('select2/data/wpcaAdapter'),
 

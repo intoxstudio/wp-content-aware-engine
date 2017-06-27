@@ -6,7 +6,6 @@
  */
 ?>
 <?php echo $nonce; ?>
-<input type="hidden" id="current_sidebar" value="<?php the_ID(); ?>" />
 <div id="cas-groups">
 	<?php do_action('wpca/meta_box/before',$post_type); ?>
 	<ul data-vm="collection:$collection"></ul>

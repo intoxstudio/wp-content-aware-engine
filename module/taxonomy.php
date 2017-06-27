@@ -281,16 +281,6 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 	}
 
 	/**
-	 * Create module Backbone template
-	 * for administration
-	 *
-	 * @since  2.0
-	 * @return void
-	 */
-	public function template_condition() {
-	}
-
-	/**
 	 * Get content in JSON
 	 *
 	 * @since   1.0

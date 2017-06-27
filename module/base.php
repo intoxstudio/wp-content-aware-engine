@@ -264,17 +264,6 @@ abstract class WPCAModule_Base {
 	}
 
 	/**
-	 * Create module Backbone template
-	 * for administration
-	 *
-	 * @since  2.0
-	 * @return void
-	 */
-	public function template_condition() {
-
-	}
-
-	/**
 	 * Destructor
 	 *
 	 * @since 4.0

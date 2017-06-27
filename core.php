@@ -498,9 +498,7 @@ if(!class_exists('WPCACore')) {
 				));
 				add_action('admin_footer',array($template,'render'));
 
-				$template = WPCAView::make('condition_template',array(
-					'id'=> 'condition'
-				));
+				$template = WPCAView::make('condition_template');
 				add_action('admin_footer',array($template,'render'));
 
 				$view = WPCAView::make('meta_box',array(
@@ -783,11 +781,6 @@ if(!class_exists('WPCACore')) {
 				'text_direction' => is_rtl() ? 'rtl' : 'ltr'
 			));
 			wp_enqueue_style(self::PREFIX.'condition-groups');
-
-			foreach (self::$type_manager->get(get_post_type())->get_all() as $module) {
-				add_action('admin_footer',
-					array($module,'template_condition'),1);
-			}
 
 		}
 
