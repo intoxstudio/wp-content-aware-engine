@@ -247,9 +247,9 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 				$placeholder = $taxonomy->labels->all_items.$placeholder;
 				
 				$group_data[$this->id.'-'.$taxonomy->name] = array(
-						'label' => $taxonomy->label,
-						'placeholder' => $placeholder,
-						'default_value' => $taxonomy->name
+					'label'         => $taxonomy->label,
+					'placeholder'   => $placeholder,
+					'default_value' => $taxonomy->name
 				);
 
 				if($posts) {
@@ -281,8 +281,8 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 			$placeholder = '/'.sprintf(__('%s Archives',WPCA_DOMAIN),$taxonomy->labels->singular_name);
 			$placeholder = $taxonomy->labels->all_items.$placeholder;
 			$list[$this->id.'-'.$taxonomy->name] = array(
-				'name' => $taxonomy->label,
-				'placeholder' => $placeholder,
+				'name'          => $taxonomy->label,
+				'placeholder'   => $placeholder,
 				'default_value' => $taxonomy->name
 			);
 		}
