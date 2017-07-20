@@ -277,7 +277,7 @@ if(!class_exists('WPCACore')) {
 		public static function get_conditions($post_type) {
 			global $wpdb, $wp_query, $post;
 			
-			if((!$wp_query->query && !$post) || is_admin() || post_password_required())
+			if((!$wp_query->query && !$post) || is_admin())
 				return array();
 			
 			// Return cache if present
@@ -403,7 +403,7 @@ if(!class_exists('WPCACore')) {
 				return self::$post_cache[$post_type];
 			}
 
-			if(!self::$type_manager->has($post_type) || (!$wp_query->query && !$post) || is_admin() || post_password_required())
+			if(!self::$type_manager->has($post_type) || (!$wp_query->query && !$post) || is_admin())
 				return false;
 
 			$valid = self::get_conditions($post_type);
