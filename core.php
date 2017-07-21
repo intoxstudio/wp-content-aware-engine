@@ -13,7 +13,6 @@ if(!class_exists('WPCACore')) {
 
 	$domain = explode('/',plugin_basename( __FILE__ ));
 	define('WPCA_DOMAIN',$domain[0]);
-	//define('WPCA_DOMAIN','wp-content-aware-engine');
 	define('WPCA_PATH',plugin_dir_path(__FILE__));
 
 	/**
