@@ -61,7 +61,7 @@ if(!class_exists('WPCATypeManager')) {
 				'polylang'      => defined('POLYLANG_VERSION'),
 				'qtranslate'    => defined('QTX_VERSION'),
 				'transposh'     => defined('TRANSPOSH_PLUGIN_VER'),
-				'wpml'          => class_exists('SitePress')
+				'wpml'          => defined('ICL_SITEPRESS_VERSION')
 			);
 
 			foreach($modules as $name => $bool) {
