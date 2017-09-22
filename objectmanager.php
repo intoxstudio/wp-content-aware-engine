@@ -13,7 +13,7 @@ if(!class_exists('WPCAObjectManager')) {
 	/**
 	 * Manage a list of objects nicely
 	 */
-	class WPCAObjectManager {
+	class WPCAObjectManager implements IteratorAggregate {
 
 		/**
 		 * List of objects
@@ -120,6 +120,16 @@ if(!class_exists('WPCAObjectManager')) {
 		 */
 		public function count() {
 			return count($this->objects);
+		}
+
+		/**
+		 * Make objects traversable
+		 *
+		 * @since  4.2
+		 * @return ArrayIterator
+		 */
+		public function getIterator() {
+			return new ArrayIterator($this->objects);
 		}
 	}
 }
