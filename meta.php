@@ -52,6 +52,12 @@ if(!class_exists('WPCAMeta')) {
 		private $input_list;
 
 		/**
+		 * Callback to sanitize data before save
+		 * @var func
+		 */
+		private $sanitizer;
+
+		/**
 		 * Constructor
 		 *
 		 * @since 1.0
@@ -62,7 +68,8 @@ if(!class_exists('WPCAMeta')) {
 			$default_value = '',
 			$input_type    = 'text',
 			$input_list    = array(),
-			$description   = ''
+			$description   = '',
+			$sanitizer      = ''
 		) {
 			$this->id            = $id;
 			$this->title         = $title;
@@ -70,6 +77,7 @@ if(!class_exists('WPCAMeta')) {
 			$this->input_type    = $input_type;
 			$this->input_list    = $input_list;
 			$this->description   = $description;
+			$this->sanitizer     = $sanitizer;
 		}
 
 		/**
@@ -147,7 +155,11 @@ if(!class_exists('WPCAMeta')) {
 		 * @return void
 		 */
 		public function update($post_id,$value) {
-			update_post_meta($post_id, WPCACore::PREFIX . $this->id, $value);
+			if($this->input_type != 'multi') {
+				update_post_meta($post_id, WPCACore::PREFIX . $this->id, $value);
+			} else {
+				add_post_meta($post_id, WPCACore::PREFIX . $this->id, $value);
+			}
 		}
 
 		/**
@@ -158,8 +170,46 @@ if(!class_exists('WPCAMeta')) {
 		 * @param  string  $value
 		 * @return void
 		 */
-		public function delete($post_id,$value) {
+		public function delete($post_id,$value = '') {
 			delete_post_meta($post_id, WPCACore::PREFIX . $this->id, $value);
+		}
+
+		/**
+		 * Save data based on POST
+		 *
+		 * @since  4.2
+		 * @param  int     $post_id
+		 * @param  string  $value
+		 * @return void
+		 */
+		public function save($post_id) {
+			$value = isset($_POST[$this->id]) ? $_POST[$this->id] : '';
+			if($this->sanitizer && is_callable($this->sanitizer)) {
+				$value = call_user_func($this->sanitizer,$value);
+			}
+			if($this->input_type != 'multi') {
+				//value can be 0 and valid
+				if($value != '') {
+					$this->update($post_id,$value);
+				} elseif ($this->get_data($post_id,false,true) != '') {
+					$this->delete($post_id);
+				}
+			} else {
+				$old = array_flip($this->get_data($post_id,false,false));
+				if(is_array($value)) {
+					foreach ($value as $meta) {
+						if(isset($old[$meta])) {
+							unset($old[$meta]);
+						} else {
+							$this->update($post_id,$meta);
+						}
+					}
+				}
+				
+				foreach ($old as $meta => $v) {
+					$this->delete($post_id,$meta);
+				}
+			}
 		}
 
 		/**
