@@ -91,8 +91,8 @@ class WPCAModule_polylang extends WPCAModule_Base {
 	 * @return array             
 	 */
 	public function remove_sidebar_multilingual($post_types) {
-		foreach(WPCACore::post_types()->get_all() as $post_type) {
-			unset($post_types[$post_type->name]);
+		foreach(WPCACore::types() as $post_type => $module) {
+			unset($post_types[$post_type]);
 		}
 		return $post_types;
 	}

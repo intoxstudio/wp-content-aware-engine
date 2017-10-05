@@ -43,9 +43,6 @@ if(!class_exists('WPCATypeManager')) {
 		 */
 		public function set_modules() {
 
-			foreach (WPCACore::post_types()->get_all() as $key => $post_type) {
-				$this->add($key);
-			}
 			do_action('wpca/types/init',$this);
 
 			$modules = array(

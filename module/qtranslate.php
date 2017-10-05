@@ -33,7 +33,7 @@ class WPCAModule_qtranslate extends WPCAModule_Base {
 			global $q_config;
 			//Disable multilanguage
 			if(is_array($q_config['post_type_excluded'])) {
-				foreach (WPCACore::post_types()->get_all() as $name => $post_type) {
+				foreach (WPCACore::types() as $name => $modules) {
 					$q_config['post_type_excluded'][] = $name;
 				}
 				$q_config['post_type_excluded'][] = WPCACore::TYPE_CONDITION_GROUP;

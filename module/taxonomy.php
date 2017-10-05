@@ -52,9 +52,11 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 		add_action('created_term',
 			array($this,'term_ancestry_check'),10,3);
 
-		foreach ($this->_get_taxonomies() as $taxonomy) {
-			add_action('wp_ajax_wpca/module/'.$this->id.'-'.$taxonomy->name,
-				array($this,'ajax_print_content'));
+		if(is_admin()) {
+			foreach ($this->_get_taxonomies() as $taxonomy) {
+				add_action('wp_ajax_wpca/module/'.$this->id.'-'.$taxonomy->name,
+					array($this,'ajax_print_content'));
+			}
 		}
 	}
 	
@@ -205,7 +207,6 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 			foreach (get_taxonomies(array('public' => true), 'objects') as $tax) {
 				$this->taxonomy_objects[$tax->name] = $tax;
 			}
-			//Polylang module should later take advantage of taxonomy
 			if(defined('POLYLANG_VERSION')) {
 				unset($this->taxonomy_objects['language']);
 			}

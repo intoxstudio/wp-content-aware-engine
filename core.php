@@ -63,7 +63,6 @@ if(!class_exists('WPCACore')) {
 		 * Post Types that use the engine
 		 * @var WPCAPostTypeManager
 		 */
-		private static $post_type_manager;
 		private static $type_manager;
 
 		/**
@@ -120,10 +119,7 @@ if(!class_exists('WPCACore')) {
 		 * @return  WPCAPostTypeManager
 		 */
 		public static function post_types() {
-			if(!self::$post_type_manager) {
-				self::$post_type_manager = new WPCAPostTypeManager();
-			}
-			return self::$post_type_manager;
+			return self::$type_manager;
 		}
 
 		/**
@@ -392,8 +388,9 @@ if(!class_exists('WPCACore')) {
 				return self::$post_cache[$post_type];
 			}
 
-			if(!self::$type_manager->has($post_type) || (!$wp_query->query && !$post) || is_admin())
+			if(!self::$type_manager->has($post_type) || (!$wp_query->query && !$post) || is_admin()) {
 				return false;
+			}
 
 			$valid = self::get_conditions($post_type);
 
