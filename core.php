@@ -127,16 +127,6 @@ if(!class_exists('WPCACore')) {
 		}
 
 		/**
-		 * Content Aware Sidebars 3.5.2 rely on this
-		 *
-		 * @deprecated  4.0
-		 * @return WPTypeManager
-		 */
-		public static function modules() {
-			return self::$type_manager->get('sidebar');
-		}
-
-		/**
 		 * Get type manager
 		 * 
 		 * @since   4.0

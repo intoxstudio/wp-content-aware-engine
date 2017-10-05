@@ -138,25 +138,6 @@ class WPCAModule_post_type extends WPCAModule_Base {
 
 	/**
 	 * Get registered public post types
-	 * Content Aware Sidebars 3.5.2 relies on this
-	 *
-	 * @deprecated 4.0
-	 * @since   1.0
-	 * @return  array
-	 */
-	public function _post_types() {
-		if(!$this->_post_types_obj) {
-			// List public post types
-			$this->_post_types_obj = new WPCAObjectManager();
-			foreach (get_post_types(array('public' => true), 'objects') as $post_type) {
-				$this->_post_types_obj->add($post_type,$post_type->name);
-			}
-		}
-		return $this->_post_types_obj;
-	}
-
-	/**
-	 * Get registered public post types
 	 *
 	 * @since   4.0
 	 * @return  array

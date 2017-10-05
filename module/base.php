@@ -17,7 +17,7 @@ if (!defined('ABSPATH')) {
 abstract class WPCAModule_Base {
 	
 	/**
-	 * Module idenfification
+	 * Module identification
 	 * 
 	 * @var string
 	 */
