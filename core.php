@@ -280,12 +280,12 @@ if(!class_exists('WPCACore')) {
 
 			$modules = self::$type_manager->get($post_type)->get_all();
 
-			foreach (self::$type_manager->get_all() as $key => $type) {
-				if($key == $post_type) {
+			foreach (self::$type_manager as $other_type => $other_modules) {
+				if($other_type == $post_type) {
 					continue;
 				}
-				if($type->get_all() === $modules) {
-					$cache[] = $key;
+				if($other_modules->get_all() === $modules) {
+					$cache[] = $other_type;
 				}
 			}
 
@@ -318,6 +318,7 @@ if(!class_exists('WPCACore')) {
 			$where[] = "p.menu_order ".(is_archive() || is_home() ? '>=' : '<=')." 1";
 				
 			//Syntax changed in MySQL 5.5 and MariaDB 10.0 (reports as version 5.5)
+			//todo: this might not be needed anymore?
 			$wpdb->query('SET'.(version_compare($wpdb->db_version(), '5.5', '>=') ? ' SESSION' : ' OPTION').' SQL_BIG_SELECTS = 1');
 
 			$groups_in_context = $wpdb->get_results(
@@ -719,6 +720,7 @@ if(!class_exists('WPCACore')) {
 			//Make sure to use packaged version
 			if(wp_script_is('select2','registered')) {
 				wp_deregister_script('select2');
+				wp_deregister_style('select2');
 			}
 
 			//Add to head to take priority
