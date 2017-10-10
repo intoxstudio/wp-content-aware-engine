@@ -13,7 +13,7 @@ if (!defined('ABSPATH')) {
  * Version of this WPCA
  * @var string
  */
-$this_wpca_version = '4.1';
+$this_wpca_version = '4.2';
 
 /**
  * Class to make sure the latest
