@@ -630,7 +630,7 @@ var CAE = CAE || {};
 	);
 
 	var AutoSaver = {
-		treshold: 3000,
+		treshold: 2000,
 		timerQueue: {},
 		start: function(view) {
 			console.log("autosave: start " + view.cid);
