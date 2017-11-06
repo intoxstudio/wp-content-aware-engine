@@ -303,7 +303,7 @@ if(!class_exists('WPCACore')) {
 				}
 			}
 
-			// Check if there are any rules for this type of content
+			// Check if there are any conditions for current content
 			if(empty($where))
 				return array();
 
@@ -341,28 +341,30 @@ if(!class_exists('WPCACore')) {
 			//Force update of meta cache to prevent lazy loading
 			update_meta_cache('post',array_keys($groups_in_context+$groups_negated));
 			
+			//condition group => type
 			$valid = array();
-			foreach($groups_in_context as $key => $sidebar) {
-				$valid[$sidebar->ID] = $sidebar->post_parent;
+			foreach($groups_in_context as $group) {
+				$valid[$group->ID] = $group->post_parent;
 			}
 
-			//Exclude sidebars that have unrelated content in same group
+			//Exclude types that have unrelated content in same group
 			foreach ($excluded as $module) {
 				$valid = $module->filter_excluded_context($valid);
 			}
 
-			//Filter negated sidebars
+			//Filter negated groups
+			//type => group
 			$handled_already = array_flip($valid);
-			foreach($groups_negated as $sidebar) {
-				if(isset($valid[$sidebar->ID])) {
-					unset($valid[$sidebar->ID]);
+			foreach($groups_negated as $group) {
+				if(isset($valid[$group->ID])) {
+					unset($valid[$group->ID]);
 				} else {
-					$valid[$sidebar->ID] = $sidebar->post_parent;
+					$valid[$group->ID] = $group->post_parent;
 				}
-				if(isset($handled_already[$sidebar->post_parent])) {
-					unset($valid[$sidebar->ID]);
+				if(isset($handled_already[$group->post_parent])) {
+					unset($valid[$group->ID]);
 				}
-				$handled_already[$sidebar->post_parent] = 1;
+				$handled_already[$group->post_parent] = 1;
 			}
 
 			foreach ($cache as $cache_type) {
