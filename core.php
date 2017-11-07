@@ -304,8 +304,9 @@ if(!class_exists('WPCACore')) {
 			}
 
 			// Check if there are any conditions for current content
-			if(empty($where))
+			if(empty($where)) {
 				return array();
+			}
 
 			$post_status = array(
 				self::STATUS_PUBLISHED,
@@ -400,17 +401,6 @@ if(!class_exists('WPCACore')) {
 			self::$post_cache[$post_type] = array();
 
 			if($valid) {
-
-				$metas = array();
-				$joins = array();
-				$wheres = array();
-				$i = 0;
-				foreach ($metas as $meta) {
-					$key = 'm'.++$i;
-					$joins[] = "INNER JOIN $wpdb->postmeta $key ON $key.post_id = p.ID AND $key.meta_key = '{$meta["key"]}'";
-					$wheres[] = $key.'.meta_value '.$meta["compare"]." '".$meta["value"]."'";
-				}
-
 				$results = $wpdb->get_results("
 					SELECT
 						p.ID,
