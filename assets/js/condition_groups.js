@@ -240,7 +240,10 @@ var CAE = CAE || {};
 							return WPCA.noResults;
 						},
 						searching: function(){
-							return WPCA.searching+"...";
+							return WPCA.searching+'...';
+						},
+						loadingMore: function() {
+							return WPCA.loadingMore+'...';
 						}
 					},
 					nextSearchTerm: function(selected, currentTerm) {

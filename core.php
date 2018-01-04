@@ -727,7 +727,7 @@ if(!class_exists('WPCACore')) {
 			wp_localize_script(self::PREFIX.'condition-groups', 'WPCA', array(
 				'searching'     => __('Searching',WPCA_DOMAIN),
 				'noResults'     => __('No results found.',WPCA_DOMAIN),
-				'targetNegate'  => __('Target all but this context',WPCA_DOMAIN),
+				'loadingMore'   => __('Loading more results',WPCA_DOMAIN),
 				'unsaved'       => __('Conditions have unsaved changes. Do you want to continue and discard these changes?',WPCA_DOMAIN),
 				'groups'        => $data,
 				'meta_default'  => $group_meta,
