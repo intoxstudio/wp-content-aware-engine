@@ -179,21 +179,78 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 			'hide_empty' => $args['hide_empty']
 		));
 
+		$start = $args['offset'];
+		$end = $start + $args['number'];
+		$walk_tree = false;
 		$retval = array();
+
 		if($total_items) {
-			$terms = get_terms($args['taxonomy'],$args);
 			$taxonomy = get_taxonomy($args['taxonomy']);
 
-			//Hierarchical taxonomies use ids instead of slugs
-			//see http://codex.wordpress.org/Function_Reference/wp_set_post_objects
-			$value_var = ($taxonomy->hierarchical ? 'term_id' : 'slug');
+			if($taxonomy->hierarchical && !$args['search'] && !$args['include']) {
+				
+				$args['number'] = 0;
+				$args['offset'] = 0;
 
-			foreach ($terms as $term) {
-				//term names are encoded
-				$retval[$term->$value_var] = htmlspecialchars_decode($term->name);
+				$walk_tree = true;
+
+			}
+			
+			$terms = get_terms($args['taxonomy'],$args);
+
+			if($walk_tree) {
+				$sorted_terms = array();
+				foreach ($terms as $term) {
+					$sorted_terms[$term->parent][] = $term;
+				}
+				$this->_walk_tree($sorted_terms,$sorted_terms[0],0,$start,$end,0,$retval);
+			} else {
+				//Hierarchical taxonomies use ids instead of slugs
+				//see http://codex.wordpress.org/Function_Reference/wp_set_post_objects
+				$value_var = ($taxonomy->hierarchical ? 'term_id' : 'slug');
+
+				foreach ($terms as $term) {
+					//term names are encoded
+					$retval[$term->$value_var] = htmlspecialchars_decode($term->name);
+				}
 			}
 		}
 		return $retval;
+	}
+
+	/**
+	 *  Get hierarchical content with level param
+	 *
+	 * @since  3.7.2
+	 * @param  array  $all_terms
+	 * @param  array  $terms
+	 * @param  int    $i
+	 * @param  int    $start
+	 * @param  int    $end
+	 * @param  int    $level
+	 * @param  array  &$retval
+	 * @return void
+	 */
+	protected function _walk_tree($all_terms,$terms,$i,$start,$end,$level,&$retval) {
+		foreach ($terms as $term) {
+			if ( $i >= $end ) {
+				break;
+			}
+
+			if ( $i >= $start ) {
+				$retval[] = array(
+					'id' => $term->term_id,
+					'text' => htmlspecialchars_decode($term->name),
+					'level' => $level
+				);
+			}
+
+			$i++;
+
+			if ( isset( $all_terms[$term->term_id] ) ) {
+				$this->_walk_tree( $all_terms, $all_terms[$term->term_id], $i, $start, $end, $level + 1, $retval );
+			}
+		}
 	}
 
 	/**

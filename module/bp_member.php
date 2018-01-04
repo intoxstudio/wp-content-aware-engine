@@ -64,14 +64,23 @@ class WPCAModule_bp_member extends WPCAModule_Base {
 		}
 
 		$content = array();
+		$is_search = isset($args["search"]) && $args["search"];
 
 		if(isset($bp->members->nav)) {
 
 			foreach($bp->members->nav->get_item_nav() as $item) {
-				$content[$item->slug] = $item->name;
+				$content[$item->slug] = array(
+					'id'   => $item->slug,
+					'text' => $item->name
+				);
 				if($item->children) {
+					$level = $is_search ? 0 : 1;
 					foreach ($item->children as $child_item) {
-						$content[$item->slug."-".$child_item->slug] = $child_item->name;
+						$content[$item->slug."-".$child_item->slug] = array(
+							'text'  => $child_item->name,
+							'id'    => $item->slug."-".$child_item->slug,
+							'level' => $level
+						);
 					}
 				}
 			}
@@ -80,11 +89,11 @@ class WPCAModule_bp_member extends WPCAModule_Base {
 		if(isset($args['include'])) {
 			$content = array_intersect_key($content,array_flip($args['include']));
 		}
-		if(isset($args["search"]) && $args["search"]) {
+		if($is_search) {
 			$this->search_string = $args["search"];
 			$content = array_filter($content,array($this,"_filter_search"));
 		}
-		
+
 		return $content;
 	}
 
@@ -96,7 +105,7 @@ class WPCAModule_bp_member extends WPCAModule_Base {
 	 * @return boolean
 	 */
 	protected function _filter_search($value) {
-		return mb_stripos($value, $this->search_string) !== false;
+		return mb_stripos($value['text'], $this->search_string) !== false;
 	}
 	
 	/**

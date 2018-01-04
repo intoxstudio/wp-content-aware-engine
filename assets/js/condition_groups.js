@@ -249,6 +249,12 @@ var CAE = CAE || {};
 					nextSearchTerm: function(selected, currentTerm) {
 						return currentTerm;
 					},
+					templateResult: function(item) {
+						if(!item.level) {
+							return item.text;
+						}
+						return $('<span class="wpca-level-'+item.level+'">'+item.text+'</span>');
+					},
 					data: data,
 					dataAdapter: wpca_admin.wpcaDataAdapter,
 					ajax:{}
