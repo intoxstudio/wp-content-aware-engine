@@ -260,10 +260,14 @@ abstract class WPCAModule_Base {
 		//todo: fix in each module
 		$fix_response = array();
 		foreach ($response as $id => $title) {
-			$fix_response[] = array(
-				'id' => $id,
-				'text' => $title
-			);
+			if(!isset($title['id'])) {
+				$fix_response[] = array(
+					'id'   => $id,
+					'text' => $title
+				);
+			} else {
+				$fix_response[] = $title;
+			}
 		}
 
 		wp_send_json($fix_response);

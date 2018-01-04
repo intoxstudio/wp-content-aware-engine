@@ -77,36 +77,22 @@ class WPCAModule_author extends WPCAModule_Base {
 
 		if($args['search']) {
 			$args['search'] = '*'.$args['search'].'*';
-			//display_name does not seem to be recognized, add it anyway
 			$args['search_columns'] = array( 'user_nicename', 'user_login', 'display_name' );
-			add_filter( 'user_search_columns',
-				array($this,'filter_search_column'), 10, 3 );
 		}
 
 		$user_query = new WP_User_Query(  $args );
 
 		$author_list = array();
+
 		if($user_query->results) {
 			foreach($user_query->get_results()  as $user) {
-				$author_list[$user->ID] = $user->display_name;
+				$author_list[] = array(
+					'id'   => $user->ID,
+					'text' => $user->display_name
+				);
 			}
 		}
 		return $author_list;
-	}
-
-	/**
-	 * Filter to definitely add display_name to search_columns
-	 * WP3.6+
-	 *
-	 * @since 1.0
-	 * @param   array      $search_columns
-	 * @param   string     $search
-	 * @param   WP_User    $user
-	 * @return  array
-	 */
-	function filter_search_column($search_columns, $search, $user) {
-		$search_columns[] = 'display_name';
-		return $search_columns;
 	}
 
 }
