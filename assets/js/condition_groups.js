@@ -395,7 +395,7 @@ var CAE = CAE || {};
 			},
 			addConditionModel: function(e) {
 				var $select = $(e.currentTarget);
-				if(!!$select.val() && !this.model.conditions.findWhere({module:$select.val()})) {
+				if(!!$select.val() && isNaN($select.val()) && !this.model.conditions.findWhere({module:$select.val()})) {
 					var $selected = $select.children(":selected");
 					var condition = new CAE.Models.Condition({
 						module: $select.val(),
@@ -498,7 +498,7 @@ var CAE = CAE || {};
 			addGroupModel: function(e) {
 				var $select = $(e.currentTarget);
 
-				if(!!$select.val()) {
+				if(!!$select.val() && isNaN($select.val())) {
 					var group = new CAE.Models.Group();
 					var $selected = $select.children(":selected");
 					var condition = new CAE.Models.Condition({

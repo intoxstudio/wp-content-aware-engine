@@ -440,6 +440,7 @@ if(!class_exists('WPCACore')) {
 				foreach (self::$type_manager->get($post->post_type)->get_all() as $module) {
 					$options = $module->list_module($options);
 				}
+				$options = apply_filters('wpca/modules/list',$options);
 				$post_type_obj = get_post_type_object($post->post_type);
 
 				$template = WPCAView::make('condition_options');
@@ -447,7 +448,7 @@ if(!class_exists('WPCACore')) {
 
 				$template = WPCAView::make('group_template',array(
 					'post_type'=> $post->post_type,
-					'options'  => apply_filters('wpca/modules/list',$options)
+					'options'  => $options
 				));
 				add_action('admin_footer',array($template,'render'));
 
