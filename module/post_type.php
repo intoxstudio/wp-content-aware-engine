@@ -233,9 +233,20 @@ class WPCAModule_post_type extends WPCAModule_Base {
 
 				if($data || isset($lookup[$post_type])) {
 
-					$placeholder = $post_type_obj->has_archive ? '/'.sprintf(__('%s Archives',WPCA_DOMAIN),$post_type_obj->labels->singular_name) : '';
-					$placeholder = $post_type == 'post' ? '/'.__('Blog Page',WPCA_DOMAIN) : $placeholder;
-					$placeholder = $post_type_obj->labels->all_items.$placeholder;
+					$placeholder = $post_type_obj->labels->all_items;
+					switch($post_type) {
+						case 'post':
+							$placeholder .= ' / '.__('Blog Page',WPCA_DOMAIN);
+							break;
+						case 'product':
+							$placeholder .= ' / '.__('Shop Page',WPCA_DOMAIN);
+							break;
+						default:
+							if($post_type_obj->has_archive) {
+								$placeholder .= ' / '.sprintf(__('%s Archives',WPCA_DOMAIN),$post_type_obj->labels->singular_name);
+							}
+							break;
+					}
 
 					$group_data[$this->id.'-'.$post_type] = array(
 						'label' => $post_type_obj->label,
@@ -322,9 +333,22 @@ class WPCAModule_post_type extends WPCAModule_Base {
 	public function list_module($list) {
 		foreach($this->post_types() as $post_type) {
 			$post_type_obj = get_post_type_object($post_type);
-			$placeholder = $post_type_obj->has_archive ? '/'.sprintf(__('%s Archives',WPCA_DOMAIN),$post_type_obj->labels->singular_name) : '';
-			$placeholder = $post_type == 'post' ? '/'.__('Blog Page',WPCA_DOMAIN) : $placeholder;
-			$placeholder = $post_type_obj->labels->all_items.$placeholder;
+
+			$placeholder = $post_type_obj->labels->all_items;
+			switch($post_type) {
+				case 'post':
+					$placeholder .= ' / '.__('Blog Page',WPCA_DOMAIN);
+					break;
+				case 'product':
+					$placeholder .= ' / '.__('Shop Page',WPCA_DOMAIN);
+					break;
+				default:
+					if($post_type_obj->has_archive) {
+						$placeholder .= ' / '.sprintf(__('%s Archives',WPCA_DOMAIN),$post_type_obj->labels->singular_name);
+					}
+					break;
+			}
+
 			$list[$this->id.'-'.$post_type] = array(
 				'name' => $post_type_obj->label,
 				'placeholder' => $placeholder,
