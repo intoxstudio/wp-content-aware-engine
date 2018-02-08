@@ -260,7 +260,7 @@ abstract class WPCAModule_Base {
 		//todo: fix in each module
 		$fix_response = array();
 		foreach ($response as $id => $title) {
-			if(!isset($title['id'])) {
+			if(!is_array($title)) {
 				$fix_response[] = array(
 					'id'   => $id,
 					'text' => $title
