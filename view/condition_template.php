@@ -14,5 +14,5 @@
 	<div class="cas-group-input">
 		<select class="js-wpca-suggest" multiple="multiple"></select>
 	</div>
-	<div class="cas-group-sep"><?php _e('And',WPCA_DOMAIN); ?></div>
+	<div class="cas-group-sep"><span><?php _e('And',WPCA_DOMAIN); ?></span></div>
 </script>

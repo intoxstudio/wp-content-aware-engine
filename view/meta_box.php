@@ -11,7 +11,7 @@
 	<?php do_action('wpca/meta_box/before',$post_type); ?>
 	<ul data-vm="collection:$collection"></ul>
 	<div class="cas-group-sep" data-vm="toggle:length($collection)">
-		<?php _e('Or',WPCA_DOMAIN); ?>
+		<span><?php _e('Or',WPCA_DOMAIN); ?></span>
 	</div>
 	<div class="cas-group-new">
 		<select class="js-wpca-add-or">

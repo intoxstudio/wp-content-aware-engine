@@ -10,6 +10,7 @@
 <div class="cas-group-sep" data-vm="classes:{'wpca-group-negate': statusNegated}">
 	<span class="wpca-sep-or"><?php _e('Or',WPCA_DOMAIN); ?></span>
 	<span class="wpca-sep-not"><?php _e('Not',WPCA_DOMAIN); ?></span>
+	<span class="wpca-sep-or-not"><?php _e('Or not',WPCA_DOMAIN); ?></span>
 </div>
 <div class="cas-group-body">
 	<div class="cas-group-cell">
