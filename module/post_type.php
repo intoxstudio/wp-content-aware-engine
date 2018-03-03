@@ -149,7 +149,8 @@ class WPCAModule_post_type extends WPCAModule_Base {
 			foreach ($posts as $post) {
 				$pages_sorted[$post->post_parent][] = $post;
 			}
-			$this->_walk_tree($pages_sorted,$pages_sorted[0],0,$start,$end,0,$retval);
+			$i = 0;
+			$this->_walk_tree($pages_sorted,$pages_sorted[0],$i,$start,$end,0,$retval);
 		} else {
 			foreach ($posts as $post) {
 				$retval[$post->ID] = $this->post_title($post);
@@ -172,7 +173,7 @@ class WPCAModule_post_type extends WPCAModule_Base {
 	 * @param  array  &$retval
 	 * @return void
 	 */
-	protected function _walk_tree($all_pages,$pages,$i,$start,$end,$level,&$retval) {
+	protected function _walk_tree($all_pages,$pages,&$i,$start,$end,$level,&$retval) {
 		foreach ($pages as $page) {
 			if ( $i >= $end ) {
 				break;

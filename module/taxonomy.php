@@ -203,7 +203,8 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 				foreach ($terms as $term) {
 					$sorted_terms[$term->parent][] = $term;
 				}
-				$this->_walk_tree($sorted_terms,$sorted_terms[0],0,$start,$end,0,$retval);
+				$i = 0;
+				$this->_walk_tree($sorted_terms,$sorted_terms[0],$i,$start,$end,0,$retval);
 			} else {
 				//Hierarchical taxonomies use ids instead of slugs
 				//see http://codex.wordpress.org/Function_Reference/wp_set_post_objects
@@ -231,7 +232,7 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 	 * @param  array  &$retval
 	 * @return void
 	 */
-	protected function _walk_tree($all_terms,$terms,$i,$start,$end,$level,&$retval) {
+	protected function _walk_tree($all_terms,$terms,&$i,$start,$end,$level,&$retval) {
 		foreach ($terms as $term) {
 			if ( $i >= $end ) {
 				break;
