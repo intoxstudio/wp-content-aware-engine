@@ -82,8 +82,9 @@ var CAE = CAE || {};
 							model = response.conditions[key];
 						for(var key2 in model.data) {
 							if(model.data.hasOwnProperty(key2)) {
+								//TODO: make sure conditions have same schema
 								values.push({
-									text: model.data[key2],
+									text: typeof model.data[key2] === 'object' ? model.data[key2].text : model.data[key2],
 									id: key2
 								});
 							}
