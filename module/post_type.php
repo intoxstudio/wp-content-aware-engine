@@ -87,7 +87,7 @@ class WPCAModule_post_type extends WPCAModule_Base {
 
 		$post_status = array('publish','private','future','draft');
 		if($args['post_type'] == 'attachment') {
-			$post_status = 'inherit';
+			$post_status = array('inherit');
 		}
 
 		$walk_tree = false;
