@@ -287,9 +287,15 @@ class WPCAModule_post_type extends WPCAModule_Base {
 				get_queried_object_id()
 			);
 		}
-		global $post_type;
+
 		// Home has post as default post type
-		if(!$post_type) $post_type = 'post';
+		$post_type = get_query_var( 'post_type' );
+		if ( is_array( $post_type ) ) {
+			$post_type = reset( $post_type );
+		} elseif(!$post_type) {
+			$post_type = 'post';
+		}
+
 		return array(
 			$post_type
 		);
@@ -335,12 +341,16 @@ class WPCAModule_post_type extends WPCAModule_Base {
 		foreach($this->post_types() as $post_type) {
 			$post_type_obj = get_post_type_object($post_type);
 
+			$name = $post_type_obj->label;
 			$placeholder = $post_type_obj->labels->all_items;
+
 			switch($post_type) {
 				case 'post':
+					$name .= ' / '.__('Blog',WPCA_DOMAIN);
 					$placeholder .= ' / '.__('Blog Page',WPCA_DOMAIN);
 					break;
 				case 'product':
+					$name .= ' / '.__('Shop',WPCA_DOMAIN);
 					$placeholder .= ' / '.__('Shop Page',WPCA_DOMAIN);
 					break;
 				default:
@@ -351,7 +361,7 @@ class WPCAModule_post_type extends WPCAModule_Base {
 			}
 
 			$list[$this->id.'-'.$post_type] = array(
-				'name' => $post_type_obj->label,
+				'name' => $name,
 				'placeholder' => $placeholder,
 				'default_value' => $post_type
 			);
