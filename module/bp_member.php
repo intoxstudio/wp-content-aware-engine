@@ -71,13 +71,13 @@ class WPCAModule_bp_member extends WPCAModule_Base {
 			foreach($bp->members->nav->get_item_nav() as $item) {
 				$content[$item->slug] = array(
 					'id'   => $item->slug,
-					'text' => $item->name
+					'text' => strip_tags($item->name)
 				);
 				if($item->children) {
 					$level = $is_search ? 0 : 1;
 					foreach ($item->children as $child_item) {
 						$content[$item->slug."-".$child_item->slug] = array(
-							'text'  => $child_item->name,
+							'text'  => strip_tags($child_item->name),
 							'id'    => $item->slug."-".$child_item->slug,
 							'level' => $level
 						);
