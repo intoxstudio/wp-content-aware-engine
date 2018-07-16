@@ -191,8 +191,9 @@ if(!class_exists('WPCACore')) {
 		 * @return  array
 		 */
 		private static function get_group_ids_by_parent($parent_id) {
-			if (!self::$type_manager->has(get_post_type($parent_id)))
+			if (!self::$type_manager->has(get_post_type($parent_id))) {
 				return array();
+			}
 
 			global $wpdb;
 			return (array)$wpdb->get_col($wpdb->prepare("SELECT ID FROM $wpdb->posts WHERE post_parent = '%d'", $parent_id));
@@ -208,8 +209,9 @@ if(!class_exists('WPCACore')) {
 		 */
 		public static function sync_group_deletion($post_id) {
 
-			if (!current_user_can(self::CAPABILITY))
+			if (!current_user_can(self::CAPABILITY)) {
 				return;
+			}
 
 			$groups = self::get_group_ids_by_parent($post_id);
 			if($groups) {
@@ -254,6 +256,8 @@ if(!class_exists('WPCACore')) {
 			}
 		}
 
+		protected static $wp_query_original = array();
+
 		/**
 		 * Get filtered condition groups
 		 *
@@ -289,6 +293,8 @@ if(!class_exists('WPCACore')) {
 					$cache[] = $other_type;
 				}
 			}
+
+			self::fix_wp_query();
 
 			foreach ($modules as $module) {
 				$id = $module->get_id();
@@ -368,6 +374,8 @@ if(!class_exists('WPCACore')) {
 				}
 				$handled_already[$group->post_parent] = 1;
 			}
+
+			self::restore_wp_query();
 
 			foreach ($cache as $cache_type) {
 				self::$condition_cache[$cache_type] = $valid;
@@ -737,6 +745,78 @@ if(!class_exists('WPCACore')) {
 			));
 			wp_enqueue_style(self::PREFIX.'condition-groups');
 
+			//@todo remove when ultimate member includes fix
+			wp_dequeue_style('um_styles');
+
+			//@todo remove when events calendar pro plugin includes fix
+			wp_dequeue_script('tribe-select2');
+
+		}
+
+		/**
+		 * Modify wp_query for plugin compatibility
+		 *
+		 * @since  5.0
+		 * @return void
+		 */
+		protected static function fix_wp_query() {
+
+			$query = array();
+
+			//When themes don't declare WooCommerce support,
+			//conditionals are not working properly for Shop
+			if(defined('WOOCOMMERCE_VERSION') && is_shop() && !is_post_type_archive('product')) {
+				$query = array(
+					'is_archive'           => true,
+					'is_post_type_archive' => true,
+					'is_page'              => false,
+					'is_singular'          => false,
+					'query_vars'           => array(
+						'post_type' => 'product'
+					)
+				);
+			}
+
+			self::set_wp_query($query);
+		}
+
+		/**
+		 * Restore original wp_query
+		 *
+		 * @since  5.0
+		 * @return void
+		 */
+		protected static function restore_wp_query() {
+			self::set_wp_query(self::$wp_query_original);
+			self::$wp_query_original = array();
+		}
+
+		/**
+		 * Set properties in wp_query and save original value
+		 *
+		 * @since 5.0
+		 * @param array  $query
+		 */
+		protected static function set_wp_query($query) {
+			global $wp_query;
+			foreach($query as $key => $val) {
+				if(is_array($val)) {
+					if(!isset(self::$wp_query_original[$key])) {
+						self::$wp_query_original[$key] = array();
+					}
+					foreach($val as $k1 => $v1) {
+						if(!isset(self::$wp_query_original[$key][$k1])) {
+							self::$wp_query_original[$key][$k1] = $wp_query->$key[$k1];
+						}
+						$wp_query->$key[$k1] = $v1;
+					}
+				} else {
+					if(!isset(self::$wp_query_original[$key])) {
+						self::$wp_query_original[$key] = $wp_query->$key;
+					}
+					$wp_query->$key = $val;
+				}
+			}
 		}
 
 		/**
