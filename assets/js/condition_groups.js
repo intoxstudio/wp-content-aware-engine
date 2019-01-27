@@ -181,7 +181,7 @@ var CAE = CAE || {};
 			var that = this;
 			this.$el.slideUp(300,function() {
 				that.model.destroy();
-				console.log("cond view: condition model removed");
+				console.log("cond view: group model removed");
 			});
 		},
 		createSuggestInput: function() {
@@ -461,6 +461,7 @@ var CAE = CAE || {};
 		collection: CAE.Models.GroupCollection,
 		events: {
 			"change .js-wpca-add-or": "addGroupModel",
+			"click .js-wpca-add-quick": "addGroupQuick",
 			"click .js-wpca-save": "saveAll"
 		},
 		itemView: function(obj) {
@@ -483,6 +484,33 @@ var CAE = CAE || {};
 			}
 
 			$select.val(-1).blur();
+		},
+		addGroupQuick: function(e) {
+			e.preventDefault();
+			var config = $(e.currentTarget).data('config');
+
+			var group = new CAE.Models.Group();
+			group.set(config.options);
+
+			this.collection.add(group);
+
+			var $select = this.$el.find('.js-wpca-add-or');
+
+			for(var i in config.modules) {
+				var $selected = $select.find('option[value=' + config.modules[i] + ']');
+
+				if(!$selected.length) {
+					continue;
+				}
+
+				var condition = new CAE.Models.Condition({
+					module: config.modules[i],
+					label: $selected.text(),
+					placeholder: $selected.data('placeholder'),
+					default_value: $selected.data('default')
+				});
+				group.conditions.add(condition);
+			}
 		}
 	});
 	

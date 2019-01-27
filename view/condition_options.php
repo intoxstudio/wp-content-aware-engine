@@ -7,16 +7,14 @@
  */
 ?>
 <li>
-	<label class="cae-toggle">
-		<input data-vm="checked:exposureSingular" type="checkbox" />
-		<div class="cae-toggle-bar wpca-pull-right"></div><?php _e('Singulars',WPCA_DOMAIN); ?>
-	</label>
-</li>
-<li>
-	<label class="cae-toggle">
-		<input data-vm="checked:exposureArchive" type="checkbox" />
-		<div class="cae-toggle-bar wpca-pull-right"></div><?php _e('Archives',WPCA_DOMAIN); ?>
-	</label>
+	<label><?php _e('Page Types',WPCA_DOMAIN); ?></label>
+	<div class="wpca-pull-right">
+		<select data-vm="value:exposure">
+			<option value="0"><?php _e('Single Pages',WPCA_DOMAIN); ?></option>
+			<option value="2"><?php _e('Archive Pages',WPCA_DOMAIN); ?></option>
+			<option value="1"><?php _e('All',WPCA_DOMAIN); ?></option>
+		</select>
+	</div>
 </li>
 <li>
 	<label class="cae-toggle">
