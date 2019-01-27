@@ -30,6 +30,8 @@ class WPCAModule_bbpress extends WPCAModule_author {
 		$this->name = __('bbPress User Profiles',WPCA_DOMAIN);
 		$this->placeholder = __('All Profiles',WPCA_DOMAIN);
 		$this->default_value = $this->id;
+
+		$this->query_name = 'cbb';
 		
 		}
 
@@ -87,7 +89,7 @@ class WPCAModule_bbpress extends WPCAModule_author {
 			if(function_exists('bbp_get_forum_id')) {
 				$data[] = bbp_get_forum_id();
 			}
-			$where = "(post_type.meta_value IS NULL OR post_type.meta_value IN('".implode("','", $data)."'))";
+			$where = "(cp.meta_value IS NULL OR cp.meta_value IN('".implode("','", $data)."'))";
 		}
 		return $where;
 	}

@@ -28,6 +28,7 @@ class WPCAModule_author extends WPCAModule_Base {
 		parent::__construct('author',__('Authors',WPCA_DOMAIN));
 		$this->placeholder = __('All Authors',WPCA_DOMAIN);
 		$this->default_value = $this->id;
+		$this->query_name = 'ca';
 	}
 	
 	/**

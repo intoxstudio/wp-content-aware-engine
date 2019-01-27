@@ -28,6 +28,8 @@ class WPCAModule_pods extends WPCAModule_Base {
 		parent::__construct('pods',__('Pods Pages',WPCA_DOMAIN));
 		$this->placeholder = __('All Pods Pages',WPCA_DOMAIN);
 		$this->default_value = $this->id;
+
+		$this->query_name = 'cpo';
 	}
 	
 	/**

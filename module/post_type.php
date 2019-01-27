@@ -39,6 +39,8 @@ class WPCAModule_post_type extends WPCAModule_Base {
 	 */
 	public function __construct() {
 		parent::__construct('post_type',__('Post Types',WPCA_DOMAIN));
+
+		$this->query_name = 'cp';
 	}
 
 	/**

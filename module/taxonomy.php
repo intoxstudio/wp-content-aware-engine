@@ -46,6 +46,8 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 	 */
 	public function __construct() {
 		parent::__construct('taxonomy',__('Taxonomies',WPCA_DOMAIN));
+
+		$this->query_name = 'ct';
 	}
 
 	public function initiate() {
@@ -135,6 +137,8 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 	 * @return array
 	 */
 	public function get_context_data() {
+
+		$name = $this->get_query_name();
 		
 		//In more recent WP versions, term_id = term_tax_id
 		//but term_tax_id has always been unique
@@ -144,12 +148,12 @@ class WPCAModule_taxonomy extends WPCAModule_Base {
 				$terms[] = $term->term_taxonomy_id;
 			}
 
-			return "(term.term_taxonomy_id IS NULL OR term.term_taxonomy_id IN (".implode(",",$terms).")) AND (taxonomy.meta_value IS NULL OR taxonomy.meta_value IN('".implode("','",$this->post_taxonomies)."'))";
+			return "(term.term_taxonomy_id IS NULL OR term.term_taxonomy_id IN (".implode(",",$terms).")) AND ($name.meta_value IS NULL OR $name.meta_value IN('".implode("','",$this->post_taxonomies)."'))";
 
 		}
 		$term = get_queried_object();
 
-		return "(term.term_taxonomy_id IS NULL OR term.term_taxonomy_id = '".$term->term_taxonomy_id."') AND (taxonomy.meta_value IS NULL OR taxonomy.meta_value = '".$term->taxonomy."')";
+		return "(term.term_taxonomy_id IS NULL OR term.term_taxonomy_id = '".$term->term_taxonomy_id."') AND ($name.meta_value IS NULL OR $name.meta_value = '".$term->taxonomy."')";
 	}
 
 	/**

@@ -298,13 +298,14 @@ if(!class_exists('WPCACore')) {
 
 			foreach ($modules as $module) {
 				$id = $module->get_id();
-				if(apply_filters("wpca/module/{$id}/in-context", $module->in_context())) {
-					$join[$id] = apply_filters("wpca/module/{$id}/db-join", $module->db_join());
+				$name = $module->get_query_name();
+				if(apply_filters("wpca/module/$id/in-context", $module->in_context())) {
+					$join[$id] = apply_filters("wpca/module/$id/db-join", $module->db_join());
 					$data = $module->get_context_data();
 					if(is_array($data)) {
-						$data = "({$id}.meta_value IS NULL OR {$id}.meta_value IN ('".implode("','",$data) ."'))";
+						$data = "($name.meta_value IS NULL OR $name.meta_value IN ('".implode("','",$data) ."'))";
 					}
-					$where[$id] = apply_filters("wpca/module/{$id}/db-where", $data);
+					$where[$id] = apply_filters("wpca/module/$id/db-where", $data);
 				} else {
 					$excluded[] = $module;
 				}
@@ -320,22 +321,49 @@ if(!class_exists('WPCACore')) {
 				self::STATUS_NEGATED
 			);
 
-			$where[] = "p.post_type = '".self::TYPE_CONDITION_GROUP."'";
-			$where[] = "p.post_status IN ('".implode("','", $post_status)."')";
-			//exposure
-			$where[] = "p.menu_order ".(is_archive() || is_home() ? '>=' : '<=')." 1";
-				
-			//Syntax changed in MySQL 5.5 and MariaDB 10.0 (reports as version 5.5)
-			//todo: this might not be needed anymore?
-			$wpdb->query('SET'.(version_compare($wpdb->db_version(), '5.5', '>=') ? ' SESSION' : ' OPTION').' SQL_BIG_SELECTS = 1');
+			if(defined('CAS_SQL_CHUNK_SIZE') && CAS_SQL_CHUNK_SIZE > 0) {
+				$chunk_size = CAS_SQL_CHUNK_SIZE;
+			} else {
+				//Syntax changed in MySQL 5.5 and MariaDB 10.0 (reports as version 5.5)
+				$wpdb->query('SET'.(version_compare($wpdb->db_version(), '5.5', '>=') ? ' SESSION' : ' OPTION').' SQL_BIG_SELECTS = 1');
+				$chunk_size = count($join);
+			}
 
-			$groups_in_context = $wpdb->get_results(
-				"SELECT p.ID, p.post_parent ".
-				"FROM $wpdb->posts p ".
-				implode(' ',$join)."
-				WHERE
-				".implode(' AND ',$where)."
-			",OBJECT_K);
+			$joins = array_chunk($join, $chunk_size);
+			$joins_max = count($joins) - 1;
+			$wheres = array_chunk($where, $chunk_size);
+			$group_ids = array();
+			$groups_in_context = array();
+
+			$where2 = array();
+			$where2[] = "p.post_type = '".self::TYPE_CONDITION_GROUP."'";
+			$where2[] = "p.post_status IN ('".implode("','", $post_status)."')";
+			//exposure
+			$where2[] = "p.menu_order ".(is_archive() || is_home() ? '>=' : '<=')." 1";
+
+			foreach ($joins as $i => $join) {
+
+				if($i == $joins_max) {
+					$groups_in_context = $wpdb->get_results(
+						"SELECT p.ID, p.post_parent ".
+						"FROM $wpdb->posts p ".
+						implode(' ',$join)."
+						WHERE
+						".implode(' AND ',$wheres[$i])."
+						AND ".implode(' AND ',$where2).
+						(!empty($group_ids) ? " AND p.id IN (".implode(",",$group_ids).")" : "")
+					,OBJECT_K);
+					break;
+				}
+
+				$group_ids = array_merge($group_ids, $wpdb->get_col(
+					"SELECT p.ID ".
+					"FROM $wpdb->posts p ".
+					implode(' ',$join)."
+					WHERE
+					".implode(' AND ',$wheres[$i])."
+					AND ".implode(' AND ',$where2)));
+			}
 
 			$groups_negated = $wpdb->get_results($wpdb->prepare(
 				"SELECT p.ID, p.post_parent ".
@@ -800,10 +828,13 @@ if(!class_exists('WPCACore')) {
 		protected static function set_wp_query($query) {
 			global $wp_query;
 			foreach($query as $key => $val) {
-				if(is_array($val)) {
-					if(!isset(self::$wp_query_original[$key])) {
-						self::$wp_query_original[$key] = array();
-					}
+				$is_array = is_array($val);
+
+				if(!isset(self::$wp_query_original[$key])) {
+					self::$wp_query_original[$key] = $is_array ? array() : $wp_query->$key;
+				}
+
+				if($is_array) {
 					foreach($val as $k1 => $v1) {
 						if(!isset(self::$wp_query_original[$key][$k1])) {
 							self::$wp_query_original[$key][$k1] = $wp_query->$key[$k1];
@@ -811,9 +842,6 @@ if(!class_exists('WPCACore')) {
 						$wp_query->$key[$k1] = $v1;
 					}
 				} else {
-					if(!isset(self::$wp_query_original[$key])) {
-						self::$wp_query_original[$key] = $wp_query->$key;
-					}
 					$wp_query->$key = $val;
 				}
 			}

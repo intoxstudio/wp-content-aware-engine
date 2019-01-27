@@ -30,6 +30,8 @@ class WPCAModule_date extends WPCAModule_Base {
 		);
 		$this->placeholder = __('Date Archives',WPCA_DOMAIN);
 		$this->default_value = '0000-00-00';
+
+		//$this->query_name = 'cd';
 	}
 
 	/**
@@ -51,8 +53,11 @@ class WPCAModule_date extends WPCAModule_Base {
 	 */
 	public function get_context_data() {
 		global $wpdb;
+
+		$name = $this->get_query_name();
+
 		return $wpdb->prepare(
-			"(date.meta_value IS NULL OR '%s' = date.meta_value)",
+			"($name.meta_value IS NULL OR '%s' = $name.meta_value)",
 			'0000-00-00'
 		);
 	}

@@ -26,6 +26,8 @@ class WPCAModule_transposh extends WPCAModule_Base {
 	 */
 	public function __construct() {
 		parent::__construct('language',__('Languages',WPCA_DOMAIN));
+
+		$this->query_name = 'cl';
 	}
 	
 	/**

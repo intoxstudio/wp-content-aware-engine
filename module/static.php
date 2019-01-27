@@ -32,7 +32,9 @@ class WPCAModule_static extends WPCAModule_Base {
 	 * Constructor
 	 */
 	public function __construct() {
-		parent::__construct('static',__('Static Pages',WPCA_DOMAIN));
+		parent::__construct('static',__('Special Pages',WPCA_DOMAIN));
+
+		$this->query_name = 'cs';
 	}
 	
 	/**

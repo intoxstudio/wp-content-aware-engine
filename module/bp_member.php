@@ -34,6 +34,8 @@ class WPCAModule_bp_member extends WPCAModule_Base {
 		parent::__construct('bp_member',__('BuddyPress Profiles',WPCA_DOMAIN));
 		$this->default_value = 0;
 		$this->placeholder = __('All Sections',WPCA_DOMAIN);
+
+		$this->query_name = 'cbp';
 	}
 
 	/**

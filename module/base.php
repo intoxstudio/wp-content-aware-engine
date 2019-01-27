@@ -16,6 +16,11 @@ if (!defined('ABSPATH')) {
  *
  */
 abstract class WPCAModule_Base {
+
+	/**
+	 * @var string
+	 */
+	protected $query_name;
 	
 	/**
 	 * Module identification
@@ -109,7 +114,11 @@ abstract class WPCAModule_Base {
 	 */
 	public function db_join() {
 		global $wpdb;
-		return "LEFT JOIN $wpdb->postmeta {$this->id} ON {$this->id}.post_id = p.ID AND {$this->id}.meta_key = '".WPCACore::PREFIX.$this->id."' ";
+
+		$name = $this->get_query_name();
+		$key = $this->get_data_key();
+
+		return "LEFT JOIN $wpdb->postmeta $name ON $name.post_id = p.ID AND $name.meta_key = '$key' ";
 	}
 	
 	/**
@@ -123,6 +132,22 @@ abstract class WPCAModule_Base {
 	}
 
 	/**
+	 * @since  6.0
+	 * @return string
+	 */
+	public function get_query_name() {
+		return $this->query_name ? $this->query_name : $this->id;
+	}
+
+	/**
+	 * @since  6.0
+	 * @return string
+	 */
+	public function get_data_key() {
+		return WPCACore::PREFIX . $this->id;
+	}
+
+	/**
 	 * Save data on POST
 	 *
 	 * @since  1.0
@@ -130,7 +155,7 @@ abstract class WPCAModule_Base {
 	 * @return void
 	 */
 	public function save_data($post_id) {
-		$meta_key = WPCACore::PREFIX . $this->id;
+		$meta_key = $this->get_data_key();
 		$old = array_flip(get_post_meta($post_id, $meta_key, false));
 		$new = isset($_POST['conditions'][$this->id]) ? $_POST['conditions'][$this->id] : '';
 
@@ -163,7 +188,7 @@ abstract class WPCAModule_Base {
 	 * @return array
 	 */
 	public function get_group_data($group_data,$post_id) {
-		$data = get_post_custom_values(WPCACore::PREFIX . $this->id, $post_id);
+		$data = get_post_custom_values($this->get_data_key(), $post_id);
 		if($data) {
 			$group_data[$this->id] = array(
 				'label'         => $this->name,
@@ -210,7 +235,7 @@ abstract class WPCAModule_Base {
 	 */
 	public function filter_excluded_context($posts) {
 		foreach($posts as $id => $parent) {
-			if(get_post_custom_values(WPCACore::PREFIX . $this->id, $id) !== null) {
+			if(get_post_custom_values($this->get_data_key(), $id) !== null) {
 				unset($posts[$id]);
 			}
 		}
