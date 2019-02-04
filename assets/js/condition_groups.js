@@ -339,21 +339,24 @@ var CAE = CAE || {};
 				console.log("group view: has changes");
 				AutoSaver.start(this);
 			} else {
-				AutoSaver.clear(this);
+				console.log("group view: no changes");
+				//AutoSaver.clear(this);
 			}
 		},
 		saveAddRemove: function(model, collection, options) {
-			console.log("group view: a condition was added or removed");
 			if(collection.length) {
 				if(options.add) {
+					console.log("group view: a condition was added");
 					//save only on default value
 					if(model.get('default_value') !== '') {
 						AutoSaver.start(this);
 					}
 				} else if(this.model.get("id")) {
+					console.log("group view: a condition was removed");
 					AutoSaver.start(this);
 				}
 			} else {
+				console.log("group view: a condition was added or removed - group is empty");
 				AutoSaver.clear(this);
 				if(this.model.get("id")) {
 					//at this point, we could skip save request
