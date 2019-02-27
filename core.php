@@ -793,7 +793,7 @@ if(!class_exists('WPCACore')) {
 
 			//When themes don't declare WooCommerce support,
 			//conditionals are not working properly for Shop
-			if(defined('WOOCOMMERCE_VERSION') && is_shop() && !is_post_type_archive('product')) {
+			if(defined('WOOCOMMERCE_VERSION') && function_exists('is_shop') && is_shop() && !is_post_type_archive('product')) {
 				$query = array(
 					'is_archive'           => true,
 					'is_post_type_archive' => true,
@@ -837,9 +837,9 @@ if(!class_exists('WPCACore')) {
 				if($is_array) {
 					foreach($val as $k1 => $v1) {
 						if(!isset(self::$wp_query_original[$key][$k1])) {
-							self::$wp_query_original[$key][$k1] = $wp_query->$key[$k1];
+							self::$wp_query_original[$key][$k1] = $wp_query->{$key}[$k1];
 						}
-						$wp_query->$key[$k1] = $v1;
+						$wp_query->{$key}[$k1] = $v1;
 					}
 				} else {
 					$wp_query->$key = $val;

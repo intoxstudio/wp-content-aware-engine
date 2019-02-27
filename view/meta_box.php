@@ -24,7 +24,7 @@ $quick_links = array(
 );
 
 if(post_type_exists('product')) {
-	$uuick_links[__('Shop', WPCA_DOMAIN)] = array(
+	$quick_links[__('Shop', WPCA_DOMAIN)] = array(
 		'modules' => array('post_type-product'),
 		'options' => array('exposure' => 2)
 	);
