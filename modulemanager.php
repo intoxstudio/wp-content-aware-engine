@@ -7,23 +7,24 @@
  */
 
 if (!defined('ABSPATH')) {
-	exit;
+    exit;
 }
 
-if(!class_exists('WPCAModuleManager')) {
-	/**
-	 * Manage module objects
-	 */
-	final class WPCAModuleManager extends WPCAObjectManager {
+if (!class_exists('WPCAModuleManager')) {
+    /**
+     * Manage module objects
+     */
+    final class WPCAModuleManager extends WPCAObjectManager
+    {
 
-		/**
-		 * Constructor
-		 */
-		public function __construct() {
-			parent::__construct();
-		}
-
-	}
+        /**
+         * Constructor
+         */
+        public function __construct()
+        {
+            parent::__construct();
+        }
+    }
 }
 
 //eol
