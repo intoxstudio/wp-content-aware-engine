@@ -6,9 +6,7 @@
  * @copyright 2018 by Joachim Jensen
  */
 
-if (!defined('ABSPATH')) {
-    exit;
-}
+defined('ABSPATH') || exit;
 
 /**
  *
@@ -72,7 +70,7 @@ class WPCAModule_bp_member extends WPCAModule_Base
         }
 
         $content = array();
-        $is_search = isset($args["search"]) && $args["search"];
+        $is_search = isset($args['search']) && $args['search'];
 
         if (isset($bp->members->nav)) {
             foreach ($bp->members->nav->get_item_nav() as $item) {
@@ -83,9 +81,9 @@ class WPCAModule_bp_member extends WPCAModule_Base
                 if ($item->children) {
                     $level = $is_search ? 0 : 1;
                     foreach ($item->children as $child_item) {
-                        $content[$item->slug."-".$child_item->slug] = array(
+                        $content[$item->slug.'-'.$child_item->slug] = array(
                             'text'  => strip_tags($child_item->name),
-                            'id'    => $item->slug."-".$child_item->slug,
+                            'id'    => $item->slug.'-'.$child_item->slug,
                             'level' => $level
                         );
                     }
@@ -97,8 +95,8 @@ class WPCAModule_bp_member extends WPCAModule_Base
             $content = array_intersect_key($content, array_flip($args['include']));
         }
         if ($is_search) {
-            $this->search_string = $args["search"];
-            $content = array_filter($content, array($this,"_filter_search"));
+            $this->search_string = $args['search'];
+            $content = array_filter($content, array($this,'_filter_search'));
         }
 
         return $content;
@@ -115,7 +113,7 @@ class WPCAModule_bp_member extends WPCAModule_Base
     {
         return mb_stripos($value['text'], $this->search_string) !== false;
     }
-    
+
     /**
      * Determine if content is relevant
      *
@@ -143,7 +141,7 @@ class WPCAModule_bp_member extends WPCAModule_Base
         if (isset($bp->current_component)) {
             $data[] = $bp->current_component;
             if (isset($bp->current_action)) {
-                $data[] = $bp->current_component."-".$bp->current_action;
+                $data[] = $bp->current_component.'-'.$bp->current_action;
             }
         }
         return $data;

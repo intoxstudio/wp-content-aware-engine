@@ -6,9 +6,7 @@
  * @copyright 2018 by Joachim Jensen
  */
 
-if (!defined('ABSPATH')) {
-    exit;
-}
+defined('ABSPATH') || exit;
 
 /**
  *
@@ -21,7 +19,7 @@ if (!defined('ABSPATH')) {
  */
 class WPCAModule_post_type extends WPCAModule_Base
 {
-    
+
     /**
      * Registered public post types
      *
@@ -34,7 +32,7 @@ class WPCAModule_post_type extends WPCAModule_Base
      * @var array
      */
     private $_post_ancestor_conditions;
-    
+
     /**
      * Constructor
      */
@@ -111,7 +109,7 @@ class WPCAModule_post_type extends WPCAModule_Base
         if ($args['search']) {
             $exclude_query = '';
             if (!empty($exclude)) {
-                $exclude_query = " AND ID NOT IN (".implode(",", $exclude).")";
+                $exclude_query = ' AND ID NOT IN ('.implode(',', $exclude).')';
             }
 
             //Using unprepared (safe) exclude because WP is not good at parsing arrays
@@ -121,13 +119,13 @@ class WPCAModule_post_type extends WPCAModule_Base
 				SELECT ID, post_title, post_type, post_parent, post_status, post_password
 				FROM $wpdb->posts
 				WHERE post_type = '%s' AND (post_title LIKE '%s' OR post_name LIKE '%s') AND post_status IN('".implode("','", $post_status)."')
-				".$exclude_query."
+				".$exclude_query.'
 				ORDER BY post_title ASC
 				LIMIT %d,20
-				",
+				',
                 $args['post_type'],
-                "%".$args['search']."%",
-                "%".$args['search']."%",
+                '%'.$args['search'].'%',
+                '%'.$args['search'].'%',
                 $start
             ));
         } else {
@@ -275,7 +273,7 @@ class WPCAModule_post_type extends WPCAModule_Base
         }
         return $group_data;
     }
-    
+
     /**
      * Determine if content is relevant
      *
@@ -331,7 +329,7 @@ class WPCAModule_post_type extends WPCAModule_Base
         ));
 
         preg_match('/post_type-(.+)$/i', $args['item_object'], $matches);
-        $args['item_object'] = isset($matches[1]) ? $matches[1] : "";
+        $args['item_object'] = isset($matches[1]) ? $matches[1] : '';
 
         $post_type = get_post_type_object($args['item_object']);
 
@@ -422,7 +420,7 @@ class WPCAModule_post_type extends WPCAModule_Base
         $post_title = $post->post_title ? $post->post_title : __('(no title)');
         $post_states = apply_filters('display_post_states', $post_states, $post);
 
-        return $post_title . ' ' . ($post_states ? " (".implode(", ", $post_states).")" : "");
+        return $post_title . ' ' . ($post_states ? ' ('.implode(', ', $post_states).')' : '');
     }
 
     /**
@@ -505,7 +503,7 @@ class WPCAModule_post_type extends WPCAModule_Base
                             )
                         )
                     ));
-                    
+
                     if ($query && $query->found_posts) {
                         //Add conditions after Quick Select
                         //otherwise they will be removed there

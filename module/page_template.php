@@ -6,9 +6,7 @@
  * @copyright 2018 by Joachim Jensen
  */
 
-if (!defined('ABSPATH')) {
-    exit;
-}
+defined('ABSPATH') || exit;
 
 /**
  *
@@ -27,7 +25,7 @@ class WPCAModule_page_template extends WPCAModule_Base
      * @var string
      */
     protected $search_string;
-    
+
     /**
      * Constructor
      */
@@ -39,7 +37,7 @@ class WPCAModule_page_template extends WPCAModule_Base
 
         $this->query_name = 'cpt';
     }
-    
+
     /**
      * Determine if content is relevant
      *

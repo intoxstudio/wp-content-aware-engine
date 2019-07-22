@@ -6,9 +6,7 @@
  * @copyright 2018 by Joachim Jensen
  */
 
-if (!defined('ABSPATH')) {
-    exit;
-}
+defined('ABSPATH') || exit;
 
 if (!class_exists('WPCACore')) {
     $domain = explode('/', plugin_basename(__FILE__));
@@ -117,7 +115,7 @@ if (!class_exists('WPCACore')) {
                     10,
                     3
                 );
-            
+
                 add_action(
                     'wp_ajax_wpca/add-rule',
                     array(__CLASS__,'ajax_update_group')
@@ -172,7 +170,7 @@ if (!class_exists('WPCACore')) {
                 'publish_posts'      => self::CAPABILITY,
                 'read_private_posts' => self::CAPABILITY
             );
-            
+
             register_post_type(self::TYPE_CONDITION_GROUP, array(
                 'labels'       => array(
                     'name'               => __('Condition Groups', WPCA_DOMAIN),
@@ -288,11 +286,11 @@ if (!class_exists('WPCACore')) {
         public static function get_conditions($post_type)
         {
             global $wpdb, $wp_query, $post;
-            
+
             if ((!$wp_query->query && !$post) || is_admin()) {
                 return array();
             }
-            
+
             // Return cache if present
             if (isset(self::$condition_cache[$post_type])) {
                 return self::$condition_cache[$post_type];
@@ -362,35 +360,35 @@ if (!class_exists('WPCACore')) {
             $where2[] = "p.post_type = '".self::TYPE_CONDITION_GROUP."'";
             $where2[] = "p.post_status IN ('".implode("','", $post_status)."')";
             //exposure
-            $where2[] = "p.menu_order ".(is_archive() || is_home() ? '>=' : '<=')." 1";
+            $where2[] = 'p.menu_order '.(is_archive() || is_home() ? '>=' : '<=').' 1';
 
             foreach ($joins as $i => $join) {
                 if ($i == $joins_max) {
                     $groups_in_context = $wpdb->get_results(
-                        "SELECT p.ID, p.post_parent ".
+                        'SELECT p.ID, p.post_parent '.
                         "FROM $wpdb->posts p ".
-                        implode(' ', $join)."
+                        implode(' ', $join).'
 						WHERE
-						".implode(' AND ', $wheres[$i])."
-						AND ".implode(' AND ', $where2).
-                        (!empty($group_ids) ? " AND p.id IN (".implode(",", $group_ids).")" : ""),
+						'.implode(' AND ', $wheres[$i]).'
+						AND '.implode(' AND ', $where2).
+                        (!empty($group_ids) ? ' AND p.id IN ('.implode(',', $group_ids).')' : ''),
                         OBJECT_K
                     );
                     break;
                 }
 
                 $group_ids = array_merge($group_ids, $wpdb->get_col(
-                    "SELECT p.ID ".
+                    'SELECT p.ID '.
                     "FROM $wpdb->posts p ".
-                    implode(' ', $join)."
+                    implode(' ', $join).'
 					WHERE
-					".implode(' AND ', $wheres[$i])."
-					AND ".implode(' AND ', $where2)
+					'.implode(' AND ', $wheres[$i]).'
+					AND '.implode(' AND ', $where2)
                 ));
             }
 
             $groups_negated = $wpdb->get_results($wpdb->prepare(
-                "SELECT p.ID, p.post_parent ".
+                'SELECT p.ID, p.post_parent '.
                 "FROM $wpdb->posts p ".
                 "WHERE p.post_type = '%s' ".
                 "AND p.post_status = '%s' ",
@@ -400,7 +398,7 @@ if (!class_exists('WPCACore')) {
 
             //Force update of meta cache to prevent lazy loading
             update_meta_cache('post', array_keys($groups_in_context+$groups_negated));
-            
+
             //condition group => type
             $valid = array();
             foreach ($groups_in_context as $group) {
@@ -469,19 +467,19 @@ if (!class_exists('WPCACore')) {
 						p.post_type,
 						h.meta_value handle
 					FROM $wpdb->posts p
-					INNER JOIN $wpdb->postmeta h ON h.post_id = p.ID AND h.meta_key = '".self::PREFIX."handle' 
+					INNER JOIN $wpdb->postmeta h ON h.post_id = p.ID AND h.meta_key = '".self::PREFIX."handle'
 					WHERE
-						p.post_type = '".$post_type."' AND 
-						p.post_status = 'publish' AND 
-						p.ID IN(".implode(',', $valid).") 
+						p.post_type = '".$post_type."' AND
+						p.post_status = 'publish' AND
+						p.ID IN(".implode(',', $valid).')
 					ORDER BY p.menu_order ASC, h.meta_value DESC, p.post_date DESC
-				", OBJECT_K);
+				', OBJECT_K);
 
                 self::$post_cache[$post_type] = apply_filters("wpca/posts/{$post_type}", $results);
             }
             return self::$post_cache[$post_type];
         }
-        
+
         /**
          * Add meta box to manage condition groups
          *
@@ -640,7 +638,7 @@ if (!class_exists('WPCACore')) {
                 }
 
                 $response['message'] = __('Conditions updated', WPCA_DOMAIN);
-                
+
                 wp_send_json($response);
             } catch (Exception $e) {
                 header('HTTP/1.1 '.$e->getCode().' '.$e->getMessage());
@@ -914,5 +912,3 @@ if (!class_exists('WPCACore')) {
         }
     }
 }
-
-//eol

@@ -6,9 +6,7 @@
  * @copyright 2018 by Joachim Jensen
  */
 
-if (!defined('ABSPATH')) {
-    exit;
-}
+defined('ABSPATH') || exit;
 
 /**
  *
@@ -21,7 +19,7 @@ if (!defined('ABSPATH')) {
  */
 class WPCAModule_bbpress extends WPCAModule_author
 {
-    
+
     /**
      * Constructor
      */
@@ -50,7 +48,7 @@ class WPCAModule_bbpress extends WPCAModule_author
             array($this,'add_forum_dependency')
         );
     }
-    
+
     /**
      * Determine if content is relevant
      *
@@ -76,7 +74,7 @@ class WPCAModule_bbpress extends WPCAModule_author
         }
         return $data;
     }
-    
+
     /**
      * Sidebars to be displayed with forums will also
      * be dislpayed with respective topics and replies

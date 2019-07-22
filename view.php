@@ -6,9 +6,7 @@
  * @copyright 2018 by Joachim Jensen
  */
 
-if (!defined('ABSPATH')) {
-    exit;
-}
+defined('ABSPATH') || exit;
 
 /**
  * View Class
@@ -90,9 +88,8 @@ class WPCAView
     {
         if (stripos(strrev($this->_path), 'php.') === 0) {
             return $this->_path;
-        } else {
-            return WPCA_PATH.'view/'.str_replace('.', '/', $this->_path).'.php';
         }
+        return WPCA_PATH.'view/'.str_replace('.', '/', $this->_path).'.php';
     }
 
     /**

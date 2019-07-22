@@ -6,9 +6,7 @@
  * @copyright 2018 by Joachim Jensen
  */
 
-if (!defined('ABSPATH')) {
-    exit;
-}
+defined('ABSPATH') || exit;
 
 /**
  *
@@ -21,7 +19,7 @@ if (!defined('ABSPATH')) {
  */
 class WPCAModule_transposh extends WPCAModule_Base
 {
-    
+
     /**
      * Constructor
      */
@@ -31,7 +29,7 @@ class WPCAModule_transposh extends WPCAModule_Base
 
         $this->query_name = 'cl';
     }
-    
+
     /**
      * Determine if content is relevant
      *

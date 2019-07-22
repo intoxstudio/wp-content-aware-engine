@@ -6,9 +6,7 @@
  * @copyright 2018 by Joachim Jensen
  */
 
-if (!defined('ABSPATH')) {
-    exit;
-}
+defined('ABSPATH') || exit;
 
 /**
  *
@@ -22,7 +20,7 @@ abstract class WPCAModule_Base
      * @var string
      */
     protected $query_name;
-    
+
     /**
      * Module identification
      *
@@ -57,9 +55,9 @@ abstract class WPCAModule_Base
      *
      * @var string
      */
-    protected $default_value = "";
+    protected $default_value = '';
 
-    
+
     /**
      * Constructor
      *
@@ -127,7 +125,7 @@ abstract class WPCAModule_Base
 
         return "LEFT JOIN $wpdb->postmeta $name ON $name.post_id = p.ID AND $name.meta_key = '$key' ";
     }
-    
+
     /**
      * Idenficiation getter
      *
@@ -327,5 +325,3 @@ abstract class WPCAModule_Base
         }
     }
 }
-
-//eol

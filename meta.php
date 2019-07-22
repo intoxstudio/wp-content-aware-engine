@@ -6,9 +6,7 @@
  * @copyright 2018 by Joachim Jensen
  */
 
-if (!defined('ABSPATH')) {
-    exit;
-}
+defined('ABSPATH') || exit;
 
 if (!class_exists('WPCAMeta')) {
     /**
@@ -216,7 +214,7 @@ if (!class_exists('WPCAMeta')) {
                         }
                     }
                 }
-                
+
                 foreach ($old as $meta => $v) {
                     $this->delete($post_id, $meta);
                 }
@@ -238,5 +236,3 @@ if (!class_exists('WPCAMeta')) {
         }
     }
 }
-
-//eol

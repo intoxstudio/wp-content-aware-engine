@@ -6,9 +6,7 @@
  * @copyright 2018 by Joachim Jensen
  */
 
-if (!defined('ABSPATH')) {
-    exit;
-}
+defined('ABSPATH') || exit;
 
 /**
  * Version of this WPCA
@@ -93,5 +91,3 @@ if (!class_exists('WPCALoader')) {
     add_action('plugins_loaded', array('WPCALoader','load'), -999999);
 }
 WPCALoader::add(plugin_dir_path(__FILE__), $this_wpca_version);
-
-//

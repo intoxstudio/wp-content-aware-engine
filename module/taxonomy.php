@@ -6,9 +6,7 @@
  * @copyright 2018 by Joachim Jensen
  */
 
-if (!defined('ABSPATH')) {
-    exit;
-}
+defined('ABSPATH') || exit;
 
 /**
  *
@@ -21,7 +19,7 @@ if (!defined('ABSPATH')) {
  */
 class WPCAModule_taxonomy extends WPCAModule_Base
 {
-    
+
     /**
      * Registered public taxonomies
      *
@@ -41,7 +39,7 @@ class WPCAModule_taxonomy extends WPCAModule_Base
      * @var array
      */
     private $post_taxonomies;
-    
+
     /**
      * Constructor
      */
@@ -71,7 +69,7 @@ class WPCAModule_taxonomy extends WPCAModule_Base
             }
         }
     }
-    
+
     /**
      * Determine if content is relevant
      *
@@ -89,7 +87,7 @@ class WPCAModule_taxonomy extends WPCAModule_Base
             foreach (get_object_taxonomies(get_post_type()) as $taxonomy) {
                 //Only want taxonomies selectable in admin
                 if (isset($tax[$taxonomy])) {
-                    
+
                     //Check term caches, Core most likely used it
                     $terms = get_object_term_cache(get_the_ID(), $taxonomy);
                     if ($terms === false) {
@@ -119,14 +117,14 @@ class WPCAModule_taxonomy extends WPCAModule_Base
         $posts = parent::filter_excluded_context($posts);
         if ($posts) {
             global $wpdb;
-            $obj_w_tags = $wpdb->get_col("SELECT object_id FROM $wpdb->term_relationships WHERE object_id IN (".implode(",", array_keys($posts)).") GROUP BY object_id");
+            $obj_w_tags = $wpdb->get_col("SELECT object_id FROM $wpdb->term_relationships WHERE object_id IN (".implode(',', array_keys($posts)).') GROUP BY object_id');
             if ($obj_w_tags) {
                 $posts = array_diff_key($posts, array_flip($obj_w_tags));
             }
         }
         return $posts;
     }
-    
+
     /**
      * Query join
      *
@@ -150,7 +148,7 @@ class WPCAModule_taxonomy extends WPCAModule_Base
     public function get_context_data()
     {
         $name = $this->get_query_name();
-        
+
         //In more recent WP versions, term_id = term_tax_id
         //but term_tax_id has always been unique
         if (is_singular()) {
@@ -159,7 +157,7 @@ class WPCAModule_taxonomy extends WPCAModule_Base
                 $terms[] = $term->term_taxonomy_id;
             }
 
-            return "(term.term_taxonomy_id IS NULL OR term.term_taxonomy_id IN (".implode(",", $terms).")) AND ($name.meta_value IS NULL OR $name.meta_value IN('".implode("','", $this->post_taxonomies)."'))";
+            return '(term.term_taxonomy_id IS NULL OR term.term_taxonomy_id IN ('.implode(',', $terms).")) AND ($name.meta_value IS NULL OR $name.meta_value IN('".implode("','", $this->post_taxonomies)."'))";
         }
         $term = get_queried_object();
 
@@ -208,7 +206,7 @@ class WPCAModule_taxonomy extends WPCAModule_Base
 
                 $walk_tree = true;
             }
-            
+
             $terms = get_terms($args['taxonomy'], $args);
 
             if ($walk_tree) {
@@ -319,7 +317,7 @@ class WPCAModule_taxonomy extends WPCAModule_Base
             if ($posts || isset($ids[$taxonomy->name])) {
                 $placeholder = '/'.sprintf(__('%s Archives', WPCA_DOMAIN), $taxonomy->labels->singular_name);
                 $placeholder = $taxonomy->labels->all_items.$placeholder;
-                
+
                 $group_data[$this->id.'-'.$taxonomy->name] = array(
                     'label'         => $taxonomy->label,
                     'placeholder'   => $placeholder,
@@ -380,10 +378,10 @@ class WPCAModule_taxonomy extends WPCAModule_Base
         ));
 
         preg_match('/taxonomy-(.+)$/i', $args['item_object'], $matches);
-        $args['item_object'] = isset($matches[1]) ? $matches[1] : "";
+        $args['item_object'] = isset($matches[1]) ? $matches[1] : '';
 
         $taxonomy = get_taxonomy($args['item_object']);
-        
+
         if (!$taxonomy) {
             return false;
         }
