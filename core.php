@@ -38,25 +38,25 @@ if (!class_exists('WPCACore')) {
         /**
          * Post Statuses for condition groups
          */
-        const STATUS_NEGATED       = 'negated';
-        const STATUS_PUBLISHED     = 'publish';
+        const STATUS_NEGATED = 'negated';
+        const STATUS_PUBLISHED = 'publish';
 
         /**
          * Exposures for condition groups
          */
-        const EXP_SINGULAR         = 0;
+        const EXP_SINGULAR = 0;
         const EXP_SINGULAR_ARCHIVE = 1;
-        const EXP_ARCHIVE          = 2;
+        const EXP_ARCHIVE = 2;
 
         /**
-         * Capability to manage sidebars
+         * @deprecated 7.0
          */
-        const CAPABILITY           = 'edit_theme_options';
+        const CAPABILITY = 'edit_theme_options';
 
         /**
          * Name for generated nonces
          */
-        const NONCE                = '_ca_nonce';
+        const NONCE = '_ca_nonce';
 
         /**
          * Post Types that use the engine
@@ -71,10 +71,10 @@ if (!class_exists('WPCACore')) {
         private static $condition_cache = array();
 
         /**
-         * Sidebars retrieved from database
+         * Objects retrieved from database
          * @var array
          */
-        private static $post_cache  = array();
+        private static $post_cache = array();
 
         /**
          * Constructor
@@ -160,23 +160,26 @@ if (!class_exists('WPCACore')) {
          */
         public static function add_group_post_type()
         {
+            //This is just a safety placeholder,
+            //authorization will be done with parent object's cap
+            $capability = 'edit_theme_options';
             $capabilities = array(
-                'edit_post'          => self::CAPABILITY,
-                'read_post'          => self::CAPABILITY,
-                'delete_post'        => self::CAPABILITY,
-                'edit_posts'         => self::CAPABILITY,
-                'delete_posts'       => self::CAPABILITY,
-                'edit_others_posts'  => self::CAPABILITY,
-                'publish_posts'      => self::CAPABILITY,
-                'read_private_posts' => self::CAPABILITY
+                'edit_post'          => $capability,
+                'read_post'          => $capability,
+                'delete_post'        => $capability,
+                'edit_posts'         => $capability,
+                'delete_posts'       => $capability,
+                'edit_others_posts'  => $capability,
+                'publish_posts'      => $capability,
+                'read_private_posts' => $capability
             );
 
             register_post_type(self::TYPE_CONDITION_GROUP, array(
-                'labels'       => array(
-                    'name'               => __('Condition Groups', WPCA_DOMAIN),
-                    'singular_name'      => __('Condition Group', WPCA_DOMAIN),
+                'labels' => array(
+                    'name'          => __('Condition Groups', WPCA_DOMAIN),
+                    'singular_name' => __('Condition Group', WPCA_DOMAIN),
                 ),
-                'capabilities' => $capabilities,
+                'capabilities'        => $capabilities,
                 'public'              => false,
                 'hierarchical'        => false,
                 'exclude_from_search' => true,
@@ -228,10 +231,6 @@ if (!class_exists('WPCACore')) {
          */
         public static function sync_group_deletion($post_id)
         {
-            if (!current_user_can(self::CAPABILITY)) {
-                return;
-            }
-
             $groups = self::get_group_ids_by_parent($post_id);
             if ($groups) {
                 foreach ($groups as $group_id) {
@@ -397,7 +396,7 @@ if (!class_exists('WPCACore')) {
             ), OBJECT_K);
 
             //Force update of meta cache to prevent lazy loading
-            update_meta_cache('post', array_keys($groups_in_context+$groups_negated));
+            update_meta_cache('post', array_keys($groups_in_context + $groups_negated));
 
             //condition group => type
             $valid = array();
@@ -494,43 +493,42 @@ if (!class_exists('WPCACore')) {
 
         public static function render_group_meta_box($post, $screen, $context = 'normal', $priority = 'default')
         {
-            if (self::$type_manager->has($post->post_type)) {
-                $options = array();
-                foreach (self::$type_manager->get($post->post_type)->get_all() as $module) {
-                    $options = $module->list_module($options);
-                }
-                $options = apply_filters('wpca/modules/list', $options);
-                $post_type_obj = get_post_type_object($post->post_type);
-
-                $template = WPCAView::make('condition_options');
-                add_action('wpca/group/settings', array($template,'render'), -1, 2);
-
-                $template = WPCAView::make('group_template', array(
-                    'post_type'=> $post->post_type,
-                    'options'  => $options
-                ));
-                add_action('admin_footer', array($template,'render'));
-
-                $template = WPCAView::make('condition_template');
-                add_action('admin_footer', array($template,'render'));
-
-                $view = WPCAView::make('meta_box', array(
-                    'post_type'=> $post->post_type,
-                    'nonce'    => wp_nonce_field(self::PREFIX.$post->ID, self::NONCE, true, false),
-                    'options'  => $options
-                ));
-
-                $title = isset($post_type_obj->labels->ca_title) ? $post_type_obj->labels->ca_title : __('Conditional Logic', WPCA_DOMAIN);
-
-                add_meta_box(
-                    'cas-rules',
-                    $title,
-                    array($view,'render'),
-                    $screen,
-                    $context,
-                    $priority
-                );
+            if (!self::$type_manager->has($post->post_type)) {
+                return;
             }
+
+            $post_type_obj = get_post_type_object($post->post_type);
+
+            if (!current_user_can($post_type_obj->cap->edit_post, $post->ID)) {
+                return;
+            }
+
+            $template = WPCAView::make('condition_options');
+            add_action('wpca/group/settings', array($template,'render'), -1, 2);
+
+            $template = WPCAView::make('group_template', array(
+                'post_type' => $post->post_type
+            ));
+            add_action('admin_footer', array($template,'render'));
+
+            $template = WPCAView::make('condition_template');
+            add_action('admin_footer', array($template,'render'));
+
+            $view = WPCAView::make('meta_box', array(
+                'post_type' => $post->post_type,
+                'nonce'     => wp_nonce_field(self::PREFIX.$post->ID, self::NONCE, true, false),
+            ));
+
+            $title = isset($post_type_obj->labels->ca_title) ? $post_type_obj->labels->ca_title : __('Conditional Logic', WPCA_DOMAIN);
+
+            add_meta_box(
+                'cas-rules',
+                $title,
+                array($view,'render'),
+                $screen,
+                $context,
+                $priority
+            );
         }
 
         /**
@@ -578,11 +576,11 @@ if (!class_exists('WPCACore')) {
 
             if ($post) {
                 $groups = get_posts(array(
-                    'posts_per_page'   => -1,
-                    'post_type'        => self::TYPE_CONDITION_GROUP,
-                    'post_parent'      => $post->ID,
-                    'post_status'      => array(self::STATUS_PUBLISHED,self::STATUS_NEGATED),
-                    'order'            => 'ASC'
+                    'posts_per_page' => -1,
+                    'post_type'      => self::TYPE_CONDITION_GROUP,
+                    'post_parent'    => $post->ID,
+                    'post_status'    => array(self::STATUS_PUBLISHED,self::STATUS_NEGATED),
+                    'order'          => 'ASC'
                 ));
             }
             return $groups;
@@ -596,55 +594,55 @@ if (!class_exists('WPCACore')) {
          */
         public static function ajax_update_group()
         {
-            $response = array();
-
-            try {
-                if (!isset($_POST['current_id']) ||
-                    !check_ajax_referer(self::PREFIX.$_POST['current_id'], 'token', false)) {
-                    $response = __('Unauthorized request', WPCA_DOMAIN);
-                    throw new Exception('Forbidden', 403);
-                }
-
-                //Make sure some rules are sent
-                if (!isset($_POST['conditions'])) {
-                    //Otherwise we delete group
-                    if ($_POST['id'] && wp_delete_post(intval($_POST['id']), true) === false) {
-                        $response = __('Could not delete conditions', WPCA_DOMAIN);
-                        throw new Exception('Internal Server Error', 500);
-                    }
-                    $response['removed'] = true;
-                }
-                if (!isset($response['removed'])) {
-                    //If ID was not sent at this point, it is a new group
-                    if (!$_POST['id']) {
-                        $post_id = self::add_condition_group(intval($_POST['current_id']));
-                        $response['new_post_id'] = $post_id;
-                    } else {
-                        $post_id = intval($_POST['id']);
-                    }
-
-                    wp_update_post(array(
-                        'ID' => $post_id,
-                        'post_status' => $_POST['status'] == self::STATUS_NEGATED ? self::STATUS_NEGATED : self::STATUS_PUBLISHED,
-                        'menu_order' => (int)$_POST['exposure']
-                    ));
-
-                    foreach (self::$type_manager->get($_POST['post_type'])->get_all() as $module) {
-                        //send $_POST here
-                        $module->save_data($post_id);
-                    }
-
-                    do_action('wpca/modules/save-data', $post_id, $_POST['post_type']);
-                }
-
-                $response['message'] = __('Conditions updated', WPCA_DOMAIN);
-
-                wp_send_json($response);
-            } catch (Exception $e) {
-                header('HTTP/1.1 '.$e->getCode().' '.$e->getMessage());
-                echo $response;
-                wp_die();
+            if (!isset($_POST['current_id']) ||
+                !check_ajax_referer(self::PREFIX.$_POST['current_id'], 'token', false)) {
+                wp_send_json_error(__('Unauthorized request', WPCA_DOMAIN), 403);
             }
+
+            $parent_id = (int)$_POST['current_id'];
+            $parent_type = get_post_type_object($_POST['post_type']);
+
+            if (! current_user_can($parent_type->cap->edit_post, $parent_id)) {
+                wp_send_json_error(__('Unauthorized request', WPCA_DOMAIN), 403);
+            }
+
+            $response = array(
+                'message' => __('Conditions updated', WPCA_DOMAIN)
+            );
+
+            //Make sure some rules are sent
+            if (!isset($_POST['conditions'])) {
+                //Otherwise we delete group
+                if ($_POST['id'] && wp_delete_post(intval($_POST['id']), true) === false) {
+                    wp_send_json_error(__('Could not delete conditions', WPCA_DOMAIN), 500);
+                }
+
+                $response['removed'] = true;
+                wp_send_json($response);
+            }
+
+            //If ID was not sent at this point, it is a new group
+            if (!$_POST['id']) {
+                $post_id = self::add_condition_group($parent_id);
+                $response['new_post_id'] = $post_id;
+            } else {
+                $post_id = (int)$_POST['id'];
+            }
+
+            wp_update_post(array(
+                'ID'          => $post_id,
+                'post_status' => $_POST['status'] == self::STATUS_NEGATED ? self::STATUS_NEGATED : self::STATUS_PUBLISHED,
+                'menu_order'  => (int)$_POST['exposure']
+            ));
+
+            foreach (self::$type_manager->get($parent_type->name)->get_all() as $module) {
+                //send $_POST here
+                $module->save_data($post_id);
+            }
+
+            do_action('wpca/modules/save-data', $post_id, $parent_type->name);
+
+            wp_send_json($response);
         }
 
         /**
