@@ -21,6 +21,11 @@ class WPCAModule_taxonomy extends WPCAModule_Base
 {
 
     /**
+     * @var string
+     */
+    protected $category = 'taxonomy';
+
+    /**
      * Registered public taxonomies
      *
      * @var array
@@ -134,7 +139,7 @@ class WPCAModule_taxonomy extends WPCAModule_Base
     public function db_join()
     {
         global $wpdb;
-        $joins  = parent::db_join();
+        $joins = parent::db_join();
         $joins .= "LEFT JOIN $wpdb->term_relationships term ON term.object_id = p.ID ";
         return $joins;
     }
@@ -185,7 +190,7 @@ class WPCAModule_taxonomy extends WPCAModule_Base
             'update_term_meta_cache' => false
         ));
 
-        $args['offset'] = ($args['paged']-1)*$args['number'];
+        $args['offset'] = ($args['paged'] - 1) * $args['number'];
         unset($args['paged']);
 
         $total_items = wp_count_terms($args['taxonomy'], array(
@@ -252,8 +257,8 @@ class WPCAModule_taxonomy extends WPCAModule_Base
 
             if ($i >= $start) {
                 $retval[] = array(
-                    'id' => $term->term_id,
-                    'text' => htmlspecialchars_decode($term->name),
+                    'id'    => $term->term_id,
+                    'text'  => htmlspecialchars_decode($term->name),
                     'level' => $level
                 );
             }
@@ -342,10 +347,9 @@ class WPCAModule_taxonomy extends WPCAModule_Base
     }
 
     /**
-     * Set module info in list
+     * @since 2.0
+     * @param array $list
      *
-     * @since  2.0
-     * @param  array  $list
      * @return array
      */
     public function list_module($list)
@@ -353,8 +357,9 @@ class WPCAModule_taxonomy extends WPCAModule_Base
         foreach ($this->_get_taxonomies() as $taxonomy) {
             $placeholder = '/'.sprintf(__('%s Archives', WPCA_DOMAIN), $taxonomy->labels->singular_name);
             $placeholder = $taxonomy->labels->all_items.$placeholder;
-            $list[$this->id.'-'.$taxonomy->name] = array(
-                'name'          => $taxonomy->label,
+            $list[] = array(
+                'id'            => $this->id.'-'.$taxonomy->name,
+                'text'          => $taxonomy->label,
                 'placeholder'   => $placeholder,
                 'default_value' => $taxonomy->name
             );
@@ -372,9 +377,9 @@ class WPCAModule_taxonomy extends WPCAModule_Base
     public function ajax_get_content($args)
     {
         $args = wp_parse_args($args, array(
-            'item_object'    => 'post',
-            'paged'          => 1,
-            'search'         => ''
+            'item_object' => 'post',
+            'paged'       => 1,
+            'search'      => ''
         ));
 
         preg_match('/taxonomy-(.+)$/i', $args['item_object'], $matches);

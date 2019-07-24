@@ -21,6 +21,11 @@ class WPCAModule_post_type extends WPCAModule_Base
 {
 
     /**
+     * @var string
+     */
+    protected $category = 'post_type';
+
+    /**
      * Registered public post types
      *
      * @var array
@@ -191,8 +196,8 @@ class WPCAModule_post_type extends WPCAModule_Base
 
             if ($i >= $start) {
                 $retval[] = array(
-                    'id' => $page->ID,
-                    'text' => $this->post_title($page),
+                    'id'    => $page->ID,
+                    'text'  => $this->post_title($page),
                     'level' => $level
                 );
             }
@@ -260,8 +265,8 @@ class WPCAModule_post_type extends WPCAModule_Base
                     }
 
                     $group_data[$this->id.'-'.$post_type] = array(
-                        'label' => $post_type_obj->label,
-                        'placeholder' => $placeholder,
+                        'label'         => $post_type_obj->label,
+                        'placeholder'   => $placeholder,
                         'default_value' => $post_type
                     );
 
@@ -323,9 +328,9 @@ class WPCAModule_post_type extends WPCAModule_Base
     public function ajax_get_content($args)
     {
         $args = wp_parse_args($args, array(
-            'item_object'    => 'post',
-            'paged'          => 1,
-            'search'         => ''
+            'item_object' => 'post',
+            'paged'       => 1,
+            'search'      => ''
         ));
 
         preg_match('/post_type-(.+)$/i', $args['item_object'], $matches);
@@ -343,10 +348,9 @@ class WPCAModule_post_type extends WPCAModule_Base
     }
 
     /**
-     * Set module info in list
-     *
      * @since  2.0
      * @param  array  $list
+     *
      * @return array
      */
     public function list_module($list)
@@ -373,9 +377,10 @@ class WPCAModule_post_type extends WPCAModule_Base
                     break;
             }
 
-            $list[$this->id.'-'.$post_type] = array(
-                'name' => $name,
-                'placeholder' => $placeholder,
+            $list[] = array(
+                'id'            => $this->id.'-'.$post_type,
+                'text'          => $name,
+                'placeholder'   => $placeholder,
                 'default_value' => $post_type
             );
         }
@@ -489,7 +494,7 @@ class WPCAModule_post_type extends WPCAModule_Base
                     $query = new WP_Query(array(
                         'post_type'  => WPCACore::TYPE_CONDITION_GROUP,
                         'meta_query' => array(
-                        'relation'   => 'AND',
+                        'relation' => 'AND',
                             array(
                                 'key'     => WPCACore::PREFIX . 'autoselect',
                                 'value'   => 1,

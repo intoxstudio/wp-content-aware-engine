@@ -272,7 +272,6 @@ var CAE = CAE || {};
 			return condition;
 		},
 		events: {
-			"change .js-wpca-add-and":      "addConditionModel",
 			"click .js-wpca-save-group":    "saveGroup",
 			"click .js-wpca-options":       "showOptions"
 		},
@@ -329,6 +328,37 @@ var CAE = CAE || {};
 			this.listenTo( this.model, 'unsavedChanges', this.saveChanges);
 			this.listenTo( this.model.conditions, 'unsavedChanges', this.saveChanges);
 			this.listenTo( this.model.conditions, 'add remove', this.saveAddRemove);
+
+			var self = this;
+
+			var $elem = $('.js-wpca-add-and', this.$el);
+			$elem.select2({
+				theme: 'wpca',
+				placeholder: '+ ' + WPCA.newCondition,
+				minimumInputLength: 0,
+				closeOnSelect: true,//does not work properly on false
+				allowClear: false,
+				//multiple: true,
+				width: "resolve",
+				nextSearchTerm: function (selectedObject, currentSearchTerm) {
+					return currentSearchTerm;
+				},
+				data: WPCA.conditions
+			}).on('select2:select', function (e) {
+				var data = e.params.data;
+
+				if (!self.model.conditions.findWhere({ module: data.id })) {
+					var condition = new CAE.Models.Condition({
+						module: data.id,
+						label: data.text,
+						placeholder: data.placeholder,
+						default_value: data.default_value
+					});
+					self.model.conditions.add(condition);
+				}
+
+				$elem.val(null).trigger("change");
+			});
 		},
 		showOptions: function(e) {
 			$(e.delegateTarget).find('.cas-group-options').slideToggle(200);
@@ -366,20 +396,6 @@ var CAE = CAE || {};
 					this.removeModel();
 				}
 			}
-		},
-		addConditionModel: function(e) {
-			var $select = $(e.currentTarget);
-			if(!!$select.val() && isNaN($select.val()) && !this.model.conditions.findWhere({module:$select.val()})) {
-				var $selected = $select.children(":selected");
-				var condition = new CAE.Models.Condition({
-					module: $select.val(),
-					label: $selected.text(),
-					placeholder: $selected.data('placeholder'),
-					default_value: $selected.data('default')
-				});
-				this.model.conditions.add(condition);
-			}
-			$select.val(-1).blur();
 		},
 		removeModel: function() {
 			var that = this;
@@ -446,7 +462,7 @@ var CAE = CAE || {};
 				error: function(xhr, desc, e) {
 					$save.attr("disabled",false).show();
 					$spinner.removeClass('is-active');
-					wpca_admin.alert.failure(xhr.responseText);
+					wpca_admin.alert.failure(xhr.responseJSON.data);
 				}
 			});
 		},
@@ -463,30 +479,51 @@ var CAE = CAE || {};
 		el: "#cas-groups",
 		collection: CAE.Models.GroupCollection,
 		events: {
-			"change .js-wpca-add-or": "addGroupModel",
 			"click .js-wpca-add-quick": "addGroupQuick",
 			"click .js-wpca-save": "saveAll"
 		},
+		conditionsById: {},
+		initialize: function() {
+
+			var self = this;
+
+			this.conditionsById = _.chain(WPCA.conditions)
+				.pluck(['children'])
+				.flatten()
+				.indexBy('id')
+				.value();
+
+			var $elem = $('.js-wpca-add-or', this.$el);
+			$elem.select2({
+				theme: 'wpca',
+				placeholder: '+ ' + WPCA.newGroup,
+				minimumInputLength: 0,
+				closeOnSelect: true,//does not work properly on false
+				allowClear: false,
+				//multiple: true,
+				width: "auto",
+				nextSearchTerm: function (selectedObject, currentSearchTerm) {
+					return currentSearchTerm;
+				},
+				data: WPCA.conditions
+			}).on('select2:select', function (e) {
+				var data = e.params.data;
+				var group = new CAE.Models.Group();
+				var condition = new CAE.Models.Condition({
+					module: data.id,
+					label: data.text,
+					placeholder: data.placeholder,
+					default_value: data.default_value
+				});
+				self.collection.add(group);
+				group.conditions.add(condition);
+
+				$elem.val(null).trigger("change");
+			});
+
+		},
 		itemView: function(obj) {
 			return new CAE.Views.Group(obj);
-		},
-		addGroupModel: function(e) {
-			var $select = $(e.currentTarget);
-
-			if(!!$select.val() && isNaN($select.val())) {
-				var group = new CAE.Models.Group();
-				var $selected = $select.children(":selected");
-				var condition = new CAE.Models.Condition({
-					module: $select.val(),
-					label: $selected.text(),
-					placeholder: $selected.data('placeholder'),
-					default_value: $selected.data('default')
-				});
-				this.collection.add(group);
-				group.conditions.add(condition);
-			}
-
-			$select.val(-1).blur();
 		},
 		addGroupQuick: function(e) {
 			e.preventDefault();
@@ -497,26 +534,24 @@ var CAE = CAE || {};
 
 			this.collection.add(group);
 
-			var $select = this.$el.find('.js-wpca-add-or');
-
 			for(var i in config.modules) {
-				var $selected = $select.find('option[value=' + config.modules[i] + ']');
-
-				if(!$selected.length) {
+				if (!this.conditionsById.hasOwnProperty(config.modules[i])) {
 					continue;
 				}
 
+				var selected = this.conditionsById[config.modules[i]];
+
 				var condition = new CAE.Models.Condition({
-					module: config.modules[i],
-					label: $selected.text(),
-					placeholder: $selected.data('placeholder'),
-					default_value: $selected.data('default')
+					module: selected.id,
+					label: selected.text,
+					placeholder: selected.placeholder,
+					default_value: selected.default_value
 				});
 				group.conditions.add(condition);
 			}
 		}
 	});
-	
+
 	//remove tag completely on backspace
 	$.fn.select2.amd.require(['select2/selection/search'], function (Search) {
 		Search.prototype.searchRemoveChoice = function (decorated, item) {
@@ -587,7 +622,7 @@ var CAE = CAE || {};
 								more: more,
 								items: cachedData ? self.cachedResults[params.term].items.concat(data) : data
 							};
-							
+
 							callback({
 								results: data,
 								pagination: {
@@ -639,7 +674,7 @@ var CAE = CAE || {};
 			this.alert = new CAE.Views.Alert({
 				model:new CAE.Models.Alert()
 			});
-			
+
 			CAE.conditionGroups = new CAE.Views.GroupCollection({
 				collection:new CAE.Models.GroupCollection(WPCA.groups,{parse:true})
 			});

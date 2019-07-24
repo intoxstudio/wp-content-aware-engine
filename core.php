@@ -23,12 +23,12 @@ if (!class_exists('WPCACore')) {
          * Using class prefix instead of namespace
          * for PHP5.2 compatibility
          */
-        const CLASS_PREFIX         = 'WPCA';
+        const CLASS_PREFIX = 'WPCA';
 
         /**
          * Prefix for data (keys) stored in database
          */
-        const PREFIX               = '_ca_';
+        const PREFIX = '_ca_';
 
         /**
          * Post Type for condition groups
@@ -726,14 +726,7 @@ if (!class_exists('WPCACore')) {
                 foreach (self::$type_manager->get($post_type)->get_all() as $module) {
                     $data[$i]['conditions'] = $module->get_group_data($data[$i]['conditions'], $group->ID);
                 }
-                // $meta = get_post_custom($group->ID);
-                // foreach ($group_meta as $meta_key => $default_value) {
-                // 	$value = $default_value;
-                // 	if(isset($meta[$meta_key])) {
-                // 		$value = $meta[$meta_key];
-                // 	}
-                // 	$data[$i][$meta_key] = $value;
-                // }
+
                 foreach ($group_meta as $meta_key => $default_value) {
                     $value = get_post_meta($group->ID, $meta_key, true);
                     if ($value === false) {
@@ -744,17 +737,53 @@ if (!class_exists('WPCACore')) {
                 $i++;
             }
 
+            $conditions = array(
+                'general' => array(
+                    'text'     => __('General'),
+                    'children' => array()
+                ),
+                'post_type' => array(
+                    'text'     => __('Post Types'),
+                    'children' => array()
+                ),
+                'taxonomy' => array(
+                    'text'     => __('Taxonomies'),
+                    'children' => array()
+                ),
+                'plugins' => array(
+                    'text'     => __('Plugins'),
+                    'children' => array()
+                )
+            );
+
+            foreach (self::$type_manager->get($post_type)->get_all() as $module) {
+                $category = $module->get_category();
+                if (!isset($conditions[$category])) {
+                    $category = 'general';
+                }
+
+                $conditions[$category]['children'] = $module->list_module($conditions[$category]['children']);
+            }
+
+            foreach ($conditions as $key => $condition) {
+                if (empty($condition['children'])) {
+                    unset($conditions[$key]);
+                }
+            }
+
             //Make sure to use packaged version
             if (wp_script_is('select2', 'registered')) {
                 wp_deregister_script('select2');
                 wp_deregister_style('select2');
             }
 
+            $plugins_url = plugins_url('', __FILE__);
+
             //Add to head to take priority
             //if being added under other name
             wp_register_script(
                 'select2',
-                plugins_url('/assets/js/select2.min.js', __FILE__),
+                $plugins_url . '/assets/js/select2.min.js',
                 array('jquery'),
                 '4.0.3',
                 false
@@ -762,7 +791,7 @@ if (!class_exists('WPCACore')) {
 
             wp_register_script(
                 'backbone.trackit',
-                plugins_url('/assets/js/backbone.trackit.min.js', __FILE__),
+                $plugins_url . '/assets/js/backbone.trackit.min.js',
                 array('backbone'),
                 '0.1.0',
                 true
@@ -770,7 +799,7 @@ if (!class_exists('WPCACore')) {
 
             wp_register_script(
                 'backbone.epoxy',
-                plugins_url('/assets/js/backbone.epoxy.min.js', __FILE__),
+                $plugins_url . '/assets/js/backbone.epoxy.min.js',
                 array('backbone'),
                 '1.3.3',
                 true
@@ -778,21 +807,24 @@ if (!class_exists('WPCACore')) {
 
             wp_register_script(
                 self::PREFIX.'condition-groups',
-                plugins_url('/assets/js/condition_groups.min.js', __FILE__),
-                array('jquery','select2','backbone','backbone.trackit','backbone.epoxy'),
+                $plugins_url . '/assets/js/condition_groups.min.js',
+                array('jquery','select2','backbone.trackit','backbone.epoxy'),
                 WPCA_VERSION,
                 true
             );
 
             wp_enqueue_script(self::PREFIX.'condition-groups');
             wp_localize_script(self::PREFIX.'condition-groups', 'WPCA', array(
-                'searching'     => __('Searching', WPCA_DOMAIN),
-                'noResults'     => __('No results found.', WPCA_DOMAIN),
-                'loadingMore'   => __('Loading more results', WPCA_DOMAIN),
-                'unsaved'       => __('Conditions have unsaved changes. Do you want to continue and discard these changes?', WPCA_DOMAIN),
-                'groups'        => $data,
-                'meta_default'  => $group_meta,
-                'post_type'     => $post_type,
+                'searching'      => __('Searching', WPCA_DOMAIN),
+                'noResults'      => __('No results found.', WPCA_DOMAIN),
+                'loadingMore'    => __('Loading more results', WPCA_DOMAIN),
+                'unsaved'        => __('Conditions have unsaved changes. Do you want to continue and discard these changes?', WPCA_DOMAIN),
+                'newGroup'       => __('New condition group', WPCA_DOMAIN),
+                'newCondition'   => __('Meet ALL of these conditions', WPCA_DOMAIN),
+                'conditions'     => array_values($conditions),
+                'groups'         => $data,
+                'meta_default'   => $group_meta,
+                'post_type'      => $post_type,
                 'text_direction' => is_rtl() ? 'rtl' : 'ltr'
             ));
             wp_enqueue_style(self::PREFIX.'condition-groups');

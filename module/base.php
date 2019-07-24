@@ -15,29 +15,22 @@ defined('ABSPATH') || exit;
  */
 abstract class WPCAModule_Base
 {
-
     /**
      * @var string
      */
     protected $query_name;
 
     /**
-     * Module identification
-     *
      * @var string
      */
     protected $id;
 
     /**
-     * Module name
-     *
      * @var string
      */
     protected $name;
 
     /**
-     * Module description
-     *
      * @var string
      */
     protected $description;
@@ -57,13 +50,16 @@ abstract class WPCAModule_Base
      */
     protected $default_value = '';
 
+    /**
+     * @var string
+     */
+    protected $category = 'general';
 
     /**
-     * Constructor
-     *
-     * @param   string    $id
-     * @param   string    $title
-     * @param   string    $description
+     * @param string $id
+     * @param string $title
+     * @param string $description
+     * @param string $placeholder
      */
     public function __construct($id, $title, $description = '', $placeholder = '')
     {
@@ -92,19 +88,18 @@ abstract class WPCAModule_Base
     }
 
     /**
-     * Set module info in list
+     * @since 2.0
+     * @param array $list
      *
-     * @since  2.0
-     * @param  array  $list
      * @return array
      */
     public function list_module($list)
     {
-        //TODO: remove in favor of backbone objects
-        $list[$this->id] = array(
-            'name' => $this->name,
-            'placeholder' => $this->placeholder,
-            'default_value' => $this->default_value
+        $list[] = array(
+            'id'            => $this->id,
+            'text'          => $this->name,
+            'placeholder'   => $this->placeholder,
+            'default_value' => $this->default_value,
         );
         return $list;
     }
@@ -127,14 +122,33 @@ abstract class WPCAModule_Base
     }
 
     /**
-     * Idenficiation getter
-     *
      * @since  1.0
+     *
      * @return string
      */
     final public function get_id()
     {
         return $this->id;
+    }
+
+    /**
+     * @since 7.0
+     *
+     * @return string
+     */
+    final public function get_name()
+    {
+        return $this->name;
+    }
+
+    /**
+     * @since 7.0
+     *
+     * @return string
+     */
+    final public function get_category()
+    {
+        return $this->category;
     }
 
     /**
@@ -263,8 +277,8 @@ abstract class WPCAModule_Base
     public function ajax_get_content($args)
     {
         $args = wp_parse_args($args, array(
-            'paged'          => 1,
-            'search'         => ''
+            'paged'  => 1,
+            'search' => ''
         ));
 
         return $this->_get_content($args);
@@ -287,8 +301,8 @@ abstract class WPCAModule_Base
         $search = isset($_POST['search']) ? $_POST['search'] : false;
 
         $response = $this->ajax_get_content(array(
-            'paged' => $paged,
-            'search' => $search,
+            'paged'       => $paged,
+            'search'      => $search,
             'item_object' => $_POST['action']
         ));
 

@@ -21,6 +21,11 @@ class WPCAModule_bbpress extends WPCAModule_author
 {
 
     /**
+     * @var string
+     */
+    protected $category = 'plugins';
+
+    /**
      * Constructor
      */
     public function __construct()

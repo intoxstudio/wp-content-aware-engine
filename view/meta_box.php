@@ -39,19 +39,15 @@ echo $nonce; ?>
     </div>
     <div class="cas-group-new">
         <div>
-        <select class="js-wpca-add-or">
-            <option value="-1">+ <?php _e('New condition group', WPCA_DOMAIN); ?></option>
-<?php
-            foreach ($options as $key => $value) {
-                echo '<option data-placeholder="'.$value['placeholder'].'" data-default="'.$value['default_value'].'" value="'.$key.'">'.$value['name'].'</option>';
-            }
-?>
-        </select>
-        <span style="vertical-align: middle;"><em>or</em> <strong>Quick Add:</strong></span>
+            <select class="wpca-conditions-add js-wpca-add-or">
+                <option></option>
+            </select>
+            <span style="vertical-align: middle;"><em>or</em> <strong>Quick Add:</strong></span>
         </div>
         <div>
             <?php foreach ($quick_links as $label => $conditions) : ?>
-                <a class="js-wpca-add-quick" href="#" data-config='<?php echo json_encode($conditions); ?>'><?php echo $label; ?></a>
+            <a class="js-wpca-add-quick" href="#"
+                data-config='<?php echo json_encode($conditions); ?>'><?php echo $label; ?></a>
             <?php endforeach; ?>
         </div>
     </div>

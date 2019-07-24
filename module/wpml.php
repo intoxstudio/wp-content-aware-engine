@@ -21,6 +21,11 @@ class WPCAModule_wpml extends WPCAModule_Base
 {
 
     /**
+     * @var string
+     */
+    protected $category = 'plugins';
+
+    /**
      * Constructor
      */
     public function __construct()

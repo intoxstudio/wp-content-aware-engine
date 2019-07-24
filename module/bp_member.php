@@ -21,6 +21,11 @@ class WPCAModule_bp_member extends WPCAModule_Base
 {
 
     /**
+     * @var string
+     */
+    protected $category = 'plugins';
+
+    /**
      * Cached search string
      * @var string
      */
