@@ -760,7 +760,8 @@ if (!class_exists('WPCACore')) {
                     $category = 'general';
                 }
 
-                $conditions[$category]['children'] = $module->list_module($conditions[$category]['children']);
+                //array_values used for backwards compatibility
+                $conditions[$category]['children'] = array_values($module->list_module($conditions[$category]['children']));
             }
 
             foreach ($conditions as $key => $condition) {
