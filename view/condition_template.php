@@ -1,9 +1,9 @@
 <?php
 /**
  * @package WP Content Aware Engine
- * @author Joachim Jensen <jv@intox.dk>
+ * @author Joachim Jensen <joachim@dev.institute>
  * @license GPLv3
- * @copyright 2018 by Joachim Jensen
+ * @copyright 2019 by Joachim Jensen
  */
 ?>
 <script type="text/template" id="wpca-template-condition">

@@ -1,9 +1,9 @@
 <?php
 /**
  * @package WP Content Aware Engine
- * @author Joachim Jensen <jv@intox.dk>
+ * @author Joachim Jensen <joachim@dev.institute>
  * @license GPLv3
- * @copyright 2018 by Joachim Jensen
+ * @copyright 2019 by Joachim Jensen
  */
 
 defined('ABSPATH') || exit;
@@ -66,18 +66,18 @@ if (!class_exists('WPCAMeta')) {
             $id,
             $title,
             $default_value = '',
-            $input_type    = 'text',
-            $input_list    = array(),
-            $description   = '',
-            $sanitizer      = ''
+            $input_type = 'text',
+            $input_list = array(),
+            $description = '',
+            $sanitizer = ''
         ) {
-            $this->id            = $id;
-            $this->title         = $title;
+            $this->id = $id;
+            $this->title = $title;
             $this->default_value = $default_value;
-            $this->input_type    = $input_type;
-            $this->input_list    = $input_list;
-            $this->description   = $description;
-            $this->sanitizer     = $sanitizer;
+            $this->input_type = $input_type;
+            $this->input_list = $input_list;
+            $this->description = $description;
+            $this->sanitizer = $sanitizer;
         }
 
         /**
