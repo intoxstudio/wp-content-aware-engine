@@ -27,7 +27,7 @@
 </li>
 <li>
     <label class="cae-toggle">
-        <input data-vm="checked:int(_ca_autoselect)" type="checkbox" />
+        <input data-vm="checked:binary(_ca_autoselect)" type="checkbox" />
         <div class="cae-toggle-bar wpca-pull-right"></div><?php _e('Auto-select new children of selected items', WPCA_DOMAIN); ?>
     </label>
 </li>

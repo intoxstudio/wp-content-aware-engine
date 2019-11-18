@@ -285,33 +285,10 @@ var CAE = CAE || {};
 					var valid = bool ? 'negated' : 'publish';
 					this.setBinding("status", valid);
 				}
-			},
-			//ensure exposure number and state
-			exposureSingular: {
-				deps: ["exposure"],
-				get: function(exposure) {
-					return exposure <= 1;
-				},
-				set: function( bool ) {
-					var isArchive = this.getBinding('exposureArchive'),
-						val = !(bool && isArchive) ? 2 : (isArchive ? 1 : 0);
-					this.setBinding("exposure",val);
-				}
-			},
-			exposureArchive: {
-				deps: ["exposure"],
-				get: function(exposure) {
-					return exposure >= 1;
-				},
-				set: function( bool ) {
-					var isSingular = this.getBinding('exposureSingular'),
-						val = !(bool && isSingular) ? 0 : (isSingular ? 1 : 2);
-					this.setBinding("exposure",val);
-				}
 			}
 		},
 		bindingFilters: {
-			//epoxy integer filter seems broken
+			//@deprecated use binary
 			int: {
 				get: function( value ) {
 					return value ? 1 : 0;
@@ -319,6 +296,32 @@ var CAE = CAE || {};
 				set: function( value ) {
 					return value ? 1 : 0;
 				}
+			},
+			binary: {
+				get: function (value) {
+					return value ? 1 : 0;
+				},
+				set: function (value) {
+					return value ? 1 : 0;
+				}
+			},
+			hasModule: function (collection) {
+				var lookup = {};
+				for(var i = 1; i < arguments.length; i++) {
+					lookup[arguments[i]] = true;
+				}
+				return collection.filter(function(value) {
+					return lookup.hasOwnProperty(value.get('module'));
+				}).length == arguments.length - 1;
+			},
+			hasAnyModule: function (collection) {
+				var lookup = {};
+				for (var i = 1; i < arguments.length; i++) {
+					lookup[arguments[i]] = true;
+				}
+				return !!collection.find(function (value) {
+					return lookup.hasOwnProperty(value.get('module'));
+				});
 			}
 		},
 		initialize: function() {
