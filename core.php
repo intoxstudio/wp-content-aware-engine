@@ -83,8 +83,6 @@ if (!class_exists('WPCACore')) {
         {
             spl_autoload_register(array(__CLASS__,'_autoload_class_files'));
 
-            self::$type_manager = new WPCATypeManager();
-
             if (is_admin()) {
                 add_action(
                     'admin_enqueue_scripts',
@@ -138,7 +136,7 @@ if (!class_exists('WPCACore')) {
          */
         public static function post_types()
         {
-            return self::$type_manager;
+            return self::types();
         }
 
         /**
@@ -149,6 +147,9 @@ if (!class_exists('WPCACore')) {
          */
         public static function types()
         {
+            if (!isset(self::$type_manager)) {
+                self::$type_manager = new WPCATypeManager();
+            }
             return self::$type_manager;
         }
 
@@ -214,7 +215,7 @@ if (!class_exists('WPCACore')) {
          */
         private static function get_group_ids_by_parent($parent_id)
         {
-            if (!self::$type_manager->has(get_post_type($parent_id))) {
+            if (!self::types()->has(get_post_type($parent_id))) {
                 return array();
             }
 
@@ -274,7 +275,7 @@ if (!class_exists('WPCACore')) {
             }
         }
 
-        protected static $wp_query_original = array();
+        private static $wp_query_original = array();
 
         /**
          * Get filtered condition groups
@@ -451,7 +452,7 @@ if (!class_exists('WPCACore')) {
                 return self::$post_cache[$post_type];
             }
 
-            if (!self::$type_manager->has($post_type) || (!$wp_query->query && !$post) || is_admin()) {
+            if (!self::types()->has($post_type) || (!$wp_query->query && !$post) || is_admin()) {
                 return false;
             }
 
@@ -493,7 +494,7 @@ if (!class_exists('WPCACore')) {
 
         public static function render_group_meta_box($post, $screen, $context = 'normal', $priority = 'default')
         {
-            if (!self::$type_manager->has($post->post_type)) {
+            if (!self::types()->has($post->post_type)) {
                 return;
             }
 
@@ -569,7 +570,7 @@ if (!class_exists('WPCACore')) {
          * @param  WP_Post|int    $post_id
          * @return array
          */
-        private static function _get_condition_groups($post_id = null)
+        private static function get_condition_groups($post_id = null)
         {
             $post = get_post($post_id);
             $groups = array();
@@ -676,7 +677,7 @@ if (!class_exists('WPCACore')) {
                 WPCA_VERSION
             );
 
-            if (self::$type_manager->has($current_screen->post_type) && $current_screen->base == 'post') {
+            if (self::types()->has($current_screen->post_type) && $current_screen->base == 'post') {
                 self::enqueue_scripts_styles($hook);
             }
         }
@@ -710,7 +711,7 @@ if (!class_exists('WPCACore')) {
 
             $group_meta = self::get_condition_meta_keys($post_type);
 
-            $groups = self::_get_condition_groups();
+            $groups = self::get_condition_groups();
             $data = array();
             $i = 0;
             foreach ($groups as $group) {
@@ -721,7 +722,7 @@ if (!class_exists('WPCACore')) {
                     'conditions' => array()
                 );
 
-                foreach (self::$type_manager->get($post_type)->get_all() as $module) {
+                foreach (self::types()->get($post_type)->get_all() as $module) {
                     $data[$i]['conditions'] = $module->get_group_data($data[$i]['conditions'], $group->ID);
                 }
 
@@ -754,7 +755,7 @@ if (!class_exists('WPCACore')) {
                 )
             );
 
-            foreach (self::$type_manager->get($post_type)->get_all() as $module) {
+            foreach (self::types()->get($post_type)->get_all() as $module) {
                 $category = $module->get_category();
                 if (!isset($conditions[$category])) {
                     $category = 'general';
@@ -841,7 +842,7 @@ if (!class_exists('WPCACore')) {
          * @since  5.0
          * @return void
          */
-        protected static function fix_wp_query()
+        private static function fix_wp_query()
         {
             $query = array();
 
@@ -868,7 +869,7 @@ if (!class_exists('WPCACore')) {
          * @since  5.0
          * @return void
          */
-        protected static function restore_wp_query()
+        private static function restore_wp_query()
         {
             self::set_wp_query(self::$wp_query_original);
             self::$wp_query_original = array();
@@ -880,7 +881,7 @@ if (!class_exists('WPCACore')) {
          * @since 5.0
          * @param array  $query
          */
-        protected static function set_wp_query($query)
+        private static function set_wp_query($query)
         {
             global $wp_query;
             foreach ($query as $key => $val) {
