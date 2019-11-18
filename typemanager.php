@@ -38,7 +38,7 @@ if (!class_exists('WPCATypeManager')) {
          */
         public function add($name, $arg = '')
         {
-            parent::add(new WPCAModuleManager(), $name);
+            parent::add(new WPCAObjectManager(), $name);
         }
 
         /**
