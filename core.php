@@ -58,7 +58,7 @@ if (!class_exists('WPCACore')) {
          */
         const NONCE = '_ca_nonce';
 
-        const OPTION_EXCLUDED_CONDITIONS_CACHE = '_ca_excluded_conditions_cache';
+        const OPTION_CONDITION_TYPE_CACHE = '_ca_condition_type_cache';
 
         /**
          * Post Types that use the engine
@@ -166,6 +166,11 @@ if (!class_exists('WPCACore')) {
             return self::$type_manager;
         }
 
+        /**
+         * @since 8.0
+         *
+         * @return void
+         */
         public static function schedule_cache_condition_types()
         {
             if (wp_next_scheduled('wpca/cache_condition_types') !== false) {
@@ -176,7 +181,7 @@ if (!class_exists('WPCACore')) {
         }
 
         /**
-         * Fetch
+         * Cache condition types currently in use
          *
          * @since 8.0
          *
@@ -187,10 +192,12 @@ if (!class_exists('WPCACore')) {
             $all_modules = array();
             $modules_by_type = array();
             $ignored_modules = array('taxonomy' => 1);
+            $cache = array();
 
             $types = self::types();
             foreach ($types as $type => $modules) {
                 $modules_by_type[$type] = array();
+                $cache[$type] = array();
                 foreach ($modules as $module) {
                     if (isset($ignored_modules[$module->get_id()])) {
                         continue;
@@ -202,7 +209,7 @@ if (!class_exists('WPCACore')) {
             }
 
             if (!$all_modules) {
-                update_option(self::OPTION_EXCLUDED_CONDITIONS_CACHE, array());
+                update_option(self::OPTION_CONDITION_TYPE_CACHE, array());
                 return;
             }
 
@@ -218,52 +225,15 @@ AND m.meta_key IN ('.self::sql_prepare_in($all_modules).')
 GROUP BY p.post_type, m.meta_key
 ';
 
-            $results = $wpdb->get_results($query);
-
-            if (!$results) {
-                update_option(self::OPTION_EXCLUDED_CONDITIONS_CACHE, array());
-                return;
-            }
+            $results = (array) $wpdb->get_results($query);
 
             foreach ($results as $result) {
                 if (isset($modules_by_type[$result->post_type][$result->meta_key])) {
-                    unset($modules_by_type[$result->post_type][$result->meta_key]);
+                    $cache[$result->post_type][] = $modules_by_type[$result->post_type][$result->meta_key];
                 }
             }
 
-            foreach ($modules_by_type as $type => $modules) {
-                $modules_by_type[$type] = array_values($modules);
-            }
-
-            update_option(self::OPTION_EXCLUDED_CONDITIONS_CACHE, $modules_by_type);
-        }
-
-        protected static function filter_excluded_conditions($type, $modules)
-        {
-            $excluded_conditions = get_option(self::OPTION_EXCLUDED_CONDITIONS_CACHE, array());
-
-            if (!$excluded_conditions || !isset($excluded_conditions[$type])) {
-                return $modules;
-            }
-
-            $excluded_conditions_lookup = array_flip($excluded_conditions[$type]);
-            $filtered_modules = array();
-
-            foreach ($modules as $module) {
-                if (!isset($excluded_conditions_lookup[$module->get_id()])) {
-                    $filtered_modules[] = $module;
-                }
-            }
-
-            return $filtered_modules;
-        }
-
-        protected static function sql_prepare_in($input)
-        {
-            $output = array_map(function ($v) {
-                return "'" . esc_sql($v) . "'";
-            }, $input);
-            return implode(',', $output);
+            update_option(self::OPTION_CONDITION_TYPE_CACHE, $cache);
         }
 
         /**
@@ -417,14 +387,14 @@ GROUP BY p.post_type, m.meta_key
                 $post_type
             );
 
-            $modules = self::$type_manager->get($post_type)->get_all();
-            $modules = self::filter_excluded_conditions($post_type, $modules);
+            $modules = self::types()->get($post_type)->get_all();
+            $modules = self::filter_condition_type_cache($post_type, $modules);
 
-            foreach (self::$type_manager as $other_type => $other_modules) {
+            foreach (self::types() as $other_type => $other_modules) {
                 if ($other_type == $post_type) {
                     continue;
                 }
-                if (self::filter_excluded_conditions($other_type, $other_modules->get_all()) === $modules) {
+                if (self::filter_condition_type_cache($other_type, $other_modules->get_all()) === $modules) {
                     $cache[] = $other_type;
                 }
             }
@@ -751,9 +721,9 @@ GROUP BY p.post_type, m.meta_key
             ));
 
             //Prune condition type cache, will rebuild within 24h
-            update_option(self::OPTION_EXCLUDED_CONDITIONS_CACHE, array());
+            update_option(self::OPTION_CONDITION_TYPE_CACHE, array());
 
-            foreach (self::$type_manager->get($parent_type->name)->get_all() as $module) {
+            foreach (self::types()->get($parent_type->name)->get_all() as $module) {
                 //send $_POST here
                 $module->save_data($post_id);
             }
@@ -1058,6 +1028,47 @@ GROUP BY p.post_type, m.meta_key
                 $subject = substr_replace($subject, $replace, $pos, strlen($search));
             }
             return $subject;
+        }
+
+        /**
+         * @since 8.0
+         * @param array $input
+         *
+         * @return string
+         */
+        private static function sql_prepare_in($input)
+        {
+            $output = array_map(function ($value) {
+                return "'" . esc_sql($value) . "'";
+            }, $input);
+            return implode(',', $output);
+        }
+
+        /**
+         * @since 8.0
+         * @param string $type
+         * @param array $modules
+         *
+         * @return array
+         */
+        private static function filter_condition_type_cache($type, $modules)
+        {
+            $included_conditions = get_option(self::OPTION_CONDITION_TYPE_CACHE, array());
+
+            if (!$included_conditions || !isset($included_conditions[$type])) {
+                return $modules;
+            }
+
+            $included_conditions_lookup = array_flip($included_conditions[$type]);
+            $filtered_modules = array();
+
+            foreach ($modules as $module) {
+                if (isset($included_conditions_lookup[$module->get_id()])) {
+                    $filtered_modules[] = $module;
+                }
+            }
+
+            return $filtered_modules;
         }
     }
 }
