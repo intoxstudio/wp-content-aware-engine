@@ -1060,11 +1060,12 @@ GROUP BY p.post_type, m.meta_key
                 return $modules;
             }
 
+            $ignored_modules = array('taxonomy' => 1);
             $included_conditions_lookup = array_flip($included_conditions[$type]);
             $filtered_modules = array();
 
             foreach ($modules as $module) {
-                if (isset($included_conditions_lookup[$module->get_id()])) {
+                if (isset($ignored_modules[$module->get_id()]) || isset($included_conditions_lookup[$module->get_id()])) {
                     $filtered_modules[] = $module;
                 }
             }
