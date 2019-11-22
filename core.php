@@ -218,9 +218,9 @@ if (!class_exists('WPCACore')) {
 
             $query = '
 SELECT p.post_type, m.meta_key
-FROM wp_posts p
-INNER JOIN wp_posts c ON c.post_parent = p.ID
-INNER JOIN wp_postmeta m ON m.post_id = c.ID
+FROM '.$wpdb->posts.' p
+INNER JOIN '.$wpdb->posts.' c ON c.post_parent = p.ID
+INNER JOIN '.$wpdb->postmeta.' m ON m.post_id = c.ID
 WHERE p.post_type IN ('.self::sql_prepare_in(array_keys($modules_by_type)).')
 AND m.meta_key IN ('.self::sql_prepare_in($all_modules).')
 GROUP BY p.post_type, m.meta_key
