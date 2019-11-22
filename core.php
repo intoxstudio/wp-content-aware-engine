@@ -418,58 +418,57 @@ GROUP BY p.post_type, m.meta_key
             }
 
             // Check if there are any conditions for current content
-            if (empty($where)) {
-                return array();
-            }
-
-            $post_status = array(
-                self::STATUS_PUBLISHED,
-                self::STATUS_NEGATED
-            );
-
-            if (defined('CAS_SQL_CHUNK_SIZE') && CAS_SQL_CHUNK_SIZE > 0) {
-                $chunk_size = CAS_SQL_CHUNK_SIZE;
-            } else {
-                //Syntax changed in MySQL 5.5 and MariaDB 10.0 (reports as version 5.5)
-                $wpdb->query('SET'.(version_compare($wpdb->db_version(), '5.5', '>=') ? ' SESSION' : ' OPTION').' SQL_BIG_SELECTS = 1');
-                $chunk_size = count($join);
-            }
-
-            $joins = array_chunk($join, $chunk_size);
-            $joins_max = count($joins) - 1;
-            $wheres = array_chunk($where, $chunk_size);
-            $group_ids = array();
             $groups_in_context = array();
+            if (!empty($where)) {
+                $post_status = array(
+                    self::STATUS_PUBLISHED,
+                    self::STATUS_NEGATED
+                );
 
-            $where2 = array();
-            $where2[] = "p.post_type = '".self::TYPE_CONDITION_GROUP."'";
-            $where2[] = "p.post_status IN ('".implode("','", $post_status)."')";
-            //exposure
-            $where2[] = 'p.menu_order '.(is_archive() || is_home() ? '>=' : '<=').' 1';
-
-            foreach ($joins as $i => $join) {
-                if ($i == $joins_max) {
-                    $groups_in_context = $wpdb->get_results(
-                        'SELECT p.ID, p.post_parent '.
-                        "FROM $wpdb->posts p ".
-                        implode(' ', $join).'
-						WHERE
-						'.implode(' AND ', $wheres[$i]).'
-						AND '.implode(' AND ', $where2).
-                        (!empty($group_ids) ? ' AND p.id IN ('.implode(',', $group_ids).')' : ''),
-                        OBJECT_K
-                    );
-                    break;
+                if (defined('CAS_SQL_CHUNK_SIZE') && CAS_SQL_CHUNK_SIZE > 0) {
+                    $chunk_size = CAS_SQL_CHUNK_SIZE;
+                } else {
+                    //Syntax changed in MySQL 5.5 and MariaDB 10.0 (reports as version 5.5)
+                    $wpdb->query('SET'.(version_compare($wpdb->db_version(), '5.5', '>=') ? ' SESSION' : ' OPTION').' SQL_BIG_SELECTS = 1');
+                    $chunk_size = count($join);
                 }
 
-                $group_ids = array_merge($group_ids, $wpdb->get_col(
-                    'SELECT p.ID '.
-                    "FROM $wpdb->posts p ".
-                    implode(' ', $join).'
-					WHERE
-					'.implode(' AND ', $wheres[$i]).'
-					AND '.implode(' AND ', $where2)
-                ));
+                $joins = array_chunk($join, $chunk_size);
+                $joins_max = count($joins) - 1;
+                $wheres = array_chunk($where, $chunk_size);
+                $group_ids = array();
+                $groups_in_context = array();
+
+                $where2 = array();
+                $where2[] = "p.post_type = '".self::TYPE_CONDITION_GROUP."'";
+                $where2[] = "p.post_status IN ('".implode("','", $post_status)."')";
+                //exposure
+                $where2[] = 'p.menu_order '.(is_archive() || is_home() ? '>=' : '<=').' 1';
+
+                foreach ($joins as $i => $join) {
+                    if ($i == $joins_max) {
+                        $groups_in_context = $wpdb->get_results(
+                            'SELECT p.ID, p.post_parent '.
+                            "FROM $wpdb->posts p ".
+                            implode(' ', $join).'
+                            WHERE
+                            '.implode(' AND ', $wheres[$i]).'
+                            AND '.implode(' AND ', $where2).
+                            (!empty($group_ids) ? ' AND p.id IN ('.implode(',', $group_ids).')' : ''),
+                            OBJECT_K
+                        );
+                        break;
+                    }
+
+                    $group_ids = array_merge($group_ids, $wpdb->get_col(
+                        'SELECT p.ID '.
+                        "FROM $wpdb->posts p ".
+                        implode(' ', $join).'
+                        WHERE
+                        '.implode(' AND ', $wheres[$i]).'
+                        AND '.implode(' AND ', $where2)
+                    ));
+                }
             }
 
             $groups_negated = $wpdb->get_results($wpdb->prepare(
@@ -481,8 +480,10 @@ GROUP BY p.post_type, m.meta_key
                 self::STATUS_NEGATED
             ), OBJECT_K);
 
-            //Force update of meta cache to prevent lazy loading
-            update_meta_cache('post', array_keys($groups_in_context + $groups_negated));
+            if (!empty($groups_in_context) || !empty($groups_negated)) {
+                //Force update of meta cache to prevent lazy loading
+                update_meta_cache('post', array_keys($groups_in_context + $groups_negated));
+            }
 
             //condition group => type
             $valid = array();
