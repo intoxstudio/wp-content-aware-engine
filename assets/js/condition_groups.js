@@ -373,7 +373,11 @@ var CAE = CAE || {};
 				AutoSaver.start(this);
 			} else {
 				console.log("group view: no changes");
-				//AutoSaver.clear(this);
+				/**
+				 * if changing a condition and setting,
+				 * then undoing the setting, hasChanges will be false,
+				 * so cannot do AutoSaver.clear() here.
+				 */
 			}
 		},
 		saveAddRemove: function(model, collection, options) {
@@ -414,9 +418,6 @@ var CAE = CAE || {};
 				$save = this.$el.find('.js-wpca-save-group'),
 				self = this;
 
-			$save.attr("disabled",true);
-			$spinner.addClass('is-active');
-
 			var data = _.clone(this.model.attributes);
 			data.action = "wpca/add-rule";
 			data.token = wpca_admin.nonce;
@@ -424,7 +425,10 @@ var CAE = CAE || {};
 			data.post_type = WPCA.post_type;
 			data.conditions = {};
 
+			var hasChanges = !!this.model.unsavedAttributes();
+
 			this.model.conditions.each(function(model) {
+				hasChanges = hasChanges || !!model.unsavedAttributes();
 				if(model.get('values').length) {
 					data.conditions[model.get('module')] = model.get('values').map(function(model) {
 						return model.id;
@@ -433,6 +437,14 @@ var CAE = CAE || {};
 					data.conditions[model.get('module')] = [model.get('default_value')];
 				}
 			});
+
+			if(!hasChanges) {
+				console.log("group view: save aborted - no changes");
+				return;
+			}
+
+			$save.attr("disabled", true);
+			$spinner.addClass('is-active');
 
 			$.ajax({
 				url: ajaxurl,
