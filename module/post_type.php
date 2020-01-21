@@ -503,7 +503,7 @@ class WPCAModule_post_type extends WPCAModule_Base
                             ),
                             array(
                                 'key'     => WPCACore::PREFIX . $this->id,
-                                'value'   => get_ancestors($post->ID, $post->post_type),
+                                'value'   => get_post_ancestors($post),
                                 'type'    => 'numeric',
                                 'compare' => 'IN'
                             )
@@ -520,6 +520,7 @@ class WPCAModule_post_type extends WPCAModule_Base
                             99,
                             2
                         );
+                        do_action('wpca/modules/auto-select/'.$this->category, $query->posts, $post);
                     }
                 }
             }

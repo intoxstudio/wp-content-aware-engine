@@ -485,6 +485,7 @@ class WPCAModule_taxonomy extends WPCAModule_Base
                     foreach ($query->posts as $post) {
                         wp_set_post_terms($post->ID, $term_id, $taxonomy, true);
                     }
+                    do_action('wpca/modules/auto-select/'.$this->category, $query->posts, $term);
                 }
             }
         }
