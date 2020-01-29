@@ -425,10 +425,10 @@ var CAE = CAE || {};
 			data.post_type = WPCA.post_type;
 			data.conditions = {};
 
-			var hasChanges = !!this.model.unsavedAttributes();
+			//var hasChanges = !!this.model.unsavedAttributes();
 
 			this.model.conditions.each(function(model) {
-				hasChanges = hasChanges || !!model.unsavedAttributes();
+				//hasChanges = hasChanges || !!model.unsavedAttributes();
 				if(model.get('values').length) {
 					data.conditions[model.get('module')] = model.get('values').map(function(model) {
 						return model.id;
@@ -438,10 +438,10 @@ var CAE = CAE || {};
 				}
 			});
 
-			if(!hasChanges) {
-				console.log("group view: save aborted - no changes");
-				return;
-			}
+			// if(!hasChanges) {
+			// 	console.log("group view: save aborted - no changes");
+			// 	return;
+			// }
 
 			$save.attr("disabled", true);
 			$spinner.addClass('is-active');
