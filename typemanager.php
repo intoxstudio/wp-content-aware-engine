@@ -52,19 +52,20 @@ if (!class_exists('WPCATypeManager')) {
             do_action('wpca/types/init', $this);
 
             $modules = array(
-                'static'        => true,
-                'post_type'     => true,
-                'author'        => true,
-                'page_template' => true,
-                'taxonomy'      => true,
-                'date'          => true,
-                'bbpress'       => function_exists('bbp_get_version'),
-                'bp_member'     => defined('BP_VERSION'),
-                'pods'          => defined('PODS_DIR'),
-                'polylang'      => defined('POLYLANG_VERSION'),
-                'qtranslate'    => defined('QTX_VERSION'),
-                'transposh'     => defined('TRANSPOSH_PLUGIN_VER'),
-                'wpml'          => defined('ICL_SITEPRESS_VERSION')
+                'static'         => true,
+                'post_type'      => true,
+                'author'         => true,
+                'page_template'  => true,
+                'taxonomy'       => true,
+                'date'           => true,
+                'bbpress'        => function_exists('bbp_get_version'),
+                'bp_member'      => defined('BP_VERSION'),
+                'pods'           => defined('PODS_DIR'),
+                'polylang'       => defined('POLYLANG_VERSION'),
+                'qtranslate'     => defined('QTX_VERSION'),
+                'translatepress' => defined('TRP_PLUGIN_VERSION'),
+                'transposh'      => defined('TRANSPOSH_PLUGIN_VER'),
+                'wpml'           => defined('ICL_SITEPRESS_VERSION')
             );
 
             foreach ($modules as $name => $bool) {
