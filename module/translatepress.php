@@ -32,14 +32,21 @@ class WPCAModule_translatepress extends WPCAModule_Base
     }
 
     /**
-     * Determine if content is relevant
-     *
      * @since  9.0
      * @return boolean
      */
     public function in_context()
     {
         return true;
+    }
+
+    /**
+     * @return bool
+     */
+    public function can_enable()
+    {
+        return defined('TRP_PLUGIN_VERSION')
+            && class_exists('TRP_Translate_Press');
     }
 
     /**
@@ -51,9 +58,7 @@ class WPCAModule_translatepress extends WPCAModule_Base
     public function get_context_data()
     {
         $data = array($this->id);
-
         $current_language = get_locale();
-
         if ($current_language) {
             $data[] = $current_language;
         }
@@ -70,13 +75,10 @@ class WPCAModule_translatepress extends WPCAModule_Base
     protected function _get_content($args = array())
     {
         $langs = array();
-
-        if (class_exists('TRP_Translate_Press')) {
-            $trp_instance = TRP_Translate_Press::get_trp_instance();
-            $langs = $trp_instance->get_component('languages')->get_language_names(
-                $trp_instance->get_component('settings')->get_setting('publish-languages')
-            );
-        }
+        $trp_instance = TRP_Translate_Press::get_trp_instance();
+        $langs = $trp_instance->get_component('languages')->get_language_names(
+            $trp_instance->get_component('settings')->get_setting('publish-languages')
+        );
 
         if (isset($args['include'])) {
             $langs = array_intersect_key($langs, array_flip($args['include']));
