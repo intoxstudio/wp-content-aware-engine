@@ -81,14 +81,23 @@ if (!class_exists('WPCATypeManager')) {
                     continue;
                 }
 
-                $class->initiate();
-
                 foreach ($this->get_all() as $post_type) {
                     $post_type->add($class, $name);
                 }
             }
 
             do_action('wpca/modules/init', $this);
+
+            //initiate all modules once with backwards compatibility on can_enable()
+            $initiated = array();
+            foreach ($this->get_all() as $post_type) {
+                foreach ($post_type->get_all() as $key => $module) {
+                    if (!isset($initiated[$key])) {
+                        $initiated[$key] = 1;
+                        $module->initiate();
+                    }
+                }
+            }
         }
     }
 }
