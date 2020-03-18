@@ -35,9 +35,18 @@ class WPCAModule_wpml extends WPCAModule_Base
         $this->query_name = 'cl';
     }
 
+
     /**
-     * Determine if content is relevant
-     *
+     * @return bool
+     */
+    public function can_enable()
+    {
+        return defined('ICL_SITEPRESS_VERSION')
+            && defined('ICL_LANGUAGE_CODE')
+            && function_exists('icl_get_languages');
+    }
+
+    /**
      * @since  1.0
      * @return boolean
      */
@@ -55,9 +64,7 @@ class WPCAModule_wpml extends WPCAModule_Base
     public function get_context_data()
     {
         $data = array($this->id);
-        if (defined('ICL_LANGUAGE_CODE')) {
-            $data[] = ICL_LANGUAGE_CODE;
-        }
+        $data[] = ICL_LANGUAGE_CODE;
         return $data;
     }
 
@@ -72,10 +79,8 @@ class WPCAModule_wpml extends WPCAModule_Base
     {
         $langs = array();
 
-        if (function_exists('icl_get_languages')) {
-            foreach (icl_get_languages('skip_missing=N') as $lng) {
-                $langs[$lng['language_code']] = $lng['native_name'];
-            }
+        foreach (icl_get_languages('skip_missing=N') as $lng) {
+            $langs[$lng['language_code']] = $lng['native_name'];
         }
 
         if (isset($args['include'])) {

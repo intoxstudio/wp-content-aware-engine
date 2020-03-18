@@ -35,9 +35,19 @@ class WPCAModule_transposh extends WPCAModule_Base
         $this->query_name = 'cl';
     }
 
+
     /**
-     * Determine if content is relevant
-     *
+     * @return bool
+     */
+    public function can_enable()
+    {
+        return defined('TRANSPOSH_PLUGIN_VER')
+            && function_exists('transposh_get_current_language')
+            && defined('TRANSPOSH_OPTIONS')
+            && method_exists('transposh_consts', 'get_language_orig_name');
+    }
+
+    /**
      * @since  1.0
      * @return boolean
      */
@@ -55,9 +65,7 @@ class WPCAModule_transposh extends WPCAModule_Base
     public function get_context_data()
     {
         $data = array($this->id);
-        if (function_exists('transposh_get_current_language')) {
-            $data[] = transposh_get_current_language();
-        }
+        $data[] = transposh_get_current_language();
         return $data;
     }
 
@@ -80,13 +88,11 @@ class WPCAModule_transposh extends WPCAModule_Base
          * using get_option instead for robustness
          */
 
-        if (defined('TRANSPOSH_OPTIONS') && method_exists('transposh_consts', 'get_language_orig_name')) {
-            $options = get_option(TRANSPOSH_OPTIONS);
+        $options = get_option(TRANSPOSH_OPTIONS);
 
-            if (isset($options['viewable_languages'])) {
-                foreach (explode(',', $options['viewable_languages']) as $lng) {
-                    $langs[$lng] = transposh_consts::get_language_orig_name($lng);
-                }
+        if (isset($options['viewable_languages'])) {
+            foreach (explode(',', $options['viewable_languages']) as $lng) {
+                $langs[$lng] = transposh_consts::get_language_orig_name($lng);
             }
         }
 

@@ -45,8 +45,15 @@ class WPCAModule_polylang extends WPCAModule_Base
     }
 
     /**
-     * Determine if content is relevant
-     *
+     * @return bool
+     */
+    public function can_enable()
+    {
+        return defined('POLYLANG_VERSION')
+            && function_exists('pll_current_language');
+    }
+
+    /**
      * @since  1.0
      * @return boolean
      */
@@ -64,9 +71,7 @@ class WPCAModule_polylang extends WPCAModule_Base
     public function get_context_data()
     {
         $data = array($this->id);
-        if (function_exists('pll_current_language')) {
-            $data[] = pll_current_language();
-        }
+        $data[] = pll_current_language();
         return $data;
     }
 

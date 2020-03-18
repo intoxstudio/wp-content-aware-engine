@@ -51,8 +51,15 @@ class WPCAModule_qtranslate extends WPCAModule_Base
     }
 
     /**
-     * Determine if content is relevant
-     *
+     * @return bool
+     */
+    public function can_enable()
+    {
+        return defined('QTX_VERSION')
+            && function_exists('qtranxf_getLanguage');
+    }
+
+    /**
      * @since  1.0
      * @return boolean
      */
@@ -70,9 +77,7 @@ class WPCAModule_qtranslate extends WPCAModule_Base
     public function get_context_data()
     {
         $data = array($this->id);
-        if (function_exists('qtranxf_getLanguage')) {
-            $data[] = qtranxf_getLanguage();
-        }
+        $data[] = qtranxf_getLanguage();
         return $data;
     }
 

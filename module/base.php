@@ -67,8 +67,6 @@ abstract class WPCAModule_Base
         $this->name = $title;
         $this->description = $description;
         $this->placeholder = $placeholder;
-
-        $this->initiate();
     }
 
     /**
@@ -88,6 +86,16 @@ abstract class WPCAModule_Base
     }
 
     /**
+     * @since  9.0
+     * @return bool
+     */
+    public function can_enable()
+    {
+        return true;
+    }
+
+    /**
+     * Set module info in list
      * @since 2.0
      * @param array $list
      *

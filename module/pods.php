@@ -38,14 +38,23 @@ class WPCAModule_pods extends WPCAModule_Base
     }
 
     /**
-     * Determine if content is relevant
-     *
+     * @return bool
+     */
+    public function can_enable()
+    {
+        return defined('PODS_DIR')
+            && function_exists('pod_page_exists')
+            && function_exists('is_pod_page')
+            && function_exists('pods_api');
+    }
+
+    /**
      * @since  2.0
      * @return boolean
      */
     public function in_context()
     {
-        return function_exists('is_pod_page') && is_pod_page();
+        return is_pod_page();
     }
 
     /**
@@ -59,10 +68,8 @@ class WPCAModule_pods extends WPCAModule_Base
         $data = array(
             $this->id
         );
-        if (function_exists('pod_page_exists')) {
-            $pod_page = pod_page_exists();
-            $data[] = $pod_page['id'];
-        }
+        $pod_page = pod_page_exists();
+        $data[] = $pod_page['id'];
         return $data;
     }
 
@@ -85,11 +92,9 @@ class WPCAModule_pods extends WPCAModule_Base
         unset($args['include']);
 
         $pods = array();
-        if (function_exists('pods_api')) {
-            $results = pods_api()->load_pages($args);
-            foreach ($results as $result) {
-                $pods[$result['id']] = $result['name'];
-            }
+        $results = pods_api()->load_pages($args);
+        foreach ($results as $result) {
+            $pods[$result['id']] = $result['name'];
         }
         if ($args['search']) {
             $this->search_string = $args['search'];

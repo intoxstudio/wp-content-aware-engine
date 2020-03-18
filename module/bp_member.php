@@ -44,6 +44,14 @@ class WPCAModule_bp_member extends WPCAModule_Base
     }
 
     /**
+     * @return bool
+     */
+    public function can_enable()
+    {
+        return defined('BP_VERSION');
+    }
+
+    /**
      * Initiate module
      *
      * @since  2.0
@@ -120,8 +128,6 @@ class WPCAModule_bp_member extends WPCAModule_Base
     }
 
     /**
-     * Determine if content is relevant
-     *
      * @global object  $bp
      * @since  1.0
      * @return boolean
