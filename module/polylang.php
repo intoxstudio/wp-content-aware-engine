@@ -3,7 +3,7 @@
  * @package WP Content Aware Engine
  * @author Joachim Jensen <joachim@dev.institute>
  * @license GPLv3
- * @copyright 2019 by Joachim Jensen
+ * @copyright 2020 by Joachim Jensen
  */
 
 defined('ABSPATH') || exit;
