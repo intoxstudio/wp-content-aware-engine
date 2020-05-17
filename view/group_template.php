@@ -7,10 +7,8 @@
  */
 ?>
 <script type="text/template" id="wpca-template-group">
-    <div class="cas-group-sep" data-vm="classes:{'wpca-group-negate': statusNegated}">
-    <span class="wpca-sep-or"><?php _e('Or', WPCA_DOMAIN); ?></span>
-    <span class="wpca-sep-not"><?php _e('Not', WPCA_DOMAIN); ?></span>
-    <span class="wpca-sep-or-not"><?php _e('Or not', WPCA_DOMAIN); ?></span>
+    <div class="cas-group-sep" data-vm="classes:{'wpca-group-negate':statusExcept}">
+    <span data-vm="text:statusLabel"></span>
 </div>
 <div class="cas-group-body">
     <div class="cas-group-actions">

@@ -40,6 +40,8 @@ if (!class_exists('WPCACore')) {
          */
         const STATUS_NEGATED = 'negated';
         const STATUS_PUBLISHED = 'publish';
+        const STATUS_OR = 'wpca_or';
+        const STATUS_EXCEPT = 'wpca_except';
 
         /**
          * Exposures for condition groups
@@ -288,6 +290,20 @@ GROUP BY p.post_type, m.meta_key
                 'show_in_admin_all_list'    => false,
                 'show_in_admin_status_list' => false,
             ));
+            register_post_status(self::STATUS_EXCEPT, array(
+                'label'                     => _x('Except', 'condition status', WPCA_DOMAIN),
+                'public'                    => false,
+                'exclude_from_search'       => true,
+                'show_in_admin_all_list'    => false,
+                'show_in_admin_status_list' => false,
+            ));
+            register_post_status(self::STATUS_OR, array(
+                'label'                     => _x('Or', 'condition status', WPCA_DOMAIN),
+                'public'                    => false,
+                'exclude_from_search'       => true,
+                'show_in_admin_all_list'    => false,
+                'show_in_admin_status_list' => false,
+            ));
         }
 
         /**
@@ -417,13 +433,20 @@ GROUP BY p.post_type, m.meta_key
                 }
             }
 
+            $use_negated_conditions = false;
+
             // Check if there are any conditions for current content
             $groups_in_context = array();
             if (!empty($where)) {
                 $post_status = array(
                     self::STATUS_PUBLISHED,
-                    self::STATUS_NEGATED
+                    self::STATUS_OR,
+                    self::STATUS_EXCEPT
                 );
+
+                if ($use_negated_conditions) {
+                    $post_status[] = self::STATUS_NEGATED;
+                }
 
                 if (defined('CAS_SQL_CHUNK_SIZE') && CAS_SQL_CHUNK_SIZE > 0) {
                     $chunk_size = CAS_SQL_CHUNK_SIZE;
@@ -448,7 +471,7 @@ GROUP BY p.post_type, m.meta_key
                 foreach ($joins as $i => $join) {
                     if ($i == $joins_max) {
                         $groups_in_context = $wpdb->get_results(
-                            'SELECT p.ID, p.post_parent '.
+                            'SELECT p.ID, p.post_parent, p.post_status '.
                             "FROM $wpdb->posts p ".
                             implode(' ', $join).'
                             WHERE
@@ -471,24 +494,36 @@ GROUP BY p.post_type, m.meta_key
                 }
             }
 
-            $groups_negated = $wpdb->get_results($wpdb->prepare(
-                'SELECT p.ID, p.post_parent '.
-                "FROM $wpdb->posts p ".
-                "WHERE p.post_type = '%s' ".
-                "AND p.post_status = '%s' ",
-                self::TYPE_CONDITION_GROUP,
-                self::STATUS_NEGATED
-            ), OBJECT_K);
+            $groups_negated = array();
+            if ($use_negated_conditions) {
+                $groups_negated = $wpdb->get_results($wpdb->prepare(
+                    'SELECT p.ID, p.post_parent '.
+                    "FROM $wpdb->posts p ".
+                    "WHERE p.post_type = '%s' ".
+                    "AND p.post_status = '%s' ",
+                    self::TYPE_CONDITION_GROUP,
+                    self::STATUS_NEGATED
+                ), OBJECT_K);
+            }
 
             if (!empty($groups_in_context) || !empty($groups_negated)) {
                 //Force update of meta cache to prevent lazy loading
                 update_meta_cache('post', array_keys($groups_in_context + $groups_negated));
             }
 
+            $excepted = array();
+            foreach ($groups_in_context as $group) {
+                if ($group->post_status == self::STATUS_EXCEPT) {
+                    $excepted[$group->post_parent] = 1;
+                }
+            }
+
             //condition group => type
             $valid = array();
             foreach ($groups_in_context as $group) {
-                $valid[$group->ID] = $group->post_parent;
+                if (!isset($excepted[$group->post_parent])) {
+                    $valid[$group->ID] = $group->post_parent;
+                }
             }
 
             //Exclude types that have unrelated content in same group
@@ -496,19 +531,21 @@ GROUP BY p.post_type, m.meta_key
                 $valid = $module->filter_excluded_context($valid);
             }
 
-            //Filter negated groups
-            //type => group
-            $handled_already = array_flip($valid);
-            foreach ($groups_negated as $group) {
-                if (isset($valid[$group->ID])) {
-                    unset($valid[$group->ID]);
-                } else {
-                    $valid[$group->ID] = $group->post_parent;
+            if ($use_negated_conditions) {
+                //Filter negated groups
+                //type => group
+                $handled_already = array_flip($valid);
+                foreach ($groups_negated as $group) {
+                    if (isset($valid[$group->ID])) {
+                        unset($valid[$group->ID]);
+                    } else {
+                        $valid[$group->ID] = $group->post_parent;
+                    }
+                    if (isset($handled_already[$group->post_parent])) {
+                        unset($valid[$group->ID]);
+                    }
+                    $handled_already[$group->post_parent] = 1;
                 }
-                if (isset($handled_already[$group->post_parent])) {
-                    unset($valid[$group->ID]);
-                }
-                $handled_already[$group->post_parent] = 1;
             }
 
             self::restore_wp_query();
@@ -666,8 +703,9 @@ GROUP BY p.post_type, m.meta_key
                     'posts_per_page' => -1,
                     'post_type'      => self::TYPE_CONDITION_GROUP,
                     'post_parent'    => $post->ID,
-                    'post_status'    => array(self::STATUS_PUBLISHED,self::STATUS_NEGATED),
-                    'order'          => 'ASC'
+                    'post_status'    => array(self::STATUS_PUBLISHED,self::STATUS_NEGATED,self::STATUS_EXCEPT, self::STATUS_OR),
+                    'order'          => 'ASC',
+                    'orderby'        => 'post_status'
                 ));
             }
             return $groups;
@@ -718,7 +756,7 @@ GROUP BY p.post_type, m.meta_key
 
             wp_update_post(array(
                 'ID'          => $post_id,
-                'post_status' => $_POST['status'] == self::STATUS_NEGATED ? self::STATUS_NEGATED : self::STATUS_PUBLISHED,
+                'post_status' => $_POST['status'],
                 'menu_order'  => (int)$_POST['exposure']
             ));
 

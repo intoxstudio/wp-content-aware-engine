@@ -285,6 +285,26 @@ var CAE = CAE || {};
 					var valid = bool ? 'negated' : 'publish';
 					this.setBinding("status", valid);
 				}
+			},
+			statusExcept: {
+				deps: ["status"],
+				get: function (status) {
+					return status == 'wpca_except';
+				},
+				set: function (bool) {
+					var valid = bool ? 'wpca_except' : 'publish';
+					this.setBinding("status", valid);
+				}
+			},
+			statusLabel: function() {
+				switch(this.getBinding("status")) {
+					case "wpca_except":
+						return 'Except';
+					case "negated":
+						return "Not";
+					default:
+						return "Or";
+				}
 			}
 		},
 		bindingFilters: {
