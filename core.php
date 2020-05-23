@@ -38,7 +38,13 @@ if (!class_exists('WPCACore')) {
         /**
          * Post Statuses for condition groups
          */
+        /**
+         * @deprecated
+         */
         const STATUS_NEGATED = 'negated';
+        /**
+         * @deprecated
+         */
         const STATUS_PUBLISHED = 'publish';
         const STATUS_OR = 'wpca_or';
         const STATUS_EXCEPT = 'wpca_except';
@@ -291,7 +297,7 @@ GROUP BY p.post_type, m.meta_key
                 'show_in_admin_status_list' => false,
             ));
             register_post_status(self::STATUS_EXCEPT, array(
-                'label'                     => _x('Except', 'condition status', WPCA_DOMAIN),
+                'label'                     => _x('Exception', 'condition status', WPCA_DOMAIN),
                 'public'                    => false,
                 'exclude_from_search'       => true,
                 'show_in_admin_all_list'    => false,
@@ -511,24 +517,34 @@ GROUP BY p.post_type, m.meta_key
                 update_meta_cache('post', array_keys($groups_in_context + $groups_negated));
             }
 
-            $excepted = array();
-            foreach ($groups_in_context as $group) {
-                if ($group->post_status == self::STATUS_EXCEPT) {
-                    $excepted[$group->post_parent] = 1;
-                }
-            }
-
             //condition group => type
             $valid = array();
             foreach ($groups_in_context as $group) {
-                if (!isset($excepted[$group->post_parent])) {
-                    $valid[$group->ID] = $group->post_parent;
-                }
+                $valid[$group->ID] = $group->post_parent;
             }
 
             //Exclude types that have unrelated content in same group
             foreach ($excluded as $module) {
                 $valid = $module->filter_excluded_context($valid);
+            }
+
+            //exclude exceptions
+            $excepted = array();
+            foreach ($valid as $group_id => $parent_id) {
+                //sanity
+                if (!isset($groups_in_context[$group_id])) {
+                    continue;
+                }
+
+                if ($groups_in_context[$group_id]->post_status == self::STATUS_EXCEPT) {
+                    $excepted[$parent_id] = 1;
+                }
+            }
+
+            foreach ($valid as $group_id => $parent_id) {
+                if (isset($excepted[$parent_id])) {
+                    unset($valid[$group_id]);
+                }
             }
 
             if ($use_negated_conditions) {
