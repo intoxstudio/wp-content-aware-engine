@@ -9,12 +9,9 @@
 defined('ABSPATH') || exit;
 
 /**
+ * Date Module
  *
- * URL Module
- *
- * Detects if current content is:
- * a) matching a URL or URL pattern
- *
+ * @deprecated 9.1
  */
 class WPCAModule_date extends WPCAModule_Base
 {
@@ -30,7 +27,9 @@ class WPCAModule_date extends WPCAModule_Base
         );
         $this->placeholder = __('Date Archives', WPCA_DOMAIN);
         $this->default_value = '0000-00-00';
-
+        if (get_class() === 'WPCAModule_date') {
+            $this->name .= ' (Legacy)';
+        }
         //$this->query_name = 'cd';
     }
 

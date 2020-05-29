@@ -12,7 +12,7 @@ defined('ABSPATH') || exit;
  * Version of this WPCA
  * @var string
  */
-$this_wpca_version = '9.0';
+$this_wpca_version = '9.1';
 
 /**
  * Class to make sure the latest
@@ -61,7 +61,8 @@ if (!class_exists('WPCALoader')) {
                 return;
             }
 
-            arsort(self::$_paths);
+            //SORT_NUMERIC added in 9.1
+            arsort(self::$_paths, SORT_NUMERIC);
 
             foreach (self::$_paths as $path => $version) {
                 $file = $path.'core.php';

@@ -60,7 +60,7 @@ var CAE = CAE || {};
 		defaults: function() {
 			var defaults = WPCA.meta_default;
 			defaults.id = null;
-			defaults.status = 'publish';
+			defaults.status = 'wpca_or';
 			defaults.exposure = 1;
 			return defaults;
 		},
@@ -282,8 +282,28 @@ var CAE = CAE || {};
 					return status == 'negated';
 				},
 				set: function( bool ) {
-					var valid = bool ? 'negated' : 'publish';
+					var valid = bool ? 'negated' : 'wpca_or';
 					this.setBinding("status", valid);
+				}
+			},
+			statusExcept: {
+				deps: ["status"],
+				get: function (status) {
+					return status == 'wpca_except';
+				},
+				set: function (bool) {
+					var valid = bool ? 'wpca_except' : 'wpca_or';
+					this.setBinding("status", valid);
+				}
+			},
+			statusLabel: function() {
+				switch(this.getBinding("status")) {
+					case "wpca_except":
+						return WPCA.condition_except;
+					case "negated":
+						return WPCA.condition_not;
+					default:
+						return WPCA.condition_or;
 				}
 			}
 		},
