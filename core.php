@@ -67,6 +67,7 @@ if (!class_exists('WPCACore')) {
         const NONCE = '_ca_nonce';
 
         const OPTION_CONDITION_TYPE_CACHE = '_ca_condition_type_cache';
+        const OPTION_POST_TYPE_OPTIONS = '_ca_post_type_options';
 
         /**
          * Post Types that use the engine
@@ -413,14 +414,15 @@ GROUP BY p.post_type, m.meta_key
             $modules = self::types()->get($post_type)->get_all();
             $modules = self::filter_condition_type_cache($post_type, $modules);
 
-            foreach (self::types() as $other_type => $other_modules) {
-                if ($other_type == $post_type) {
-                    continue;
-                }
-                if (self::filter_condition_type_cache($other_type, $other_modules->get_all()) === $modules) {
-                    $cache[] = $other_type;
-                }
-            }
+            //avoid combining as long as negated conditions are being deprecated
+            // foreach (self::types() as $other_type => $other_modules) {
+            //     if ($other_type == $post_type) {
+            //         continue;
+            //     }
+            //     if (self::filter_condition_type_cache($other_type, $other_modules->get_all()) === $modules) {
+            //         $cache[] = $other_type;
+            //     }
+            // }
 
             self::fix_wp_query();
 
@@ -439,7 +441,7 @@ GROUP BY p.post_type, m.meta_key
                 }
             }
 
-            $use_negated_conditions = false;
+            $use_negated_conditions = self::get_option($post_type, 'legacy.negated_conditions', false);
 
             // Check if there are any conditions for current content
             $groups_in_context = array();
@@ -643,7 +645,9 @@ GROUP BY p.post_type, m.meta_key
                 return;
             }
 
-            $template = WPCAView::make('condition_options');
+            $template = WPCAView::make('condition_options', array(
+                'post_type' => $post->post_type
+            ));
             add_action('wpca/group/settings', array($template,'render'), -1, 2);
 
             $template = WPCAView::make('group_template', array(
@@ -693,7 +697,7 @@ GROUP BY p.post_type, m.meta_key
             }
 
             return wp_insert_post(array(
-                'post_status' => self::STATUS_PUBLISHED,
+                'post_status' => self::STATUS_OR,
                 'menu_order'  => self::EXP_SINGULAR_ARCHIVE,
                 'post_type'   => self::TYPE_CONDITION_GROUP,
                 'post_author' => $post->post_author,
@@ -720,7 +724,7 @@ GROUP BY p.post_type, m.meta_key
                     'post_type'      => self::TYPE_CONDITION_GROUP,
                     'post_parent'    => $post->ID,
                     'post_status'    => array(self::STATUS_PUBLISHED,self::STATUS_NEGATED,self::STATUS_EXCEPT, self::STATUS_OR),
-                    'order'          => 'ASC',
+                    'order'          => 'DESC',
                     'orderby'        => 'post_status'
                 ));
             }
@@ -772,7 +776,7 @@ GROUP BY p.post_type, m.meta_key
 
             wp_update_post(array(
                 'ID'          => $post_id,
-                'post_status' => $_POST['status'],
+                'post_status' => self::sanitize_status($_POST['status']),
                 'menu_order'  => (int)$_POST['exposure']
             ));
 
@@ -787,6 +791,25 @@ GROUP BY p.post_type, m.meta_key
             do_action('wpca/modules/save-data', $post_id, $parent_type->name);
 
             wp_send_json($response);
+        }
+
+        /**
+         * @param string $status
+         *
+         * @return string
+         */
+        private static function sanitize_status($status)
+        {
+            switch ($status) {
+                case self::STATUS_NEGATED:
+                    return self::STATUS_NEGATED;
+                case self::STATUS_EXCEPT:
+                    return self::STATUS_EXCEPT;
+                case self::STATUS_OR:
+                case self::STATUS_PUBLISHED:
+                default:
+                    return self::STATUS_OR;
+            }
         }
 
         /**
@@ -1126,6 +1149,59 @@ GROUP BY p.post_type, m.meta_key
             }
 
             return $filtered_modules;
+        }
+
+        /**
+         * @param string $post_type
+         * @param string $name
+         * @param mixed|null $default_value
+         *
+         * @return mixed|null
+         */
+        public static function get_option($post_type, $name, $default_value = null)
+        {
+            if (!self::types()->has($post_type)) {
+                return $default_value;
+            }
+
+            $value = get_option(self::OPTION_POST_TYPE_OPTIONS, array());
+            $levels = explode('.', $post_type.'.'.$name);
+
+            foreach ($levels as $option_level) {
+                if (!is_array($value) || !isset($value[$option_level])) {
+                    return $default_value;
+                }
+                $value = $value[$option_level];
+            }
+            return $value;
+        }
+
+        /**
+         * @param string $post_type
+         * @param string $name
+         * @param mixed $value
+         *
+         * @return bool
+         */
+        public static function save_option($post_type, $name, $value)
+        {
+            if (!self::types()->has($post_type)) {
+                return false;
+            }
+
+            $options = get_option(self::OPTION_POST_TYPE_OPTIONS, array());
+            $keys = explode('.', $post_type.'.'.$name);
+            $array = &$options;
+
+            foreach ($keys as $key) {
+                if (!isset($array[$key]) || !is_array($array[$key])) {
+                    $array[$key] = array();
+                }
+                $array = &$array[$key];
+            }
+            $array = $value;
+
+            return update_option(self::OPTION_POST_TYPE_OPTIONS, $options);
         }
     }
 }
