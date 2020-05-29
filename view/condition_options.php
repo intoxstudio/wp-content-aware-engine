@@ -19,12 +19,15 @@
         </select>
     </div>
 </li>
+<?php if (WPCACore::get_option($post_type, 'legacy.negated_conditions', false)) : ?>
 <li>
     <label class="cae-toggle">
         <input data-vm="checked:statusNegated" type="checkbox" />
         <div class="cae-toggle-bar wpca-pull-right"></div><?php _e('Negate conditions', WPCA_DOMAIN); ?>
+        (Legacy)
     </label>
 </li>
+<?php endif; ?>
 <li>
     <label class="cae-toggle">
         <input data-vm="checked:statusExcept" type="checkbox" />

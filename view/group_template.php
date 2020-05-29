@@ -7,7 +7,7 @@
  */
 ?>
 <script type="text/template" id="wpca-template-group">
-    <div class="cas-group-sep" data-vm="classes:{'wpca-group-negate':statusExcept}">
+    <div class="cas-group-sep" data-vm="classes:{'wpca-group-negate':any(statusExcept,statusNegated)}">
     <span data-vm="text:statusLabel"></span>
 </div>
 <div class="cas-group-body">

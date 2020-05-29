@@ -90,7 +90,11 @@ if (!class_exists('WPCATypeManager')) {
 
             //initiate all modules once with backwards compatibility on can_enable()
             $initiated = array();
-            foreach ($this->get_all() as $post_type) {
+            foreach ($this->get_all() as $post_type_name => $post_type) {
+                if (!WPCACore::get_option($post_type_name, 'legacy.date_module', false)) {
+                    $post_type->remove('date');
+                }
+
                 foreach ($post_type->get_all() as $key => $module) {
                     if (!isset($initiated[$key])) {
                         $initiated[$key] = 1;
