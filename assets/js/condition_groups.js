@@ -299,11 +299,11 @@ var CAE = CAE || {};
 			statusLabel: function() {
 				switch(this.getBinding("status")) {
 					case "wpca_except":
-						return 'Except';
+						return WPCA.condition_except;
 					case "negated":
-						return "Not";
+						return WPCA.condition_not;
 					default:
-						return "Or";
+						return WPCA.condition_or;
 				}
 			}
 		},

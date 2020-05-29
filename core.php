@@ -981,17 +981,20 @@ GROUP BY p.post_type, m.meta_key
 
             wp_enqueue_script(self::PREFIX.'condition-groups');
             wp_localize_script(self::PREFIX.'condition-groups', 'WPCA', array(
-                'searching'      => __('Searching', WPCA_DOMAIN),
-                'noResults'      => __('No results found.', WPCA_DOMAIN),
-                'loadingMore'    => __('Loading more results', WPCA_DOMAIN),
-                'unsaved'        => __('Conditions have unsaved changes. Do you want to continue and discard these changes?', WPCA_DOMAIN),
-                'newGroup'       => __('New condition group', WPCA_DOMAIN),
-                'newCondition'   => __('Meet ALL of these conditions', WPCA_DOMAIN),
-                'conditions'     => array_values($conditions),
-                'groups'         => $data,
-                'meta_default'   => $group_meta,
-                'post_type'      => $post_type,
-                'text_direction' => is_rtl() ? 'rtl' : 'ltr'
+                'searching'        => __('Searching', WPCA_DOMAIN),
+                'noResults'        => __('No results found.', WPCA_DOMAIN),
+                'loadingMore'      => __('Loading more results', WPCA_DOMAIN),
+                'unsaved'          => __('Conditions have unsaved changes. Do you want to continue and discard these changes?', WPCA_DOMAIN),
+                'newGroup'         => __('New condition group', WPCA_DOMAIN),
+                'newCondition'     => __('Meet ALL of these conditions', WPCA_DOMAIN),
+                'conditions'       => array_values($conditions),
+                'groups'           => $data,
+                'meta_default'     => $group_meta,
+                'post_type'        => $post_type,
+                'text_direction'   => is_rtl() ? 'rtl' : 'ltr',
+                'condition_not'    => __('Not', WPCA_DOMAIN),
+                'condition_or'     => __('Or', WPCA_DOMAIN),
+                'condition_except' => __('Except', WPCA_DOMAIN)
             ));
             wp_enqueue_style(self::PREFIX.'condition-groups');
 
