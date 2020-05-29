@@ -9,12 +9,9 @@
 defined('ABSPATH') || exit;
 
 /**
+ * Date Module
  *
- * URL Module
- *
- * Detects if current content is:
- * a) matching a URL or URL pattern
- *
+ * @deprecated 9.1
  */
 class WPCAModule_date extends WPCAModule_Base
 {
