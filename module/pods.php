@@ -74,6 +74,21 @@ class WPCAModule_pods extends WPCAModule_Base
     }
 
     /**
+     * @param array $args
+     *
+     * @return array
+     */
+    protected function parse_query_args($args)
+    {
+        return array(
+            'ids'    => $args['include'] ? $args['include'] : false,
+            'where'  => '',
+            'limit'  => $args['limit'],
+            'search' => $args['search']
+        );
+    }
+
+    /**
      * Get Pod Pages
      *
      * @since  2.0
@@ -82,17 +97,8 @@ class WPCAModule_pods extends WPCAModule_Base
      */
     protected function _get_content($args = array())
     {
-        $args = wp_parse_args($args, array(
-            'include' => false,
-            'where'   => '',
-            'limit'   => -1,
-            'search'  => ''
-        ));
-        $args['ids'] = $args['include'];
-        unset($args['include']);
-
         $pods = array();
-        $results = pods_api()->load_pages($args);
+        $results = pods_api()->load_pages($this->parse_query_args($args));
         foreach ($results as $result) {
             $pods[$result['id']] = $result['name'];
         }
