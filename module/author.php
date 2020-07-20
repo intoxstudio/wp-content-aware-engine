@@ -59,6 +59,36 @@ class WPCAModule_author extends WPCAModule_Base
     }
 
     /**
+     * @param array $args
+     *
+     * @return array
+     */
+    protected function parse_query_args($args)
+    {
+        $new_args = array(
+            'number'      => $args['limit'],
+            'offset'      => ($args['paged'] - 1) * $args['limit'],
+            'search'      => $args['search'],
+            'fields'      => array('ID','display_name'),
+            'orderby'     => 'display_name',
+            'order'       => 'ASC',
+            'include'     => $args['include'],
+            'count_total' => false,
+        );
+        if ($new_args['search']) {
+            if (false !== strpos($new_args['search'], '@')) {
+                $new_args['search_columns'] = array( 'user_email' );
+            } elseif (is_numeric($new_args['search'])) {
+                $new_args['search_columns'] = array( 'user_login', 'ID' );
+            } else {
+                $new_args['search_columns'] = array( 'user_nicename', 'user_login', 'display_name' );
+            }
+            $new_args['search'] = '*'.$new_args['search'].'*';
+        }
+        return $new_args;
+    }
+
+    /**
      * Get authors
      *
      * @since  1.0
@@ -67,25 +97,7 @@ class WPCAModule_author extends WPCAModule_Base
      */
     protected function _get_content($args = array())
     {
-        $args = wp_parse_args($args, array(
-            'number'  => 20,
-            'fields'  => array('ID','display_name'),
-            'orderby' => 'display_name',
-            'order'   => 'ASC',
-            'paged'   => 1,
-            'search'  => '',
-            'include' => ''
-        ));
-        $args['offset'] = ($args['paged'] - 1) * $args['number'];
-        unset($args['paged']);
-
-        if ($args['search']) {
-            $args['search'] = '*'.$args['search'].'*';
-            $args['search_columns'] = array( 'user_nicename', 'user_login', 'display_name' );
-        }
-
         $user_query = new WP_User_Query($args);
-
         $author_list = array();
 
         if ($user_query->results) {
