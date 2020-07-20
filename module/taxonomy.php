@@ -178,21 +178,6 @@ class WPCAModule_taxonomy extends WPCAModule_Base
      */
     protected function _get_content($args = array())
     {
-        $args = wp_parse_args($args, array(
-            'include'                => '',
-            'taxonomy'               => 'category',
-            'number'                 => 20,
-            'orderby'                => 'name',
-            'order'                  => 'ASC',
-            'paged'                  => 1,
-            'search'                 => '',
-            'hide_empty'             => false,
-            'update_term_meta_cache' => false
-        ));
-
-        $args['offset'] = ($args['paged'] - 1) * $args['number'];
-        unset($args['paged']);
-
         $total_items = wp_count_terms($args['taxonomy'], array(
             'hide_empty' => $args['hide_empty']
         ));
@@ -212,11 +197,11 @@ class WPCAModule_taxonomy extends WPCAModule_Base
                 $walk_tree = true;
             }
 
-            $terms = get_terms($args['taxonomy'], $args);
+            $terms = new WP_Term_Query($args);
 
             if ($walk_tree) {
                 $sorted_terms = array();
-                foreach ($terms as $term) {
+                foreach ($terms->terms as $term) {
                     $sorted_terms[$term->parent][] = $term;
                 }
                 $i = 0;
@@ -226,7 +211,7 @@ class WPCAModule_taxonomy extends WPCAModule_Base
                 //see http://codex.wordpress.org/Function_Reference/wp_set_post_objects
                 $value_var = ($taxonomy->hierarchical ? 'term_id' : 'slug');
 
-                foreach ($terms as $term) {
+                foreach ($terms->terms as $term) {
                     //term names are encoded
                     $retval[$term->$value_var] = htmlspecialchars_decode($term->name);
                 }
@@ -368,33 +353,31 @@ class WPCAModule_taxonomy extends WPCAModule_Base
     }
 
     /**
-     * Get content in JSON
-     *
-     * @since   1.0
-     * @param   array    $args
-     * @return  array
-     */
-    public function ajax_get_content($args)
+    * @param array $args
+    *
+    * @return array
+    */
+    protected function parse_query_args($args)
     {
-        $args = wp_parse_args($args, array(
-            'item_object' => 'post',
-            'paged'       => 1,
-            'search'      => ''
-        ));
-
-        preg_match('/taxonomy-(.+)$/i', $args['item_object'], $matches);
-        $args['item_object'] = isset($matches[1]) ? $matches[1] : '';
-
-        $taxonomy = get_taxonomy($args['item_object']);
-
-        if (!$taxonomy) {
-            return false;
+        if (isset($args['item_object'])) {
+            preg_match('/taxonomy-(.+)$/i', $args['item_object'], $matches);
+            $args['item_object'] = isset($matches[1]) ? $matches[1] : '___';
+            $taxonomy_name = $args['item_object'];
+        } else {
+            $taxonomy_name = 'category';
         }
 
-        $args['taxonomy'] = $args['item_object'];
-        unset($args['item_object']);
-
-        return $this->_get_content($args);
+        return array(
+            'include'                => $args['include'],
+            'taxonomy'               => $taxonomy_name,
+            'number'                 => $args['limit'],
+            'offset'                 => ($args['paged'] - 1) * $args['number'],
+            'orderby'                => 'name',
+            'order'                  => 'ASC',
+            'search'                 => $args['search'],
+            'hide_empty'             => false,
+            'update_term_meta_cache' => false
+        );
     }
 
     /**
