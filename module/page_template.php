@@ -77,10 +77,9 @@ class WPCAModule_page_template extends WPCAModule_Base
     protected function _get_content($args = array())
     {
         $templates = array_flip(get_page_templates());
-        if (isset($args['include'])) {
+        if ($args['include']) {
             $templates = array_intersect_key($templates, array_flip($args['include']));
-        }
-        if (isset($args['search']) && $args['search']) {
+        } elseif ($args['search']) {
             $this->search_string = $args['search'];
             $templates = array_filter($templates, array($this,'_filter_search'));
         }

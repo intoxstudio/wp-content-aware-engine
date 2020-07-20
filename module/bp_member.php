@@ -104,10 +104,9 @@ class WPCAModule_bp_member extends WPCAModule_Base
             }
         }
 
-        if (isset($args['include'])) {
+        if (!empty($args['include'])) {
             $content = array_intersect_key($content, array_flip($args['include']));
-        }
-        if ($is_search) {
+        } elseif ($is_search) {
             $this->search_string = $args['search'];
             $content = array_filter($content, array($this,'_filter_search'));
         }

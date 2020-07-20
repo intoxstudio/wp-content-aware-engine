@@ -83,7 +83,7 @@ class WPCAModule_wpml extends WPCAModule_Base
             $langs[$lng['language_code']] = $lng['native_name'];
         }
 
-        if (isset($args['include'])) {
+        if ($args['include']) {
             $langs = array_intersect_key($langs, array_flip($args['include']));
         }
         return $langs;

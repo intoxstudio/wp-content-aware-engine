@@ -80,7 +80,7 @@ class WPCAModule_translatepress extends WPCAModule_Base
             $trp_instance->get_component('settings')->get_setting('publish-languages')
         );
 
-        if (isset($args['include'])) {
+        if ($args['include']) {
             $langs = array_intersect_key($langs, array_flip($args['include']));
         }
         return $langs;

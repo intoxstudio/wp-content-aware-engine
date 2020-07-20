@@ -52,10 +52,9 @@ class WPCAModule_static extends WPCAModule_Base
             '404'        => __('404 Page', WPCA_DOMAIN)
         );
 
-        if (isset($args['include'])) {
+        if ($args['include']) {
             $static = array_intersect_key($static, array_flip($args['include']));
-        }
-        if (isset($args['search']) && $args['search']) {
+        } elseif ($args['search']) {
             $this->search_string = $args['search'];
             $static = array_filter($static, array($this,'_filter_search'));
         }

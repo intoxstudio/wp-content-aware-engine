@@ -96,7 +96,7 @@ class WPCAModule_transposh extends WPCAModule_Base
             }
         }
 
-        if (isset($args['include'])) {
+        if ($args['include']) {
             $langs = array_intersect_key($langs, array_flip($args['include']));
         }
         return $langs;

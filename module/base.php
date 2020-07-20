@@ -225,7 +225,7 @@ abstract class WPCAModule_Base
             $group_data[$this->id] = array(
                 'label'         => $this->name,
                 'placeholder'   => $this->placeholder,
-                'data'          => $this->_get_content(array('include' => $data)),
+                'data'          => $this->get_content(array('include' => $data)),
                 'default_value' => $this->default_value
             );
         }
@@ -276,20 +276,29 @@ abstract class WPCAModule_Base
     }
 
     /**
-     * Get content for AJAX
+     * @param array $args
      *
-     * @since   1.0
-     * @param   array    $args
-     * @return  string
+     * @return array
      */
-    public function ajax_get_content($args)
+    protected function parse_query_args($args)
     {
-        $args = wp_parse_args($args, array(
-            'paged'  => 1,
-            'search' => ''
-        ));
+        return $args;
+    }
 
-        return $this->_get_content($args);
+    /**
+     * @param array $args
+     *
+     * @return array
+     */
+    protected function get_content($args)
+    {
+        $args = array_merge(array(
+            'include' => '',
+            'paged'   => 1,
+            'search'  => false,
+            'limit'   => -1,
+        ), $args);
+        return $this->_get_content($this->parse_query_args($args));
     }
 
     /**
@@ -305,12 +314,14 @@ abstract class WPCAModule_Base
             wp_die();
         }
 
-        $paged = isset($_POST['paged']) ? $_POST['paged'] : 1;
-        $search = isset($_POST['search']) ? $_POST['search'] : false;
+        if (!isset($_POST['action'], $_POST['paged'])) {
+            wp_die();
+        }
 
-        $response = $this->ajax_get_content(array(
-            'paged'       => $paged,
-            'search'      => $search,
+        $response = $this->get_content(array(
+            'paged'       => $_POST['paged'],
+            'search'      => isset($_POST['search']) ? $_POST['search'] : false,
+            'limit'       => isset($_POST['limit']) ? $_POST['limit'] : 20,
             'item_object' => $_POST['action']
         ));
 
