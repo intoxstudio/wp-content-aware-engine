@@ -85,37 +85,34 @@ class WPCAModule_post_type extends WPCAModule_Base
      */
     protected function _get_content($args = array())
     {
-        $args = wp_parse_args($args, array(
-            'include'        => '',
-            'post_type'      => 'post',
-            'orderby'        => 'title',
-            'order'          => 'ASC',
-            'paged'          => 1,
-            'posts_per_page' => 20,
-            'search'         => ''
-        ));
-
-        $exclude = array();
-        if ($args['post_type'] == 'page' && 'page' == get_option('show_on_front')) {
-            $exclude[] = intval(get_option('page_on_front'));
-            $exclude[] = intval(get_option('page_for_posts'));
-        }
-
-        $post_status = array('publish','private','future','draft');
-        if ($args['post_type'] == 'attachment') {
-            $post_status = array('inherit');
-        }
-
         $walk_tree = false;
         $start = ($args['paged'] - 1) * $args['posts_per_page'];
         $end = $start + $args['posts_per_page'];
 
         //WordPress searches in title and content by default
         //We want to search in title and slug
-        if ($args['search']) {
+        if (!empty($args['search'])) {
             $exclude_query = '';
-            if (!empty($exclude)) {
-                $exclude_query = ' AND ID NOT IN ('.implode(',', $exclude).')';
+            if (!empty($args['post__not_in'])) {
+                $exclude_query = ' AND ID NOT IN ('.implode(',', $args['post__not_in']).')';
+            }
+
+            $columns = array(
+                array('post_title', 'LIKE', '%'.$args['search'].'%'),
+                array('post_name', 'LIKE', '%'.$args['search'].'%'),
+            );
+
+            if (is_numeric($args['search'])) {
+                $columns[] = array('ID', '=', $args['search']);
+            }
+
+            $where = array();
+            $values = array();
+            foreach ($columns as $column_value) {
+                list($column, $operator, $value) = $column_value;
+                $prepared_value = is_numeric($value) ? '%d' : '%s';
+                $where[] = "{$column} {$operator} '{$prepared_value}'";
+                $values[] = $value;
             }
 
             //Using unprepared (safe) exclude because WP is not good at parsing arrays
@@ -123,37 +120,29 @@ class WPCAModule_post_type extends WPCAModule_Base
             $posts = $wpdb->get_results($wpdb->prepare(
                 "
 				SELECT ID, post_title, post_type, post_parent, post_status, post_password
-				FROM $wpdb->posts
-				WHERE post_type = '%s' AND (post_title LIKE '%s' OR post_name LIKE '%s') AND post_status IN('".implode("','", $post_status)."')
-				".$exclude_query.'
+                FROM {$wpdb->posts}
+                WHERE (".implode(' OR ', $where).")
+                AND post_status IN('".implode("','", $args['post_status'])."')
+                AND post_type = '%s'
+                $exclude_query
 				ORDER BY post_title ASC
-				LIMIT %d,20
-				',
+				LIMIT %d,%d
+				",
+                array_merge($values, array(
                 $args['post_type'],
-                '%'.$args['search'].'%',
-                '%'.$args['search'].'%',
-                $start
+                $start,
+                $args['posts_per_page']
+                ))
             ));
         } else {
-            if (is_post_type_hierarchical($args['post_type']) && !$args['include']) {
+            if (is_post_type_hierarchical($args['post_type']) && !$args['post__in']) {
                 $args['posts_per_page'] = -1;
                 $args['paged'] = 0;
                 $args['orderby'] = 'menu_order title';
 
                 $walk_tree = true;
             }
-            $query = new WP_Query(array(
-                'posts_per_page'         => $args['posts_per_page'],
-                'post_type'              => $args['post_type'],
-                'post_status'            => $post_status,
-                'post__in'               => $args['include'],
-                'post__not_in'           => $exclude,
-                'orderby'                => $args['orderby'],
-                'order'                  => $args['order'],
-                'paged'                  => $args['paged'],
-                'ignore_sticky_posts'    => true,
-                'update_post_term_cache' => false
-            ));
+            $query = new WP_Query($args);
             $posts = $query->posts;
         }
 
@@ -243,10 +232,9 @@ class WPCAModule_post_type extends WPCAModule_Base
             $lookup = array_flip((array)$ids);
             foreach ($this->post_types() as $post_type) {
                 $post_type_obj = get_post_type_object($post_type);
-                $data = $this->_get_content(array(
-                    'include'        => $ids,
-                    'posts_per_page' => -1,
-                    'post_type'      => $post_type
+                $data = $this->get_content(array(
+                    'include'   => $ids,
+                    'post_type' => $post_type
                 ));
 
                 if ($data || isset($lookup[$post_type])) {
@@ -320,32 +308,45 @@ class WPCAModule_post_type extends WPCAModule_Base
     }
 
     /**
-     * Get content in HTML
-     *
-     * @since   1.0
-     * @param   array    $args
-     * @return  string
-     */
-    public function ajax_get_content($args)
+    * @param array $args
+    *
+    * @return array
+    */
+    protected function parse_query_args($args)
     {
-        $args = wp_parse_args($args, array(
-            'item_object' => 'post',
-            'paged'       => 1,
-            'search'      => ''
-        ));
-
-        preg_match('/post_type-(.+)$/i', $args['item_object'], $matches);
-        $args['item_object'] = isset($matches[1]) ? $matches[1] : '';
-
-        $post_type = get_post_type_object($args['item_object']);
-
-        if (!$post_type) {
-            return false;
+        if (isset($args['item_object'])) {
+            preg_match('/post_type-(.+)$/i', $args['item_object'], $matches);
+            $post_type_name = isset($matches[1]) ? $matches[1] : '___';
+        } else {
+            $post_type_name = isset($args['post_type']) ? $args['post_type'] : 'category';
         }
-        $args['post_type'] = $post_type->name;
-        unset($args['item_object']);
 
-        return $this->_get_content($args);
+        $exclude = array();
+        if ($post_type_name == 'page' && 'page' == get_option('show_on_front')) {
+            $exclude[] = intval(get_option('page_on_front'));
+            $exclude[] = intval(get_option('page_for_posts'));
+        }
+
+        $post_status = array('publish','private','future','draft');
+        if ($post_status == 'attachment') {
+            $post_status = array('inherit');
+        }
+
+        return array(
+            'post__in'               => $args['include'],
+            'post__not_in'           => $exclude,
+            'post_type'              => $post_type_name,
+            'post_status'            => $post_status,
+            'orderby'                => 'title',
+            'order'                  => 'ASC',
+            'paged'                  => $args['paged'],
+            'posts_per_page'         => $args['limit'],
+            'search'                 => $args['search'],
+            'ignore_sticky_posts'    => true,
+            'update_post_term_cache' => false,
+            'suppress_filters'       => true,
+            'no_found_rows'          => true,
+        );
     }
 
     /**
