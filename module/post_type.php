@@ -487,15 +487,18 @@ class WPCAModule_post_type extends WPCAModule_Base
                 'private' => 1,
                 'future'  => 1
             );
+
             // Only new posts are relevant
             if (!isset($status[$old_status]) && isset($status[$new_status])) {
                 $post_type = get_post_type_object($post->post_type);
                 if ($post_type->hierarchical && $post_type->public) {
 
+
                     // Get sidebars with post ancestor wanting to auto-select post
                     $query = new WP_Query(array(
-                        'post_type'  => WPCACore::TYPE_CONDITION_GROUP,
-                        'meta_query' => array(
+                        'post_type'   => WPCACore::TYPE_CONDITION_GROUP,
+                        'post_status' => array('wpca_or','wpca_and','publish'),
+                        'meta_query'  => array(
                         'relation' => 'AND',
                             array(
                                 'key'     => WPCACore::PREFIX . 'autoselect',
@@ -512,6 +515,7 @@ class WPCAModule_post_type extends WPCAModule_Base
                     ));
 
                     if ($query && $query->found_posts) {
+
                         //Add conditions after Quick Select
                         //otherwise they will be removed there
                         $this->_post_ancestor_conditions = $query->posts;

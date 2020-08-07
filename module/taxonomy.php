@@ -447,8 +447,9 @@ class WPCAModule_taxonomy extends WPCAModule_Base
             if ($term->parent != '0') {
                 // Get sidebars with term ancestor wanting to auto-select term
                 $query = new WP_Query(array(
-                    'post_type'  => WPCACore::TYPE_CONDITION_GROUP,
-                    'meta_query' => array(
+                    'post_type'   => WPCACore::TYPE_CONDITION_GROUP,
+                    'post_status' => array('wpca_or','wpca_and','publish'),
+                    'meta_query'  => array(
                         array(
                             'key'     => WPCACore::PREFIX . 'autoselect',
                             'value'   => 1,
