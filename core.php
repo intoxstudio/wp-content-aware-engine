@@ -586,7 +586,7 @@ GROUP BY p.post_type, m.meta_key
          */
         public static function get_posts($post_type)
         {
-            global $wpdb, $wp_query, $post;
+            global $wp_query, $post;
 
             // Return cache if present
             if (isset(self::$post_cache[$post_type])) {
@@ -601,23 +601,61 @@ GROUP BY p.post_type, m.meta_key
 
             self::$post_cache[$post_type] = array();
 
-            if ($valid) {
-                $results = $wpdb->get_results("
-					SELECT
-						p.ID,
-						p.post_type,
-						h.meta_value handle
-					FROM $wpdb->posts p
-					INNER JOIN $wpdb->postmeta h ON h.post_id = p.ID AND h.meta_key = '".self::PREFIX."handle'
-					WHERE
-						p.post_type = '".$post_type."' AND
-						p.post_status = 'publish' AND
-						p.ID IN(".implode(',', $valid).')
-					ORDER BY p.menu_order ASC, h.meta_value DESC, p.post_date DESC
-				', OBJECT_K);
+            $results = array();
 
-                self::$post_cache[$post_type] = apply_filters("wpca/posts/{$post_type}", $results);
+            if (!empty($valid)) {
+                $data = new WP_Query(array(
+                    'post__in'               => array_values($valid),
+                    'post_type'              => $post_type,
+                    'post_status'            => 'publish',
+                    'posts_per_page'         => -1,
+                    'ignore_sticky_posts'    => true,
+                    'update_post_term_cache' => false,
+                    'update_post_meta_cache' => true,
+                    'suppress_filters'       => true,
+                    'no_found_rows'          => true,
+                    'orderby'                => 'none'
+                ));
+
+                $results = array_merge($results, $data->posts);
             }
+
+            //legacy sorting
+            uasort($results, function (WP_Post $post_a, WP_Post $post_b) {
+                //asc
+                if ($post_a->menu_order != $post_b->menu_order) {
+                    return $post_a->menu_order < $post_b->menu_order ? -1 : 1;
+                }
+
+                $post_a_handle = get_post_meta($post_a->ID, '_ca_handle', true);
+                $post_b_handle = get_post_meta($post_b->ID, '_ca_handle', true);
+
+                //desc
+                if ($post_a_handle != $post_b_handle) {
+                    return $post_a_handle > $post_b_handle ? -1 : 1;
+            }
+
+                //desc
+                if ($post_a->post_date != $post_b->post_date) {
+                    return $post_a->post_date > $post_b->post_date ? -1 : 1;
+                }
+
+                return 0;
+            });
+
+            $results = array_reduce($results, function ($carry, $post) {
+                $carry[$post->ID] = (object)array(
+                                    'ID'         => $post->ID,
+                                    'post_type'  => $post->post_type,
+                                    'handle'     => get_post_meta($post->ID, '_ca_handle', true),
+                                    'menu_order' => $post->menu_order,
+                                    'post_date'  => $post->post_date
+                                );
+                return $carry;
+            }, array());
+
+            self::$post_cache[$post_type] = apply_filters("wpca/posts/{$post_type}", $results);
+
             return self::$post_cache[$post_type];
         }
 
