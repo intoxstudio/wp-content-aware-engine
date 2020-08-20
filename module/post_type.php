@@ -332,8 +332,7 @@ class WPCAModule_post_type extends WPCAModule_Base
             $post_status = array('inherit');
         }
 
-        return array(
-            'post__in'               => $args['include'],
+        $new_args = array(
             'post__not_in'           => $exclude,
             'post_type'              => $post_type_name,
             'post_status'            => $post_status,
@@ -347,6 +346,13 @@ class WPCAModule_post_type extends WPCAModule_Base
             'suppress_filters'       => true,
             'no_found_rows'          => true,
         );
+
+        //future proof in case this is considered a bug https://core.trac.wordpress.org/ticket/28099
+        if (!empty($args['include'])) {
+            $new_args['post__in'] = $args['include'];
+        }
+
+        return $new_args;
     }
 
     /**

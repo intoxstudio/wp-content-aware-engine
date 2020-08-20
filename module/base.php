@@ -293,7 +293,7 @@ abstract class WPCAModule_Base
     protected function get_content($args)
     {
         $args = array_merge(array(
-            'include' => '',
+            'include' => array(),
             'paged'   => 1,
             'search'  => false,
             'limit'   => -1,
