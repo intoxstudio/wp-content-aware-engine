@@ -643,6 +643,7 @@ var CAE = CAE || {};
 						data: {
 							search: params.term,
 							paged: page,
+							limit: 20,
 							action: "wpca/module/"+self.type,
 							sidebar_id: wpca_admin.sidebarID,
 							nonce: wpca_admin.nonce
