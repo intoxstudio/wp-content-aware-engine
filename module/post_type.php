@@ -503,7 +503,7 @@ class WPCAModule_post_type extends WPCAModule_Base
                     // Get sidebars with post ancestor wanting to auto-select post
                     $query = new WP_Query(array(
                         'post_type'   => WPCACore::TYPE_CONDITION_GROUP,
-                        'post_status' => array('wpca_or','wpca_and','publish'),
+                        'post_status' => array(WPCACore::STATUS_OR,WPCACore::STATUS_EXCEPT,WPCACore::STATUS_PUBLISHED),
                         'meta_query'  => array(
                         'relation' => 'AND',
                             array(
