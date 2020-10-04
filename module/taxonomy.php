@@ -301,18 +301,13 @@ class WPCAModule_taxonomy extends WPCAModule_Base
             $terms_by_tax[$term->taxonomy][] = $term;
         }
 
+        $title_count = $this->get_title_count();
         foreach ($this->_get_taxonomies() as $taxonomy) {
             $posts = isset($terms_by_tax[$taxonomy->name]) ? $terms_by_tax[$taxonomy->name] : 0;
 
             if ($posts || isset($ids[$taxonomy->name])) {
-                $placeholder = '/'.sprintf(__('%s Archives', WPCA_DOMAIN), $taxonomy->labels->singular_name);
-                $placeholder = $taxonomy->labels->all_items.$placeholder;
-
-                $group_data[$this->id.'-'.$taxonomy->name] = array(
-                    'label'         => $taxonomy->label,
-                    'placeholder'   => $placeholder,
-                    'default_value' => $taxonomy->name
-                );
+                $group_data[$this->id.'-'.$taxonomy->name] = $this->get_list_data($taxonomy, $title_count[$taxonomy->label]);
+                $group_data[$this->id.'-'.$taxonomy->name]['label'] = $group_data[$this->id.'-'.$taxonomy->name]['text'];
 
                 if ($posts) {
                     $retval = array();
@@ -332,6 +327,41 @@ class WPCAModule_taxonomy extends WPCAModule_Base
     }
 
     /**
+     * Count taxonomy labels to find shared ones
+     *
+     * @return array
+     */
+    protected function get_title_count()
+    {
+        $title_count = array();
+        foreach ($this->_get_taxonomies() as $taxonomy) {
+            if (!isset($title_count[$taxonomy->label])) {
+                $title_count[$taxonomy->label] = 0;
+            }
+            $title_count[$taxonomy->label]++;
+        }
+        return $title_count;
+    }
+
+    protected function get_list_data($taxonomy, $title_count)
+    {
+        $placeholder = '/'.sprintf(__('%s Archives', WPCA_DOMAIN), $taxonomy->labels->singular_name);
+        $placeholder = $taxonomy->labels->all_items.$placeholder;
+        $label = $taxonomy->label;
+
+        if (count($taxonomy->object_type) === 1 && $title_count > 1) {
+            $post_type = get_post_type_object($taxonomy->object_type[0]);
+            $label .= ' (' . $post_type->label . ')';
+        }
+
+        return array(
+            'text'          => $label,
+            'placeholder'   => $placeholder,
+            'default_value' => $taxonomy->name
+        );
+    }
+
+    /**
      * @since 2.0
      * @param array $list
      *
@@ -339,15 +369,11 @@ class WPCAModule_taxonomy extends WPCAModule_Base
      */
     public function list_module($list)
     {
+        $title_count = $this->get_title_count();
         foreach ($this->_get_taxonomies() as $taxonomy) {
-            $placeholder = '/'.sprintf(__('%s Archives', WPCA_DOMAIN), $taxonomy->labels->singular_name);
-            $placeholder = $taxonomy->labels->all_items.$placeholder;
-            $list[] = array(
-                'id'            => $this->id.'-'.$taxonomy->name,
-                'text'          => $taxonomy->label,
-                'placeholder'   => $placeholder,
-                'default_value' => $taxonomy->name
-            );
+            $data = $this->get_list_data($taxonomy, $title_count[$taxonomy->label]);
+            $data['id'] = $this->id.'-'.$taxonomy->name;
+            $list[] = $data;
         }
         return $list;
     }
