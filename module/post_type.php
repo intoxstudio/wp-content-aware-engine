@@ -135,7 +135,7 @@ class WPCAModule_post_type extends WPCAModule_Base
                 ))
             ));
         } else {
-            if (is_post_type_hierarchical($args['post_type']) && !$args['post__in']) {
+            if (is_post_type_hierarchical($args['post_type']) && !isset($args['post__in'])) {
                 $args['posts_per_page'] = -1;
                 $args['paged'] = 0;
                 $args['orderby'] = 'menu_order title';
@@ -328,7 +328,7 @@ class WPCAModule_post_type extends WPCAModule_Base
         }
 
         $post_status = array('publish','private','future','draft');
-        if ($post_status == 'attachment') {
+        if ($post_type_name == 'attachment') {
             $post_status = array('inherit');
         }
 
