@@ -363,6 +363,7 @@ var CAE = CAE || {};
 				allowClear: false,
 				//multiple: true,
 				width: "resolve",
+				matcher: wpca_admin.wpcaModuleMatcher,
 				nextSearchTerm: function (selectedObject, currentSearchTerm) {
 					return currentSearchTerm;
 				},
@@ -537,6 +538,7 @@ var CAE = CAE || {};
 				allowClear: false,
 				//multiple: true,
 				width: "auto",
+				matcher: wpca_admin.wpcaModuleMatcher,
 				nextSearchTerm: function (selectedObject, currentSearchTerm) {
 					return currentSearchTerm;
 				},
@@ -606,7 +608,7 @@ var CAE = CAE || {};
 		};
 	}, null, true);
 
-	$.fn.select2.amd.define('select2/data/wpcaAdapter', ['select2/data/array', 'select2/utils'],
+	$.fn.select2.amd.define('select2/wpca/conditionData', ['select2/data/array', 'select2/utils'],
 		function (ArrayAdapter, Utils) {
 			function WPCADataAdapter ($element, options) {
 				WPCADataAdapter.__super__.constructor.call(this, $element, options);
@@ -674,6 +676,71 @@ var CAE = CAE || {};
 		}
 	);
 
+	/**
+	 * copy of original matcher, with support for optgroup searching
+	 */
+	$.fn.select2.amd.define('select2/wpca/moduleMatcher', ['select2/diacritics'],
+		function (DIACRITICS) {
+
+			function stripDiacritics(text) {
+				// Used 'uni range + named function' from http://jsperf.com/diacritics/18
+				function match(a) {
+					return DIACRITICS[a] || a;
+				}
+
+				return text.replace(/[^\u0000-\u007E]/g, match);
+			}
+
+			function matcher(params, data) {
+				// Always return the object if there is nothing to compare
+				if (params.term == null || params.term.trim() === '') {
+					return data;
+				}
+
+				var original = stripDiacritics(data.text).toUpperCase();
+				var term = stripDiacritics(params.term).toUpperCase();
+
+				// Check if the text contains the term
+				// if we have match on optgroup, return all children as well
+				if (original.indexOf(term) > -1) {
+					return data;
+				}
+
+				// Do a recursive check for options with children
+				if (data.children && data.children.length > 0) {
+					// Clone the data object if there are children
+					// This is required as we modify the object to remove any non-matches
+					var match = $.extend(true, {}, data);
+
+					// Check each child of the option
+					for (var c = data.children.length - 1; c >= 0; c--) {
+						var child = data.children[c];
+
+						var matches = matcher(params, child);
+
+						// If there wasn't a match, remove the object in the array
+						if (matches == null) {
+							match.children.splice(c, 1);
+						}
+					}
+
+					// If any children matched, return the new object
+					if (match.children.length > 0) {
+						return match;
+					}
+
+					// If there were no matching children, check just the plain object
+					return matcher(params, match);
+				}
+
+				// If it doesn't contain the term, don't return anything
+				return null;
+			}
+
+			return matcher;
+		}
+	);
+
 	var AutoSaver = {
 		treshold: 2000,
 		timerQueue: {},
@@ -703,7 +770,8 @@ var CAE = CAE || {};
 		nonce: $('#_ca_nonce').val(),
 		sidebarID: $('#post_ID').val(),
 		alert: null,
-		wpcaDataAdapter:$.fn.select2.amd.require('select2/data/wpcaAdapter'),
+		wpcaDataAdapter:$.fn.select2.amd.require('select2/wpca/conditionData'),
+		wpcaModuleMatcher: $.fn.select2.amd.require('select2/wpca/moduleMatcher'),
 
 		init: function() {
 
@@ -717,7 +785,7 @@ var CAE = CAE || {};
 		}
 	};
 
-	$(document).ready(function(){
+	$(function(){
 		wpca_admin.init();
 	});
 
