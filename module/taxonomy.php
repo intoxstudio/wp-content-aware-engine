@@ -397,7 +397,7 @@ class WPCAModule_taxonomy extends WPCAModule_Base
             'include'                => $args['include'],
             'taxonomy'               => $taxonomy_name,
             'number'                 => $args['limit'],
-            'offset'                 => ($args['paged'] - 1) * $args['number'],
+            'offset'                 => ($args['paged'] - 1) * $args['limit'],
             'orderby'                => 'name',
             'order'                  => 'ASC',
             'search'                 => $args['search'],
