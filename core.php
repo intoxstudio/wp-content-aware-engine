@@ -882,7 +882,7 @@ GROUP BY p.post_type, m.meta_key
             );
 
             if (self::types()->has($current_screen->post_type) && $current_screen->base == 'post') {
-                self::enqueue_scripts_styles($hook);
+                self::enqueue_scripts_styles($current_screen->post_type);
             }
         }
 
@@ -909,9 +909,9 @@ GROUP BY p.post_type, m.meta_key
          * @param   string    $hook
          * @return  void
          */
-        public static function enqueue_scripts_styles($hook)
+        public static function enqueue_scripts_styles($post_type = '')
         {
-            $post_type = get_post_type();
+            $post_type = empty($post_type) ? get_post_type() : $post_type;
 
             $group_meta = self::get_condition_meta_keys($post_type);
 
