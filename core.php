@@ -668,12 +668,15 @@ GROUP BY p.post_type, m.meta_key
          */
         public static function add_group_meta_box($post_type, $post)
         {
+            if(is_null($post)) {
+                return;
+            }
             self::render_group_meta_box($post, $post_type, 'normal', 'default');
         }
 
         public static function render_group_meta_box($post, $screen, $context = 'normal', $priority = 'default')
         {
-            if (!self::types()->has($post->post_type)) {
+            if (is_null($post) || !self::types()->has($post->post_type)) {
                 return;
             }
 
