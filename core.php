@@ -87,6 +87,10 @@ if (!class_exists('WPCACore')) {
          */
         private static $post_cache = array();
 
+        private static $wp_query_original = array();
+
+        private static $filtered_modules = array();
+
         /**
          * Constructor
          */
@@ -382,7 +386,17 @@ GROUP BY p.post_type, m.meta_key
             }
         }
 
-        private static $wp_query_original = array();
+        /**
+         * @param string $post_type
+         * @return array
+         */
+        public static function get_conditional_modules($post_type)
+        {
+            if (!isset(self::$filtered_modules[$post_type])) {
+                return array();
+            }
+            return self::$filtered_modules[$post_type];
+        }
 
         /**
          * Get filtered condition groups
@@ -436,6 +450,7 @@ GROUP BY p.post_type, m.meta_key
                         $data = "($name.meta_value IS NULL OR $name.meta_value IN ('".implode("','", $data) ."'))";
                     }
                     $where[$id] = apply_filters("wpca/module/$id/db-where", $data);
+                    self::$filtered_modules[$post_type][] = $module;
                 } else {
                     $excluded[] = $module;
                 }
@@ -633,7 +648,7 @@ GROUP BY p.post_type, m.meta_key
                 //desc
                 if ($post_a_handle != $post_b_handle) {
                     return $post_a_handle > $post_b_handle ? -1 : 1;
-            }
+                }
 
                 //desc
                 if ($post_a->post_date != $post_b->post_date) {
@@ -668,7 +683,7 @@ GROUP BY p.post_type, m.meta_key
          */
         public static function add_group_meta_box($post_type, $post)
         {
-            if(is_null($post)) {
+            if (is_null($post)) {
                 return;
             }
             self::render_group_meta_box($post, $post_type, 'normal', 'default');
