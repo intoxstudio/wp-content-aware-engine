@@ -61,8 +61,8 @@ if (!class_exists('WPCALoader')) {
                 return;
             }
 
-            uasort(self::$paths, 'version_compare');
-            foreach (array_reverse(self::$paths, true) as $path => $version) {
+            uasort(self::$_paths, 'version_compare');
+            foreach (array_reverse(self::$_paths, true) as $path => $version) {
                 $file = $path.'core.php';
                 if (file_exists($file)) {
                     include($file);
