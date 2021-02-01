@@ -780,7 +780,7 @@ GROUP BY p.post_type, m.meta_key
                     'post_type'      => self::TYPE_CONDITION_GROUP,
                     'post_parent'    => $post->ID,
                     'post_status'    => array(self::STATUS_PUBLISHED,self::STATUS_NEGATED,self::STATUS_EXCEPT, self::STATUS_OR),
-                    'order'          => 'DESC',
+                    'order'          => 'ASC',
                     'orderby'        => 'post_status'
                 ));
             }
