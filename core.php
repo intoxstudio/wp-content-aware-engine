@@ -79,77 +79,77 @@ if (!class_exists('WPCACore')) {
          * Conditions retrieved from database
          * @var array
          */
-        private static $condition_cache = array();
+        private static $condition_cache = [];
 
         /**
          * Objects retrieved from database
          * @var array
          */
-        private static $post_cache = array();
+        private static $post_cache = [];
 
-        private static $wp_query_original = array();
+        private static $wp_query_original = [];
 
-        private static $filtered_modules = array();
+        private static $filtered_modules = [];
 
         /**
          * Constructor
          */
         public static function init()
         {
-            spl_autoload_register(array(__CLASS__,'_autoload_class_files'));
+            spl_autoload_register([__CLASS__,'_autoload_class_files']);
 
             if (is_admin()) {
                 add_action(
                     'admin_enqueue_scripts',
-                    array(__CLASS__,'add_group_script_styles'),
+                    [__CLASS__,'add_group_script_styles'],
                     9
                 );
                 add_action(
                     'delete_post',
-                    array(__CLASS__,'sync_group_deletion')
+                    [__CLASS__,'sync_group_deletion']
                 );
                 add_action(
                     'trashed_post',
-                    array(__CLASS__,'sync_group_trashed')
+                    [__CLASS__,'sync_group_trashed']
                 );
                 add_action(
                     'untrashed_post',
-                    array(__CLASS__,'sync_group_untrashed')
+                    [__CLASS__,'sync_group_untrashed']
                 );
                 add_action(
                     'add_meta_boxes',
-                    array(__CLASS__,'add_group_meta_box'),
+                    [__CLASS__,'add_group_meta_box'],
                     10,
                     2
                 );
                 add_action(
                     'wpca/modules/save-data',
-                    array(__CLASS__,'save_condition_options'),
+                    [__CLASS__,'save_condition_options'],
                     10,
                     3
                 );
 
                 add_action(
                     'wp_ajax_wpca/add-rule',
-                    array(__CLASS__,'ajax_update_group')
+                    [__CLASS__,'ajax_update_group']
                 );
             }
 
             add_action(
                 'init',
-                array(__CLASS__,'add_group_post_type'),
+                [__CLASS__,'add_group_post_type'],
                 99
             );
 
             add_action(
                 'init',
-                array(__CLASS__,'schedule_cache_condition_types'),
+                [__CLASS__,'schedule_cache_condition_types'],
                 99
             );
 
             add_action(
                 'wpca/cache_condition_types',
-                array(__CLASS__,'cache_condition_types'),
+                [__CLASS__,'cache_condition_types'],
                 999
             );
         }
@@ -203,15 +203,15 @@ if (!class_exists('WPCACore')) {
          */
         public static function cache_condition_types()
         {
-            $all_modules = array();
-            $modules_by_type = array();
-            $ignored_modules = array('taxonomy' => 1);
-            $cache = array();
+            $all_modules = [];
+            $modules_by_type = [];
+            $ignored_modules = ['taxonomy' => 1];
+            $cache = [];
 
             $types = self::types();
             foreach ($types as $type => $modules) {
-                $modules_by_type[$type] = array();
-                $cache[$type] = array();
+                $modules_by_type[$type] = [];
+                $cache[$type] = [];
                 foreach ($modules as $module) {
                     if (isset($ignored_modules[$module->get_id()])) {
                         continue;
@@ -223,7 +223,7 @@ if (!class_exists('WPCACore')) {
             }
 
             if (!$all_modules) {
-                update_option(self::OPTION_CONDITION_TYPE_CACHE, array());
+                update_option(self::OPTION_CONDITION_TYPE_CACHE, []);
                 return;
             }
 
@@ -261,7 +261,7 @@ GROUP BY p.post_type, m.meta_key
             //This is just a safety placeholder,
             //authorization will be done with parent object's cap
             $capability = 'edit_theme_options';
-            $capabilities = array(
+            $capabilities = [
                 'edit_post'          => $capability,
                 'read_post'          => $capability,
                 'delete_post'        => $capability,
@@ -270,13 +270,13 @@ GROUP BY p.post_type, m.meta_key
                 'edit_others_posts'  => $capability,
                 'publish_posts'      => $capability,
                 'read_private_posts' => $capability
-            );
+            ];
 
-            register_post_type(self::TYPE_CONDITION_GROUP, array(
-                'labels' => array(
+            register_post_type(self::TYPE_CONDITION_GROUP, [
+                'labels' => [
                     'name'          => __('Condition Groups', WPCA_DOMAIN),
                     'singular_name' => __('Condition Group', WPCA_DOMAIN),
-                ),
+                ],
                 'capabilities'        => $capabilities,
                 'public'              => false,
                 'hierarchical'        => false,
@@ -289,32 +289,32 @@ GROUP BY p.post_type, m.meta_key
                 'has_archive'         => false,
                 'rewrite'             => false,
                 'query_var'           => false,
-                'supports'            => array('author'),
+                'supports'            => ['title'],
                 'can_export'          => false,
                 'delete_with_user'    => false
-            ));
+            ]);
 
-            register_post_status(self::STATUS_NEGATED, array(
+            register_post_status(self::STATUS_NEGATED, [
                 'label'                     => _x('Negated', 'condition status', WPCA_DOMAIN),
                 'public'                    => false,
                 'exclude_from_search'       => true,
                 'show_in_admin_all_list'    => false,
                 'show_in_admin_status_list' => false,
-            ));
-            register_post_status(self::STATUS_EXCEPT, array(
+            ]);
+            register_post_status(self::STATUS_EXCEPT, [
                 'label'                     => _x('Exception', 'condition status', WPCA_DOMAIN),
                 'public'                    => false,
                 'exclude_from_search'       => true,
                 'show_in_admin_all_list'    => false,
                 'show_in_admin_status_list' => false,
-            ));
-            register_post_status(self::STATUS_OR, array(
+            ]);
+            register_post_status(self::STATUS_OR, [
                 'label'                     => _x('Or', 'condition status', WPCA_DOMAIN),
                 'public'                    => false,
                 'exclude_from_search'       => true,
                 'show_in_admin_all_list'    => false,
                 'show_in_admin_status_list' => false,
-            ));
+            ]);
         }
 
         /**
@@ -327,7 +327,7 @@ GROUP BY p.post_type, m.meta_key
         private static function get_group_ids_by_parent($parent_id)
         {
             if (!self::types()->has(get_post_type($parent_id))) {
-                return array();
+                return [];
             }
 
             global $wpdb;
@@ -393,7 +393,7 @@ GROUP BY p.post_type, m.meta_key
         public static function get_conditional_modules($post_type)
         {
             if (!isset(self::$filtered_modules[$post_type])) {
-                return array();
+                return [];
             }
             return self::$filtered_modules[$post_type];
         }
@@ -409,7 +409,7 @@ GROUP BY p.post_type, m.meta_key
             global $wpdb, $wp_query, $post;
 
             if ((!$wp_query->query && !$post) || is_admin()) {
-                return array();
+                return [];
             }
 
             // Return cache if present
@@ -417,13 +417,13 @@ GROUP BY p.post_type, m.meta_key
                 return self::$condition_cache[$post_type];
             }
 
-            $excluded = array();
-            $where = array();
-            $join = array();
+            $excluded = [];
+            $where = [];
+            $join = [];
 
-            $cache = array(
+            $cache = [
                 $post_type
-            );
+            ];
 
             $modules = self::types()->get($post_type)->get_all();
             $modules = self::filter_condition_type_cache($post_type, $modules);
@@ -459,13 +459,13 @@ GROUP BY p.post_type, m.meta_key
             $use_negated_conditions = self::get_option($post_type, 'legacy.negated_conditions', false);
 
             // Check if there are any conditions for current content
-            $groups_in_context = array();
+            $groups_in_context = [];
             if (!empty($where)) {
-                $post_status = array(
+                $post_status = [
                     self::STATUS_PUBLISHED,
                     self::STATUS_OR,
                     self::STATUS_EXCEPT
-                );
+                ];
 
                 if ($use_negated_conditions) {
                     $post_status[] = self::STATUS_NEGATED;
@@ -482,10 +482,10 @@ GROUP BY p.post_type, m.meta_key
                 $joins = array_chunk($join, $chunk_size);
                 $joins_max = count($joins) - 1;
                 $wheres = array_chunk($where, $chunk_size);
-                $group_ids = array();
-                $groups_in_context = array();
+                $group_ids = [];
+                $groups_in_context = [];
 
-                $where2 = array();
+                $where2 = [];
                 $where2[] = "p.post_type = '".self::TYPE_CONDITION_GROUP."'";
                 $where2[] = "p.post_status IN ('".implode("','", $post_status)."')";
                 //exposure
@@ -517,7 +517,7 @@ GROUP BY p.post_type, m.meta_key
                 }
             }
 
-            $groups_negated = array();
+            $groups_negated = [];
             if ($use_negated_conditions) {
                 $groups_negated = $wpdb->get_results($wpdb->prepare(
                     'SELECT p.ID, p.post_parent '.
@@ -535,7 +535,7 @@ GROUP BY p.post_type, m.meta_key
             }
 
             //condition group => type
-            $valid = array();
+            $valid = [];
             foreach ($groups_in_context as $group) {
                 $valid[$group->ID] = $group->post_parent;
             }
@@ -546,7 +546,7 @@ GROUP BY p.post_type, m.meta_key
             }
 
             //exclude exceptions
-            $excepted = array();
+            $excepted = [];
             foreach ($valid as $group_id => $parent_id) {
                 //sanity
                 if (!isset($groups_in_context[$group_id])) {
@@ -614,12 +614,12 @@ GROUP BY p.post_type, m.meta_key
 
             $valid = self::get_conditions($post_type);
 
-            self::$post_cache[$post_type] = array();
+            self::$post_cache[$post_type] = [];
 
-            $results = array();
+            $results = [];
 
             if (!empty($valid)) {
-                $data = new WP_Query(array(
+                $data = new WP_Query([
                     'post__in'               => array_values($valid),
                     'post_type'              => $post_type,
                     'post_status'            => 'publish',
@@ -630,7 +630,7 @@ GROUP BY p.post_type, m.meta_key
                     'suppress_filters'       => true,
                     'no_found_rows'          => true,
                     'orderby'                => 'none'
-                ));
+                ]);
 
                 $results = array_merge($results, $data->posts);
             }
@@ -659,15 +659,15 @@ GROUP BY p.post_type, m.meta_key
             });
 
             $results = array_reduce($results, function ($carry, $post) {
-                $carry[$post->ID] = (object)array(
+                $carry[$post->ID] = (object)[
                                     'ID'         => $post->ID,
                                     'post_type'  => $post->post_type,
                                     'handle'     => get_post_meta($post->ID, '_ca_handle', true),
                                     'menu_order' => $post->menu_order,
                                     'post_date'  => $post->post_date
-                                );
+                                ];
                 return $carry;
-            }, array());
+            }, []);
 
             self::$post_cache[$post_type] = apply_filters("wpca/posts/{$post_type}", $results);
 
@@ -701,30 +701,30 @@ GROUP BY p.post_type, m.meta_key
                 return;
             }
 
-            $template = WPCAView::make('condition_options', array(
+            $template = WPCAView::make('condition_options', [
                 'post_type' => $post->post_type
-            ));
-            add_action('wpca/group/settings', array($template,'render'), -1, 2);
+            ]);
+            add_action('wpca/group/settings', [$template,'render'], -1, 2);
 
-            $template = WPCAView::make('group_template', array(
+            $template = WPCAView::make('group_template', [
                 'post_type' => $post->post_type
-            ));
-            add_action('admin_footer', array($template,'render'));
+            ]);
+            add_action('admin_footer', [$template,'render']);
 
             $template = WPCAView::make('condition_template');
-            add_action('admin_footer', array($template,'render'));
+            add_action('admin_footer', [$template,'render']);
 
-            $view = WPCAView::make('meta_box', array(
+            $view = WPCAView::make('meta_box', [
                 'post_type' => $post->post_type,
                 'nonce'     => wp_nonce_field(self::PREFIX.$post->ID, self::NONCE, true, false),
-            ));
+            ]);
 
             $title = isset($post_type_obj->labels->ca_title) ? $post_type_obj->labels->ca_title : __('Conditional Logic', WPCA_DOMAIN);
 
             add_meta_box(
                 'cas-rules',
                 $title,
-                array($view,'render'),
+                [$view,'render'],
                 $screen,
                 $context,
                 $priority
@@ -745,20 +745,20 @@ GROUP BY p.post_type, m.meta_key
 
             //Make sure to go from auto-draft to draft
             if ($post->post_status == 'auto-draft') {
-                wp_update_post(array(
+                wp_update_post([
                     'ID'          => $post->ID,
                     'post_title'  => '',
                     'post_status' => 'draft'
-                ));
+                ]);
             }
 
-            return wp_insert_post(array(
+            return wp_insert_post([
                 'post_status' => self::STATUS_OR,
                 'menu_order'  => self::EXP_SINGULAR_ARCHIVE,
                 'post_type'   => self::TYPE_CONDITION_GROUP,
                 'post_author' => $post->post_author,
                 'post_parent' => $post->ID,
-            ));
+            ]);
         }
 
         /**
@@ -772,17 +772,17 @@ GROUP BY p.post_type, m.meta_key
         private static function get_condition_groups($post_id = null)
         {
             $post = get_post($post_id);
-            $groups = array();
+            $groups = [];
 
             if ($post) {
-                $groups = get_posts(array(
+                $groups = get_posts([
                     'posts_per_page' => -1,
                     'post_type'      => self::TYPE_CONDITION_GROUP,
                     'post_parent'    => $post->ID,
-                    'post_status'    => array(self::STATUS_PUBLISHED,self::STATUS_NEGATED,self::STATUS_EXCEPT, self::STATUS_OR),
+                    'post_status'    => [self::STATUS_PUBLISHED,self::STATUS_NEGATED,self::STATUS_EXCEPT, self::STATUS_OR],
                     'order'          => 'ASC',
                     'orderby'        => 'post_status'
-                ));
+                ]);
             }
             return $groups;
         }
@@ -807,9 +807,9 @@ GROUP BY p.post_type, m.meta_key
                 wp_send_json_error(__('Unauthorized request', WPCA_DOMAIN), 403);
             }
 
-            $response = array(
+            $response = [
                 'message' => __('Conditions updated', WPCA_DOMAIN)
-            );
+            ];
 
             //Make sure some rules are sent
             if (!isset($_POST['conditions'])) {
@@ -830,14 +830,14 @@ GROUP BY p.post_type, m.meta_key
                 $post_id = (int)$_POST['id'];
             }
 
-            wp_update_post(array(
+            wp_update_post([
                 'ID'          => $post_id,
                 'post_status' => self::sanitize_status($_POST['status']),
                 'menu_order'  => (int)$_POST['exposure']
-            ));
+            ]);
 
             //Prune condition type cache, will rebuild within 24h
-            update_option(self::OPTION_CONDITION_TYPE_CACHE, array());
+            update_option(self::OPTION_CONDITION_TYPE_CACHE, []);
 
             foreach (self::types()->get($parent_type->name)->get_all() as $module) {
                 //send $_POST here
@@ -895,7 +895,7 @@ GROUP BY p.post_type, m.meta_key
             wp_register_style(
                 self::PREFIX.'condition-groups',
                 plugins_url('/assets/css/condition_groups.css', __FILE__),
-                array(),
+                [],
                 WPCA_VERSION
             );
 
@@ -913,9 +913,9 @@ GROUP BY p.post_type, m.meta_key
          */
         public static function get_condition_meta_keys($post_type)
         {
-            $group_meta = array(
+            $group_meta = [
                 '_ca_autoselect' => 0
-            );
+            ];
             return apply_filters('wpca/condition/meta', $group_meta, $post_type);
         }
 
@@ -934,15 +934,15 @@ GROUP BY p.post_type, m.meta_key
             $group_meta = self::get_condition_meta_keys($post_type);
 
             $groups = self::get_condition_groups();
-            $data = array();
+            $data = [];
             $i = 0;
             foreach ($groups as $group) {
-                $data[$i] = array(
+                $data[$i] = [
                     'id'         => $group->ID,
                     'status'     => $group->post_status,
                     'exposure'   => $group->menu_order,
-                    'conditions' => array()
-                );
+                    'conditions' => []
+                ];
 
                 foreach (self::types()->get($post_type)->get_all() as $module) {
                     $data[$i]['conditions'] = $module->get_group_data($data[$i]['conditions'], $group->ID);
@@ -958,24 +958,24 @@ GROUP BY p.post_type, m.meta_key
                 $i++;
             }
 
-            $conditions = array(
-                'general' => array(
+            $conditions = [
+                'general' => [
                     'text'     => __('General'),
-                    'children' => array()
-                ),
-                'post_type' => array(
+                    'children' => []
+                ],
+                'post_type' => [
                     'text'     => __('Post Types'),
-                    'children' => array()
-                ),
-                'taxonomy' => array(
+                    'children' => []
+                ],
+                'taxonomy' => [
                     'text'     => __('Taxonomies'),
-                    'children' => array()
-                ),
-                'plugins' => array(
+                    'children' => []
+                ],
+                'plugins' => [
                     'text'     => __('Plugins'),
-                    'children' => array()
-                )
-            );
+                    'children' => []
+                ]
+            ];
 
             foreach (self::types()->get($post_type)->get_all() as $module) {
                 $category = $module->get_category();
@@ -1006,7 +1006,7 @@ GROUP BY p.post_type, m.meta_key
             wp_register_script(
                 'select2',
                 $plugins_url . '/assets/js/select2.min.js',
-                array('jquery'),
+                ['jquery'],
                 '4.0.3',
                 false
             );
@@ -1014,7 +1014,7 @@ GROUP BY p.post_type, m.meta_key
             wp_register_script(
                 'backbone.trackit',
                 $plugins_url . '/assets/js/backbone.trackit.min.js',
-                array('backbone'),
+                ['backbone'],
                 '0.1.0',
                 true
             );
@@ -1022,7 +1022,7 @@ GROUP BY p.post_type, m.meta_key
             wp_register_script(
                 'backbone.epoxy',
                 $plugins_url . '/assets/js/backbone.epoxy.min.js',
-                array('backbone'),
+                ['backbone'],
                 '1.3.3',
                 true
             );
@@ -1030,13 +1030,13 @@ GROUP BY p.post_type, m.meta_key
             wp_register_script(
                 self::PREFIX.'condition-groups',
                 $plugins_url . '/assets/js/condition_groups.min.js',
-                array('jquery','select2','backbone.trackit','backbone.epoxy'),
+                ['jquery','select2','backbone.trackit','backbone.epoxy'],
                 WPCA_VERSION,
                 true
             );
 
             wp_enqueue_script(self::PREFIX.'condition-groups');
-            wp_localize_script(self::PREFIX.'condition-groups', 'WPCA', array(
+            wp_localize_script(self::PREFIX.'condition-groups', 'WPCA', [
                 'searching'        => __('Searching', WPCA_DOMAIN),
                 'noResults'        => __('No results found.', WPCA_DOMAIN),
                 'loadingMore'      => __('Loading more results', WPCA_DOMAIN),
@@ -1051,7 +1051,7 @@ GROUP BY p.post_type, m.meta_key
                 'condition_not'    => __('Not', WPCA_DOMAIN),
                 'condition_or'     => __('Or', WPCA_DOMAIN),
                 'condition_except' => __('Except', WPCA_DOMAIN)
-            ));
+            ]);
             wp_enqueue_style(self::PREFIX.'condition-groups');
 
             //@todo remove when ultimate member includes fix
@@ -1069,20 +1069,20 @@ GROUP BY p.post_type, m.meta_key
          */
         private static function fix_wp_query()
         {
-            $query = array();
+            $query = [];
 
             //When themes don't declare WooCommerce support,
             //conditionals are not working properly for Shop
             if (defined('WOOCOMMERCE_VERSION') && function_exists('is_shop') && is_shop() && !is_post_type_archive('product')) {
-                $query = array(
+                $query = [
                     'is_archive'           => true,
                     'is_post_type_archive' => true,
                     'is_page'              => false,
                     'is_singular'          => false,
-                    'query_vars'           => array(
+                    'query_vars'           => [
                         'post_type' => 'product'
-                    )
-                );
+                    ]
+                ];
             }
 
             self::set_wp_query($query);
@@ -1097,7 +1097,7 @@ GROUP BY p.post_type, m.meta_key
         private static function restore_wp_query()
         {
             self::set_wp_query(self::$wp_query_original);
-            self::$wp_query_original = array();
+            self::$wp_query_original = [];
         }
 
         /**
@@ -1113,7 +1113,7 @@ GROUP BY p.post_type, m.meta_key
                 $is_array = is_array($val);
 
                 if (!isset(self::$wp_query_original[$key])) {
-                    self::$wp_query_original[$key] = $is_array ? array() : $wp_query->$key;
+                    self::$wp_query_original[$key] = $is_array ? [] : $wp_query->$key;
                 }
 
                 if ($is_array) {
@@ -1191,15 +1191,15 @@ GROUP BY p.post_type, m.meta_key
          */
         private static function filter_condition_type_cache($type, $modules)
         {
-            $included_conditions = get_option(self::OPTION_CONDITION_TYPE_CACHE, array());
+            $included_conditions = get_option(self::OPTION_CONDITION_TYPE_CACHE, []);
 
             if (!$included_conditions || !isset($included_conditions[$type])) {
                 return $modules;
             }
 
-            $ignored_modules = array('taxonomy' => 1);
+            $ignored_modules = ['taxonomy' => 1];
             $included_conditions_lookup = array_flip($included_conditions[$type]);
-            $filtered_modules = array();
+            $filtered_modules = [];
 
             foreach ($modules as $module) {
                 if (isset($ignored_modules[$module->get_id()]) || isset($included_conditions_lookup[$module->get_id()])) {
@@ -1223,7 +1223,7 @@ GROUP BY p.post_type, m.meta_key
                 return $default_value;
             }
 
-            $value = get_option(self::OPTION_POST_TYPE_OPTIONS, array());
+            $value = get_option(self::OPTION_POST_TYPE_OPTIONS, []);
             $levels = explode('.', $post_type.'.'.$name);
 
             foreach ($levels as $option_level) {
@@ -1248,13 +1248,13 @@ GROUP BY p.post_type, m.meta_key
                 return false;
             }
 
-            $options = get_option(self::OPTION_POST_TYPE_OPTIONS, array());
+            $options = get_option(self::OPTION_POST_TYPE_OPTIONS, []);
             $keys = explode('.', $post_type.'.'.$name);
             $array = &$options;
 
             foreach ($keys as $key) {
                 if (!isset($array[$key]) || !is_array($array[$key])) {
-                    $array[$key] = array();
+                    $array[$key] = [];
                 }
                 $array = &$array[$key];
             }
