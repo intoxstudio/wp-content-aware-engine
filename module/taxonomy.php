@@ -19,6 +19,12 @@ defined('ABSPATH') || exit;
  */
 class WPCAModule_taxonomy extends WPCAModule_Base
 {
+    /**
+     * when condition has select terms,
+     * set this value in postmeta
+     * @see parent::filter_excluded_context()
+     */
+    const VALUE_HAS_TERMS = '-1';
 
     /**
      * @var string
@@ -30,7 +36,7 @@ class WPCAModule_taxonomy extends WPCAModule_Base
      *
      * @var array
      */
-    private $taxonomy_objects = array();
+    private $taxonomy_objects = [];
 
     /**
      * Terms of a given singular
@@ -60,7 +66,7 @@ class WPCAModule_taxonomy extends WPCAModule_Base
         parent::initiate();
         add_action(
             'created_term',
-            array($this,'term_ancestry_check'),
+            [$this,'term_ancestry_check'],
             10,
             3
         );
@@ -69,7 +75,7 @@ class WPCAModule_taxonomy extends WPCAModule_Base
             foreach ($this->_get_taxonomies() as $taxonomy) {
                 add_action(
                     'wp_ajax_wpca/module/'.$this->id.'-'.$taxonomy->name,
-                    array($this,'ajax_print_content')
+                    [$this,'ajax_print_content']
                 );
             }
         }
@@ -85,8 +91,8 @@ class WPCAModule_taxonomy extends WPCAModule_Base
     {
         if (is_singular()) {
             $tax = $this->_get_taxonomies();
-            $this->post_terms = array();
-            $this->post_taxonomies = array();
+            $this->post_terms = [];
+            $this->post_taxonomies = [];
 
             // Check if content has any taxonomies supported
             foreach (get_object_taxonomies(get_post_type()) as $taxonomy) {
@@ -104,30 +110,9 @@ class WPCAModule_taxonomy extends WPCAModule_Base
                     }
                 }
             }
-            return !!$this->post_terms;
+            return !empty($this->post_terms);
         }
         return is_tax() || is_category() || is_tag();
-    }
-
-    /**
-     * Remove posts if they have data from
-     * other contexts (meaning conditions arent met)
-     *
-     * @since  3.2
-     * @param  array  $posts
-     * @return array
-     */
-    public function filter_excluded_context($posts)
-    {
-        $posts = parent::filter_excluded_context($posts);
-        if ($posts) {
-            global $wpdb;
-            $obj_w_tags = $wpdb->get_col("SELECT object_id FROM $wpdb->term_relationships WHERE object_id IN (".implode(',', array_keys($posts)).') GROUP BY object_id');
-            if ($obj_w_tags) {
-                $posts = array_diff_key($posts, array_flip($obj_w_tags));
-            }
-        }
-        return $posts;
     }
 
     /**
@@ -157,16 +142,19 @@ class WPCAModule_taxonomy extends WPCAModule_Base
         //In more recent WP versions, term_id = term_tax_id
         //but term_tax_id has always been unique
         if (is_singular()) {
-            $terms = array();
+            $terms = [];
             foreach ($this->post_terms as $term) {
                 $terms[] = $term->term_taxonomy_id;
             }
-
-            return '(term.term_taxonomy_id IS NULL OR term.term_taxonomy_id IN ('.implode(',', $terms).")) AND ($name.meta_value IS NULL OR $name.meta_value IN('".implode("','", $this->post_taxonomies)."'))";
+            $tax = $this->post_taxonomies;
+        } else {
+            $term = get_queried_object();
+            $terms = [$term->term_taxonomy_id];
+            $tax = [$term->taxonomy];
         }
-        $term = get_queried_object();
 
-        return "(term.term_taxonomy_id IS NULL OR term.term_taxonomy_id = '".$term->term_taxonomy_id."') AND ($name.meta_value IS NULL OR $name.meta_value = '".$term->taxonomy."')";
+        $tax[] = self::VALUE_HAS_TERMS;
+        return '(term.term_taxonomy_id IS NULL OR term.term_taxonomy_id IN ('.implode(',', $terms).")) AND ($name.meta_value IS NULL OR $name.meta_value IN('".implode("','", $tax)."'))";
     }
 
     /**
@@ -176,16 +164,16 @@ class WPCAModule_taxonomy extends WPCAModule_Base
      * @param  array $args
      * @return array
      */
-    protected function _get_content($args = array())
+    protected function _get_content($args = [])
     {
-        $total_items = wp_count_terms($args['taxonomy'], array(
+        $total_items = wp_count_terms($args['taxonomy'], [
             'hide_empty' => $args['hide_empty']
-        ));
+        ]);
 
         $start = $args['offset'];
         $end = $start + $args['number'];
         $walk_tree = false;
-        $retval = array();
+        $retval = [];
 
         if ($total_items) {
             $taxonomy = get_taxonomy($args['taxonomy']);
@@ -200,7 +188,7 @@ class WPCAModule_taxonomy extends WPCAModule_Base
             $terms = new WP_Term_Query($args);
 
             if ($walk_tree) {
-                $sorted_terms = array();
+                $sorted_terms = [];
                 foreach ($terms->terms as $term) {
                     $sorted_terms[$term->parent][] = $term;
                 }
@@ -241,11 +229,11 @@ class WPCAModule_taxonomy extends WPCAModule_Base
             }
 
             if ($i >= $start) {
-                $retval[] = array(
+                $retval[] = [
                     'id'    => $term->term_id,
                     'text'  => htmlspecialchars_decode($term->name),
                     'level' => $level
-                );
+                ];
             }
 
             $i++;
@@ -266,7 +254,7 @@ class WPCAModule_taxonomy extends WPCAModule_Base
     {
         // List public taxonomies
         if (empty($this->taxonomy_objects)) {
-            foreach (get_taxonomies(array('public' => true), 'objects') as $tax) {
+            foreach (get_taxonomies(['public' => true], 'objects') as $tax) {
                 $this->taxonomy_objects[$tax->name] = $tax;
             }
             if (defined('POLYLANG_VERSION')) {
@@ -296,7 +284,7 @@ class WPCAModule_taxonomy extends WPCAModule_Base
             // 	'update_term_meta_cache' => false
             // )
         );
-        $terms_by_tax = array();
+        $terms_by_tax = [];
         foreach ($terms as $term) {
             $terms_by_tax[$term->taxonomy][] = $term;
         }
@@ -310,7 +298,7 @@ class WPCAModule_taxonomy extends WPCAModule_Base
                 $group_data[$this->id.'-'.$taxonomy->name]['label'] = $group_data[$this->id.'-'.$taxonomy->name]['text'];
 
                 if ($posts) {
-                    $retval = array();
+                    $retval = [];
 
                     //Hierarchical taxonomies use ids instead of slugs
                     //see http://codex.wordpress.org/Function_Reference/wp_set_post_objects
@@ -333,7 +321,7 @@ class WPCAModule_taxonomy extends WPCAModule_Base
      */
     protected function get_title_count()
     {
-        $title_count = array();
+        $title_count = [];
         foreach ($this->_get_taxonomies() as $taxonomy) {
             if (!isset($title_count[$taxonomy->label])) {
                 $title_count[$taxonomy->label] = 0;
@@ -354,11 +342,11 @@ class WPCAModule_taxonomy extends WPCAModule_Base
             $label .= ' (' . $post_type->label . ')';
         }
 
-        return array(
+        return [
             'text'          => $label,
             'placeholder'   => $placeholder,
             'default_value' => $taxonomy->name
-        );
+        ];
     }
 
     /**
@@ -393,7 +381,7 @@ class WPCAModule_taxonomy extends WPCAModule_Base
             $taxonomy_name = 'category';
         }
 
-        return array(
+        return [
             'include'                => $args['include'],
             'taxonomy'               => $taxonomy_name,
             'number'                 => $args['limit'],
@@ -403,7 +391,7 @@ class WPCAModule_taxonomy extends WPCAModule_Base
             'search'                 => $args['search'],
             'hide_empty'             => false,
             'update_term_meta_cache' => false
-        );
+        ];
     }
 
     /**
@@ -415,10 +403,11 @@ class WPCAModule_taxonomy extends WPCAModule_Base
      */
     public function save_data($post_id)
     {
-        //parent::save_data($post_id);
         $meta_key = WPCACore::PREFIX . $this->id;
         $old = array_flip(get_post_meta($post_id, $meta_key, false));
         $tax_input = $_POST['conditions'];
+
+        $has_select_terms = false;
 
         //Save terms
         //Loop through each public taxonomy
@@ -426,7 +415,7 @@ class WPCAModule_taxonomy extends WPCAModule_Base
 
             //If no terms, maybe delete old ones
             if (!isset($tax_input[$this->id.'-'.$taxonomy->name])) {
-                $terms = array();
+                $terms = [];
                 if (isset($old[$taxonomy->name])) {
                     delete_post_meta($post_id, $meta_key, $taxonomy->name);
                 }
@@ -452,7 +441,17 @@ class WPCAModule_taxonomy extends WPCAModule_Base
                 }
             }
 
+            if (!empty($terms)) {
+                $has_select_terms = true;
+            }
+
             wp_set_object_terms($post_id, $terms, $taxonomy->name);
+        }
+
+        if ($has_select_terms && !isset($old[self::VALUE_HAS_TERMS])) {
+            add_post_meta($post_id, $meta_key, self::VALUE_HAS_TERMS);
+        } elseif (!$has_select_terms && isset($old[self::VALUE_HAS_TERMS])) {
+            delete_post_meta($post_id, $meta_key, self::VALUE_HAS_TERMS);
         }
     }
 
@@ -472,25 +471,25 @@ class WPCAModule_taxonomy extends WPCAModule_Base
 
             if ($term->parent != '0') {
                 // Get sidebars with term ancestor wanting to auto-select term
-                $query = new WP_Query(array(
+                $query = new WP_Query([
                     'post_type'   => WPCACore::TYPE_CONDITION_GROUP,
-                    'post_status' => array(WPCACore::STATUS_OR,WPCACore::STATUS_EXCEPT,WPCACore::STATUS_PUBLISHED),
-                    'meta_query'  => array(
-                        array(
+                    'post_status' => [WPCACore::STATUS_OR,WPCACore::STATUS_EXCEPT,WPCACore::STATUS_PUBLISHED],
+                    'meta_query'  => [
+                        [
                             'key'     => WPCACore::PREFIX . 'autoselect',
                             'value'   => 1,
                             'compare' => '='
-                        )
-                    ),
-                    'tax_query' => array(
-                        array(
+                        ]
+                    ],
+                    'tax_query' => [
+                        [
                             'taxonomy'         => $taxonomy,
                             'field'            => 'id',
                             'terms'            => get_ancestors($term_id, $taxonomy),
                             'include_children' => false
-                        )
-                    )
-                ));
+                        ]
+                    ]
+                ]);
                 if ($query && $query->found_posts) {
                     foreach ($query->posts as $post) {
                         wp_set_post_terms($post->ID, $term_id, $taxonomy, true);

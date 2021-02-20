@@ -12,7 +12,7 @@ defined('ABSPATH') || exit;
  * Version of this WPCA
  * @var string
  */
-$this_wpca_version = '9.2a';
+$this_wpca_version = '9.3a';
 
 /**
  * Class to make sure the latest
@@ -28,7 +28,7 @@ if (!class_exists('WPCALoader')) {
          * Absolute paths and versions
          * @var array
          */
-        private static $_paths = array();
+        private static $_paths = [];
 
         public function __construct()
         {
@@ -87,6 +87,6 @@ if (!class_exists('WPCALoader')) {
         }
     }
     //Hook as early as possible after plugins are loaded
-    add_action('plugins_loaded', array('WPCALoader','load'), -999999);
+    add_action('plugins_loaded', ['WPCALoader','load'], -999999);
 }
 WPCALoader::add(plugin_dir_path(__FILE__), $this_wpca_version);

@@ -80,7 +80,7 @@ abstract class WPCAModule_Base
         if (is_admin()) {
             add_action(
                 'wp_ajax_wpca/module/'.$this->id,
-                array($this,'ajax_print_content')
+                [$this,'ajax_print_content']
             );
         }
     }
@@ -103,12 +103,12 @@ abstract class WPCAModule_Base
      */
     public function list_module($list)
     {
-        $list[] = array(
+        $list[] = [
             'id'            => $this->id,
             'text'          => $this->name,
             'placeholder'   => $this->placeholder,
             'default_value' => $this->default_value,
-        );
+        ];
         return $list;
     }
 
@@ -222,12 +222,12 @@ abstract class WPCAModule_Base
     {
         $data = get_post_custom_values($this->get_data_key(), $post_id);
         if ($data) {
-            $group_data[$this->id] = array(
+            $group_data[$this->id] = [
                 'label'         => $this->name,
                 'placeholder'   => $this->placeholder,
-                'data'          => $this->get_content(array('include' => $data)),
+                'data'          => $this->get_content(['include' => $data]),
                 'default_value' => $this->default_value
-            );
+            ];
         }
         return $group_data;
     }
@@ -239,7 +239,7 @@ abstract class WPCAModule_Base
      * @param   array     $args
      * @return  array
      */
-    abstract protected function _get_content($args = array());
+    abstract protected function _get_content($args = []);
 
     /**
      * Determine if current content is relevant
@@ -292,12 +292,12 @@ abstract class WPCAModule_Base
      */
     protected function get_content($args)
     {
-        $args = array_merge(array(
-            'include' => array(),
+        $args = array_merge([
+            'include' => [],
             'paged'   => 1,
             'search'  => false,
             'limit'   => -1,
-        ), $args);
+        ], $args);
         return $this->_get_content($this->parse_query_args($args));
     }
 
@@ -318,23 +318,23 @@ abstract class WPCAModule_Base
             wp_die();
         }
 
-        $response = $this->get_content(array(
+        $response = $this->get_content([
             'paged'       => $_POST['paged'],
             'search'      => isset($_POST['search']) ? $_POST['search'] : false,
             'limit'       => isset($_POST['limit']) ? $_POST['limit'] : 20,
             'item_object' => $_POST['action']
-        ));
+        ]);
 
         //ECMAScript has no standard to guarantee
         //prop order in an object, send array instead
         //todo: fix in each module
-        $fix_response = array();
+        $fix_response = [];
         foreach ($response as $id => $title) {
             if (!is_array($title)) {
-                $fix_response[] = array(
+                $fix_response[] = [
                     'id'   => $id,
                     'text' => $title
-                );
+                ];
             } else {
                 $fix_response[] = $title;
             }
@@ -353,7 +353,7 @@ abstract class WPCAModule_Base
         if (is_admin()) {
             remove_action(
                 'wp_ajax_wpca/module/'.$this->id,
-                array($this,'ajax_print_content')
+                [$this,'ajax_print_content']
             );
         }
     }
