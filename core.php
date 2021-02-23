@@ -286,6 +286,7 @@ GROUP BY p.post_type, m.meta_key
                 'show_in_menu'        => false,
                 'show_in_nav_menus'   => false,
                 'show_in_admin_bar'   => false,
+                'show_in_rest'        => false,
                 'has_archive'         => false,
                 'rewrite'             => false,
                 'query_var'           => false,
