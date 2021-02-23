@@ -265,11 +265,9 @@ var CAE = CAE || {};
 		template: $('#wpca-template-group').html(),
 		itemView: function(obj) {
 			if(CAE.Views[obj.model.get("module")]) {
-				var condition = new CAE.Views[obj.model.get("module")](obj);
-			} else {
-				var condition = new CAE.Views.Condition(obj);
+				return new CAE.Views[obj.model.get("module")](obj);
 			}
-			return condition;
+			return new CAE.Views.Condition(obj);
 		},
 		events: {
 			"click .js-wpca-save-group":    "saveGroup",
@@ -451,8 +449,8 @@ var CAE = CAE || {};
 			this.model.conditions.each(function(model) {
 				//hasChanges = hasChanges || !!model.unsavedAttributes();
 				if(model.get('values').length) {
-					data.conditions[model.get('module')] = model.get('values').map(function(model) {
-						return model.id;
+					data.conditions[model.get('module')] = model.get('values').map(function(_model) {
+						return _model.id;
 					});
 				} else if(model.get('default_value') !== '') {
 					data.conditions[model.get('module')] = [model.get('default_value')];
@@ -653,7 +651,7 @@ var CAE = CAE || {};
 						dataType: 'JSON',
 						type: 'POST',
 						success: function(data) {
-							var more = !(data.length < 20);
+							var more = data.length >= 20;
 
 							self.cachedResults[params.term] = {
 								page: page,
