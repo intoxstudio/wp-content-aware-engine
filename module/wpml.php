@@ -63,7 +63,7 @@ class WPCAModule_wpml extends WPCAModule_Base
      */
     public function get_context_data()
     {
-        $data = array($this->id);
+        $data = [$this->id];
         $data[] = ICL_LANGUAGE_CODE;
         return $data;
     }
@@ -75,9 +75,9 @@ class WPCAModule_wpml extends WPCAModule_Base
      * @param  array $args
      * @return array
      */
-    protected function _get_content($args = array())
+    protected function _get_content($args = [])
     {
-        $langs = array();
+        $langs = [];
 
         foreach (icl_get_languages('skip_missing=N') as $lng) {
             $langs[$lng['language_code']] = $lng['native_name'];

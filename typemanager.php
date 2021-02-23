@@ -24,7 +24,7 @@ if (!class_exists('WPCATypeManager')) {
             parent::__construct();
             add_action(
                 'init',
-                array($this,'set_modules'),
+                [$this,'set_modules'],
                 999
             );
         }
@@ -51,7 +51,7 @@ if (!class_exists('WPCATypeManager')) {
         {
             do_action('wpca/types/init', $this);
 
-            $modules = array(
+            $modules = [
                 'static',
                 'post_type',
                 'author',
@@ -66,7 +66,7 @@ if (!class_exists('WPCATypeManager')) {
                 'translatepress',
                 'transposh',
                 'wpml'
-            );
+            ];
 
             foreach ($modules as $name) {
                 $class_name = WPCACore::CLASS_PREFIX.'Module_'.$name;
@@ -89,7 +89,7 @@ if (!class_exists('WPCATypeManager')) {
             do_action('wpca/modules/init', $this);
 
             //initiate all modules once with backwards compatibility on can_enable()
-            $initiated = array();
+            $initiated = [];
             foreach ($this->get_all() as $post_type_name => $post_type) {
                 if (!WPCACore::get_option($post_type_name, 'legacy.date_module', false)) {
                     $post_type->remove('date');

@@ -52,10 +52,10 @@ class WPCAModule_author extends WPCAModule_Base
     public function get_context_data()
     {
         global $post;
-        return array(
+        return [
             $this->id,
             (string)(is_singular() ? $post->post_author : get_query_var('author'))
-        );
+        ];
     }
 
     /**
@@ -65,23 +65,23 @@ class WPCAModule_author extends WPCAModule_Base
      */
     protected function parse_query_args($args)
     {
-        $new_args = array(
+        $new_args = [
             'number'      => $args['limit'],
             'offset'      => ($args['paged'] - 1) * $args['limit'],
             'search'      => $args['search'],
-            'fields'      => array('ID','display_name'),
+            'fields'      => ['ID','display_name'],
             'orderby'     => 'display_name',
             'order'       => 'ASC',
             'include'     => $args['include'],
             'count_total' => false,
-        );
+        ];
         if ($new_args['search']) {
             if (false !== strpos($new_args['search'], '@')) {
-                $new_args['search_columns'] = array( 'user_email' );
+                $new_args['search_columns'] = [ 'user_email' ];
             } elseif (is_numeric($new_args['search'])) {
-                $new_args['search_columns'] = array( 'user_login', 'ID' );
+                $new_args['search_columns'] = [ 'user_login', 'ID' ];
             } else {
-                $new_args['search_columns'] = array( 'user_nicename', 'user_login', 'display_name' );
+                $new_args['search_columns'] = [ 'user_nicename', 'user_login', 'display_name' ];
             }
             $new_args['search'] = '*'.$new_args['search'].'*';
         }
@@ -95,17 +95,17 @@ class WPCAModule_author extends WPCAModule_Base
      * @param  array     $args
      * @return array
      */
-    protected function _get_content($args = array())
+    protected function _get_content($args = [])
     {
         $user_query = new WP_User_Query($args);
-        $author_list = array();
+        $author_list = [];
 
         if ($user_query->results) {
             foreach ($user_query->get_results()  as $user) {
-                $author_list[] = array(
+                $author_list[] = [
                     'id'   => $user->ID,
                     'text' => $user->display_name
-                );
+                ];
             }
         }
         return $author_list;

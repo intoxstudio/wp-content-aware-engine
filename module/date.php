@@ -69,9 +69,9 @@ class WPCAModule_date extends WPCAModule_Base
      * @since  1.0
      * @return array
      */
-    protected function _get_content($args = array())
+    protected function _get_content($args = [])
     {
-        $data = array();
+        $data = [];
         if ($args['include']) {
             $data = array_intersect_key($data, array_flip($args['include']));
         }

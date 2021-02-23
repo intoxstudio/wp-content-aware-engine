@@ -40,7 +40,7 @@ class WPCAModule_polylang extends WPCAModule_Base
         parent::initiate();
         add_filter(
             'pll_get_post_types',
-            array($this,'remove_sidebar_multilingual')
+            [$this,'remove_sidebar_multilingual']
         );
     }
 
@@ -70,7 +70,7 @@ class WPCAModule_polylang extends WPCAModule_Base
      */
     public function get_context_data()
     {
-        $data = array($this->id);
+        $data = [$this->id];
         $data[] = pll_current_language();
         return $data;
     }
@@ -83,14 +83,14 @@ class WPCAModule_polylang extends WPCAModule_Base
      * @param  array  $args
      * @return array
      */
-    protected function _get_content($args = array())
+    protected function _get_content($args = [])
     {
         global $polylang;
 
-        $langs = array();
+        $langs = [];
 
         if (isset($polylang->model) && method_exists($polylang->model, 'get_languages_list')) {
-            foreach ($polylang->model->get_languages_list(array('fields' => false)) as $lng) {
+            foreach ($polylang->model->get_languages_list(['fields' => false]) as $lng) {
                 $langs[$lng->slug] = $lng->name;
             }
         }

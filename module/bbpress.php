@@ -50,7 +50,7 @@ class WPCAModule_bbpress extends WPCAModule_author
         parent::initiate();
         add_filter(
             'wpca/module/post_type/db-where',
-            array($this,'add_forum_dependency')
+            [$this,'add_forum_dependency']
         );
     }
 
@@ -82,7 +82,7 @@ class WPCAModule_bbpress extends WPCAModule_author
      */
     public function get_context_data()
     {
-        $data = array($this->id);
+        $data = [$this->id];
         $data[] = bbp_get_displayed_user_id();
         return $data;
     }
@@ -97,12 +97,12 @@ class WPCAModule_bbpress extends WPCAModule_author
      */
     public function add_forum_dependency($where)
     {
-        if (is_singular(array('topic','reply'))) {
-            $data = array(
+        if (is_singular(['topic','reply'])) {
+            $data = [
                 get_post_type(),
                 get_the_ID(),
                 'forum'
-            );
+            ];
             $data[] = bbp_get_forum_id();
             $where = "(cp.meta_value IS NULL OR cp.meta_value IN('".implode("','", $data)."'))";
         }

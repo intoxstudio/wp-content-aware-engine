@@ -64,7 +64,7 @@ class WPCAModule_transposh extends WPCAModule_Base
      */
     public function get_context_data()
     {
-        $data = array($this->id);
+        $data = [$this->id];
         $data[] = transposh_get_current_language();
         return $data;
     }
@@ -77,10 +77,10 @@ class WPCAModule_transposh extends WPCAModule_Base
      * @param  array $args
      * @return array
      */
-    protected function _get_content($args = array())
+    protected function _get_content($args = [])
     {
         global $my_transposh_plugin;
-        $langs = array();
+        $langs = [];
 
         /**
          * isset($my_transposh_plugin->options->viewable_languages)

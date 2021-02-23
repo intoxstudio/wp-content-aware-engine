@@ -44,19 +44,19 @@ class WPCAModule_static extends WPCAModule_Base
      * @param  array $args
      * @return array
      */
-    protected function _get_content($args = array())
+    protected function _get_content($args = [])
     {
-        $static = array(
+        $static = [
             'front-page' => __('Front Page', WPCA_DOMAIN),
             'search'     => __('Search Results', WPCA_DOMAIN),
             '404'        => __('404 Page', WPCA_DOMAIN)
-        );
+        ];
 
         if ($args['include']) {
             $static = array_intersect_key($static, array_flip($args['include']));
         } elseif ($args['search']) {
             $this->search_string = $args['search'];
-            $static = array_filter($static, array($this,'_filter_search'));
+            $static = array_filter($static, [$this,'_filter_search']);
         }
         return $static;
     }
@@ -99,8 +99,8 @@ class WPCAModule_static extends WPCAModule_Base
         } else {
             $val = '404';
         }
-        return array(
+        return [
             $val
-        );
+        ];
     }
 }

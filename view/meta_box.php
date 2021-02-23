@@ -6,26 +6,26 @@
  * @copyright 2020 by Joachim Jensen
  */
 
-$quick_links = array(
-    __('Blog', WPCA_DOMAIN) => array(
-        'modules' => array('post_type-post'),
-        'options' => array('exposure' => 2)
-    ),
-    __('Posts by Author', WPCA_DOMAIN) => array(
-        'modules' => array('post_type-post','author'),
-        'options' => array('exposure' => 0)
-    ),
-    __('Posts in Category', WPCA_DOMAIN) => array(
-        'modules' => array('post_type-post','taxonomy-category'),
-        'options' => array('exposure' => 0)
-    )
-);
+$quick_links = [
+    __('Blog', WPCA_DOMAIN) => [
+        'modules' => ['post_type-post'],
+        'options' => ['exposure' => 2]
+    ],
+    __('Posts by Author', WPCA_DOMAIN) => [
+        'modules' => ['post_type-post','author'],
+        'options' => ['exposure' => 0]
+    ],
+    __('Posts in Category', WPCA_DOMAIN) => [
+        'modules' => ['post_type-post','taxonomy-category'],
+        'options' => ['exposure' => 0]
+    ]
+];
 
 if (post_type_exists('product')) {
-    $quick_links[__('Shop', WPCA_DOMAIN)] = array(
-        'modules' => array('post_type-product'),
-        'options' => array('exposure' => 2)
-    );
+    $quick_links[__('Shop', WPCA_DOMAIN)] = [
+        'modules' => ['post_type-product'],
+        'options' => ['exposure' => 2]
+    ];
 }
 
 echo $nonce; ?>

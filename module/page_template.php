@@ -61,10 +61,10 @@ class WPCAModule_page_template extends WPCAModule_Base
      */
     public function get_context_data()
     {
-        return array(
+        return [
             $this->id,
             get_post_meta(get_the_ID(), '_wp_page_template', true)
-        );
+        ];
     }
 
     /**
@@ -74,14 +74,14 @@ class WPCAModule_page_template extends WPCAModule_Base
      * @param  array $args
      * @return array
      */
-    protected function _get_content($args = array())
+    protected function _get_content($args = [])
     {
         $templates = array_flip(get_page_templates());
         if ($args['include']) {
             $templates = array_intersect_key($templates, array_flip($args['include']));
         } elseif ($args['search']) {
             $this->search_string = $args['search'];
-            $templates = array_filter($templates, array($this,'_filter_search'));
+            $templates = array_filter($templates, [$this,'_filter_search']);
         }
         return $templates;
     }

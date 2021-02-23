@@ -62,7 +62,7 @@ class WPCAModule_bp_member extends WPCAModule_Base
         parent::initiate();
         add_filter(
             'wpca/module/static/in-context',
-            array($this,'static_is_content')
+            [$this,'static_is_content']
         );
     }
 
@@ -74,31 +74,31 @@ class WPCAModule_bp_member extends WPCAModule_Base
      * @param   array     $args
      * @return  array
      */
-    protected function _get_content($args = array())
+    protected function _get_content($args = [])
     {
         global $bp;
 
         if (isset($args['paged']) && $args['paged'] > 1) {
-            return array();
+            return [];
         }
 
-        $content = array();
+        $content = [];
         $is_search = isset($args['search']) && $args['search'];
 
         if (isset($bp->members->nav)) {
             foreach ($bp->members->nav->get_item_nav() as $item) {
-                $content[$item->slug] = array(
+                $content[$item->slug] = [
                     'id'   => $item->slug,
                     'text' => strip_tags($item->name)
-                );
+                ];
                 if ($item->children) {
                     $level = $is_search ? 0 : 1;
                     foreach ($item->children as $child_item) {
-                        $content[$item->slug.'-'.$child_item->slug] = array(
+                        $content[$item->slug.'-'.$child_item->slug] = [
                             'text'  => strip_tags($child_item->name),
                             'id'    => $item->slug.'-'.$child_item->slug,
                             'level' => $level
-                        );
+                        ];
                     }
                 }
             }
@@ -108,7 +108,7 @@ class WPCAModule_bp_member extends WPCAModule_Base
             $content = array_intersect_key($content, array_flip($args['include']));
         } elseif ($is_search) {
             $this->search_string = $args['search'];
-            $content = array_filter($content, array($this,'_filter_search'));
+            $content = array_filter($content, [$this,'_filter_search']);
         }
 
         return $content;
@@ -147,7 +147,7 @@ class WPCAModule_bp_member extends WPCAModule_Base
     public function get_context_data()
     {
         global $bp;
-        $data = array($this->default_value);
+        $data = [$this->default_value];
         if (isset($bp->current_component)) {
             $data[] = $bp->current_component;
             if (isset($bp->current_action)) {

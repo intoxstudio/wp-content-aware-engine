@@ -65,9 +65,9 @@ class WPCAModule_pods extends WPCAModule_Base
      */
     public function get_context_data()
     {
-        $data = array(
+        $data = [
             $this->id
-        );
+        ];
         $pod_page = pod_page_exists();
         $data[] = $pod_page['id'];
         return $data;
@@ -80,12 +80,12 @@ class WPCAModule_pods extends WPCAModule_Base
      */
     protected function parse_query_args($args)
     {
-        return array(
+        return [
             'ids'    => $args['include'] ? $args['include'] : false,
             'where'  => '',
             'limit'  => $args['limit'],
             'search' => $args['search']
-        );
+        ];
     }
 
     /**
@@ -95,16 +95,16 @@ class WPCAModule_pods extends WPCAModule_Base
      * @param  array $args
      * @return array
      */
-    protected function _get_content($args = array())
+    protected function _get_content($args = [])
     {
-        $pods = array();
+        $pods = [];
         $results = pods_api()->load_pages($this->parse_query_args($args));
         foreach ($results as $result) {
             $pods[$result['id']] = $result['name'];
         }
         if ($args['search']) {
             $this->search_string = $args['search'];
-            $pods = array_filter($pods, array($this,'_filter_search'));
+            $pods = array_filter($pods, [$this,'_filter_search']);
         }
 
         return $pods;

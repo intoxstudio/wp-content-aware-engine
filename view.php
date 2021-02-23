@@ -42,7 +42,7 @@ class WPCAView
      * @param   string    $path
      * @param   array     $params
      */
-    private function __construct($path, $params = array())
+    private function __construct($path, $params = [])
     {
         $this->_path = $path;
         $this->_params = $params;
@@ -56,7 +56,7 @@ class WPCAView
      * @param   array     $params
      * @return  WPCAView
      */
-    public static function make($name, $params = array())
+    public static function make($name, $params = [])
     {
         return new self($name, $params);
     }

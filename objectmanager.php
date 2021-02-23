@@ -20,7 +20,7 @@ if (!class_exists('WPCAObjectManager')) {
          *
          * @var array
          */
-        private $objects = array();
+        private $objects = [];
 
         /**
          * Constructor

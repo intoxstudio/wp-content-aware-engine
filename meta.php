@@ -67,7 +67,7 @@ if (!class_exists('WPCAMeta')) {
             $title,
             $default_value = '',
             $input_type = 'text',
-            $input_list = array(),
+            $input_list = [],
             $description = '',
             $sanitizer = ''
         ) {

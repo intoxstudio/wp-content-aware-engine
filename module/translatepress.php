@@ -57,7 +57,7 @@ class WPCAModule_translatepress extends WPCAModule_Base
      */
     public function get_context_data()
     {
-        $data = array($this->id);
+        $data = [$this->id];
         $current_language = get_locale();
         if ($current_language) {
             $data[] = $current_language;
@@ -72,9 +72,9 @@ class WPCAModule_translatepress extends WPCAModule_Base
      * @param  array $args
      * @return array
      */
-    protected function _get_content($args = array())
+    protected function _get_content($args = [])
     {
-        $langs = array();
+        $langs = [];
         $trp_instance = TRP_Translate_Press::get_trp_instance();
         $langs = $trp_instance->get_component('languages')->get_language_names(
             $trp_instance->get_component('settings')->get_setting('publish-languages')

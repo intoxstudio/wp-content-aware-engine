@@ -76,7 +76,7 @@ class WPCAModule_qtranslate extends WPCAModule_Base
      */
     public function get_context_data()
     {
-        $data = array($this->id);
+        $data = [$this->id];
         $data[] = qtranxf_getLanguage();
         return $data;
     }
@@ -89,11 +89,11 @@ class WPCAModule_qtranslate extends WPCAModule_Base
      * @param   array     $args
      * @return  array
      */
-    protected function _get_content($args = array())
+    protected function _get_content($args = [])
     {
         global $q_config;
 
-        $langs = array();
+        $langs = [];
 
         if (isset($q_config['language_name'])) {
             foreach ((array)get_option('qtranslate_enabled_languages') as $lng) {
