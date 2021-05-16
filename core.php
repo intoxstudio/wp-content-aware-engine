@@ -409,7 +409,7 @@ GROUP BY p.post_type, m.meta_key
         {
             global $wpdb, $wp_query, $post;
 
-            if ((!$wp_query->query && !$post) || is_admin()) {
+            if (!self::types()->has($post_type) || (!$wp_query->query && !$post) || is_admin()) {
                 return [];
             }
 
@@ -595,25 +595,20 @@ GROUP BY p.post_type, m.meta_key
          * Get filtered posts from a post type
          *
          * @since  1.0
-         * @global type     $wpdb
-         * @global WP_Query $wp_query
-         * @global WP_Post  $post
          * @return array
          */
         public static function get_posts($post_type)
         {
-            global $wp_query, $post;
-
-            // Return cache if present
             if (isset(self::$post_cache[$post_type])) {
                 return self::$post_cache[$post_type];
             }
 
-            if (!self::types()->has($post_type) || (!$wp_query->query && !$post) || is_admin()) {
+            $valid = self::get_conditions($post_type);
+
+            //if cache hasn't been set, method was called too early
+            if (!isset(self::$condition_cache[$post_type])) {
                 return false;
             }
-
-            $valid = self::get_conditions($post_type);
 
             self::$post_cache[$post_type] = [];
 
