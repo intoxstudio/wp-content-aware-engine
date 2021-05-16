@@ -43,13 +43,13 @@ class WPCAModule_taxonomy extends WPCAModule_Base
      *
      * @var array
      */
-    private $post_terms;
+    private $post_terms = [];
 
     /**
      * Taxonomies for a given singular
      * @var array
      */
-    private $post_taxonomies;
+    private $post_taxonomies = [];
 
     /**
      * Constructor
@@ -89,11 +89,26 @@ class WPCAModule_taxonomy extends WPCAModule_Base
      */
     public function in_context()
     {
+        //check if post_taxonomies contains more than self::VALUE_HAS_TERMS
+        return count($this->get_context_data()) > 1;
+    }
+
+    /**
+     * Get data from context
+     *
+     * @since  1.0
+     * @return array
+     */
+    public function get_context_data()
+    {
+        if (!empty($this->post_taxonomies)) {
+            return $this->post_taxonomies;
+        }
+
+        $this->post_taxonomies[] = self::VALUE_HAS_TERMS;
+
         if (is_singular()) {
             $tax = $this->_get_taxonomies();
-            $this->post_terms = [];
-            $this->post_taxonomies = [];
-
             // Check if content has any taxonomies supported
             foreach (get_object_taxonomies(get_post_type()) as $taxonomy) {
                 //Only want taxonomies selectable in admin
@@ -110,51 +125,88 @@ class WPCAModule_taxonomy extends WPCAModule_Base
                     }
                 }
             }
-            return !empty($this->post_terms);
-        }
-        return is_tax() || is_category() || is_tag();
-    }
-
-    /**
-     * Query join
-     *
-     * @since  1.0
-     * @return string
-     */
-    public function db_join()
-    {
-        global $wpdb;
-        $joins = parent::db_join();
-        $joins .= "LEFT JOIN $wpdb->term_relationships term ON term.object_id = p.ID ";
-        return $joins;
-    }
-
-    /**
-     * Get data from context
-     *
-     * @since  1.0
-     * @return array
-     */
-    public function get_context_data()
-    {
-        $name = $this->get_query_name();
-
-        //In more recent WP versions, term_id = term_tax_id
-        //but term_tax_id has always been unique
-        if (is_singular()) {
-            $terms = [];
-            foreach ($this->post_terms as $term) {
-                $terms[] = $term->term_taxonomy_id;
-            }
-            $tax = $this->post_taxonomies;
-        } else {
+        } elseif (is_tax() || is_category() || is_tag()) {
             $term = get_queried_object();
-            $terms = [$term->term_taxonomy_id];
-            $tax = [$term->taxonomy];
+            $this->post_taxonomies[] = $term->taxonomy;
+            $this->post_terms[] = $term;
         }
 
-        $tax[] = self::VALUE_HAS_TERMS;
-        return '(term.term_taxonomy_id IS NULL OR term.term_taxonomy_id IN ('.implode(',', $terms).")) AND ($name.meta_value IS NULL OR $name.meta_value IN('".implode("','", $tax)."'))";
+        return $this->post_taxonomies;
+    }
+
+    /**
+    * Remove posts if they have data from
+    * other contexts (meaning conditions arent met)
+    *
+    * @since  3.2
+    * @param array $posts
+    * @param boolean $in_context
+    * @return array
+    */
+    public function filter_excluded_context($posts, $in_context = false)
+    {
+        $posts = parent::filter_excluded_context($posts, $in_context);
+        if ($in_context) {
+            $post_terms_by_tax = [];
+            foreach ($this->post_terms as $term) {
+                $post_terms_by_tax[$term->taxonomy][$term->term_taxonomy_id] = $term->term_taxonomy_id;
+            }
+
+            $check_terms = [];
+
+            //1. group's taxonomies must match all in post
+            foreach ($posts as $condition_id => $condition_group) {
+                $condition_taxonomies = get_post_meta($condition_id, '_ca_taxonomy', false);
+                foreach ($condition_taxonomies as $taxonomy) {
+                    //if value==-1, group has individual terms, so goto 2
+                    if ($taxonomy == '-1') {
+                        $check_terms[$condition_id] = $condition_group;
+                    }
+                    //if group has more taxonomies than post, unset
+                    elseif (!isset($post_terms_by_tax[$taxonomy])) {
+                        unset($posts[$condition_id]);
+                        break;
+                    }
+                }
+            }
+
+            //2. group's terms must match with minimum 1 in each taxonomy in post
+            if (!empty($check_terms)) {
+                //eager load groups terms
+                $conditions_terms = wp_get_object_terms(array_keys($check_terms), array_keys($post_terms_by_tax), [
+                    'fields'                 => 'all_with_object_id',
+                    'orderby'                => 'none',
+                    'update_term_meta_cache' => false
+                ]);
+
+                $conditions_to_unset = [];
+                foreach ($conditions_terms as $term) {
+                    if (!isset($conditions_to_unset[$term->object_id][$term->taxonomy])) {
+                        $conditions_to_unset[$term->object_id][$term->taxonomy] = 0;
+                    }
+                    $conditions_to_unset[$term->object_id][$term->taxonomy] |= isset($post_terms_by_tax[$term->taxonomy][$term->term_taxonomy_id]);
+                }
+
+                foreach ($check_terms as $condition_id => $condition_group) {
+
+                    //if group has no terms in these taxonomies, it has terms in others, so unset
+                    if (!isset($conditions_to_unset[$condition_id])) {
+                        unset($posts[$condition_id]);
+                        continue;
+                    }
+
+                    foreach ($conditions_to_unset[$condition_id] as $taxonomy => $should_keep) {
+                        //if group has a taxonomy with no term match, unset
+                        if (!$should_keep) {
+                            unset($posts[$condition_id]);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        
+        return $posts;
     }
 
     /**

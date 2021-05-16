@@ -262,14 +262,17 @@ abstract class WPCAModule_Base
      * other contexts (meaning conditions arent met)
      *
      * @since  3.2
-     * @param  array  $posts
+     * @param array $posts
+     * @param boolean $in_context
      * @return array
      */
-    public function filter_excluded_context($posts)
+    public function filter_excluded_context($posts, $in_context = false)
     {
-        foreach ($posts as $id => $parent) {
-            if (get_post_custom_values($this->get_data_key(), $id) !== null) {
-                unset($posts[$id]);
+        if (!$in_context) {
+            foreach ($posts as $id => $group) {
+                if (get_post_custom_values($this->get_data_key(), $id) !== null) {
+                    unset($posts[$id]);
+                }
             }
         }
         return $posts;

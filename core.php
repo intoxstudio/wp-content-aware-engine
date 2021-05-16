@@ -418,7 +418,6 @@ GROUP BY p.post_type, m.meta_key
                 return self::$condition_cache[$post_type];
             }
 
-            $excluded = [];
             $where = [];
             $join = [];
 
@@ -441,10 +440,13 @@ GROUP BY p.post_type, m.meta_key
 
             self::fix_wp_query();
 
+            $in_context_by_module_id = [];
             foreach ($modules as $module) {
                 $id = $module->get_id();
                 $name = $module->get_query_name();
-                if (apply_filters("wpca/module/$id/in-context", $module->in_context())) {
+                $in_context = apply_filters("wpca/module/$id/in-context", $module->in_context());
+                $in_context_by_module_id[$id] = $in_context;
+                if ($in_context) {
                     $join[$id] = apply_filters("wpca/module/$id/db-join", $module->db_join());
                     $data = $module->get_context_data();
                     if (is_array($data)) {
@@ -452,8 +454,6 @@ GROUP BY p.post_type, m.meta_key
                     }
                     $where[$id] = apply_filters("wpca/module/$id/db-where", $data);
                     self::$filtered_modules[$post_type][] = $module;
-                } else {
-                    $excluded[] = $module;
                 }
             }
 
@@ -535,28 +535,26 @@ GROUP BY p.post_type, m.meta_key
                 update_meta_cache('post', array_keys($groups_in_context + $groups_negated));
             }
 
-            //condition group => type
-            $valid = [];
-            foreach ($groups_in_context as $group) {
-                $valid[$group->ID] = $group->post_parent;
-            }
-
             //Exclude types that have unrelated content in same group
-            foreach ($excluded as $module) {
-                $valid = $module->filter_excluded_context($valid);
+            foreach ($modules as $module) {
+                $groups_in_context = $module->filter_excluded_context(
+                    $groups_in_context,
+                    $in_context_by_module_id[$module->get_id()]
+                );
             }
 
             //exclude exceptions
             $excepted = [];
-            foreach ($valid as $group_id => $parent_id) {
-                //sanity
-                if (!isset($groups_in_context[$group_id])) {
-                    continue;
+            foreach ($groups_in_context as $group_id => $group) {
+                if ($group->post_status == self::STATUS_EXCEPT) {
+                    $excepted[$group->parent_id] = 1;
                 }
+            }
 
-                if ($groups_in_context[$group_id]->post_status == self::STATUS_EXCEPT) {
-                    $excepted[$parent_id] = 1;
-                }
+            //condition group => type
+            $valid = [];
+            foreach ($groups_in_context as $group) {
+                $valid[$group->ID] = $group->post_parent;
             }
 
             foreach ($valid as $group_id => $parent_id) {
