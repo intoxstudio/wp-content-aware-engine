@@ -205,7 +205,6 @@ if (!class_exists('WPCACore')) {
         {
             $all_modules = [];
             $modules_by_type = [];
-            $ignored_modules = ['taxonomy' => 1];
             $cache = [];
 
             $types = self::types();
@@ -213,10 +212,6 @@ if (!class_exists('WPCACore')) {
                 $modules_by_type[$type] = [];
                 $cache[$type] = [];
                 foreach ($modules as $module) {
-                    if (isset($ignored_modules[$module->get_id()])) {
-                        continue;
-                    }
-
                     $modules_by_type[$type][$module->get_data_key()] = $module->get_id();
                     $all_modules[$module->get_data_key()] = $module->get_data_key();
                 }
@@ -1191,12 +1186,11 @@ GROUP BY p.post_type, m.meta_key
                 return $modules;
             }
 
-            $ignored_modules = ['taxonomy' => 1];
             $included_conditions_lookup = array_flip($included_conditions[$type]);
             $filtered_modules = [];
 
             foreach ($modules as $module) {
-                if (isset($ignored_modules[$module->get_id()]) || isset($included_conditions_lookup[$module->get_id()])) {
+                if (isset($included_conditions_lookup[$module->get_id()])) {
                     $filtered_modules[] = $module;
                 }
             }
