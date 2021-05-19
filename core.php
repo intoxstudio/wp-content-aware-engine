@@ -442,10 +442,10 @@ GROUP BY p.post_type, m.meta_key
                 $in_context = apply_filters("wpca/module/$id/in-context", $module->in_context());
                 $in_context_by_module_id[$id] = $in_context;
                 if ($in_context) {
-                    $join[$id] = apply_filters("wpca/module/$id/db-join", $module->db_join());
+                    $join[$id] = $module->db_join();
                     $data = $module->get_context_data();
                     if (is_array($data)) {
-                        $data = "($name.meta_value IS NULL OR $name.meta_value IN ('".implode("','", $data) ."'))";
+                        $data = "($name.meta_value IS NULL OR $name.meta_value IN ('".self::sql_prepare_in($data)."'))";
                     }
                     $where[$id] = apply_filters("wpca/module/$id/db-where", $data);
                     self::$filtered_modules[$post_type][] = $module;
@@ -466,13 +466,13 @@ GROUP BY p.post_type, m.meta_key
                 if ($use_negated_conditions) {
                     $post_status[] = self::STATUS_NEGATED;
                 }
-
-                if (defined('CAS_SQL_CHUNK_SIZE') && CAS_SQL_CHUNK_SIZE > 0) {
-                    $chunk_size = CAS_SQL_CHUNK_SIZE;
-                } else {
+                
+                $chunk_size = count($join);
+                if (defined('WPCA_SQL_JOIN_SIZE') && is_integer(WPCA_SQL_JOIN_SIZE) && WPCA_SQL_JOIN_SIZE > 0) {
+                    $chunk_size = WPCA_SQL_JOIN_SIZE;
+                } elseif (defined('WPCA_SQL_COMPATIBILITY_MODE') && WPCA_SQL_COMPATIBILITY_MODE === true) {
                     //Syntax changed in MySQL 5.5 and MariaDB 10.0 (reports as version 5.5)
                     $wpdb->query('SET'.(version_compare($wpdb->db_version(), '5.5', '>=') ? ' SESSION' : ' OPTION').' SQL_BIG_SELECTS = 1');
-                    $chunk_size = count($join);
                 }
 
                 $joins = array_chunk($join, $chunk_size);
@@ -484,7 +484,6 @@ GROUP BY p.post_type, m.meta_key
                 $where2 = [];
                 $where2[] = "p.post_type = '".self::TYPE_CONDITION_GROUP."'";
                 $where2[] = "p.post_status IN ('".implode("','", $post_status)."')";
-                //exposure
                 $where2[] = 'p.menu_order '.(is_archive() || is_home() ? '>=' : '<=').' 1';
 
                 foreach ($joins as $i => $join) {
