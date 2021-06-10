@@ -1,9 +1,9 @@
 <?php
 /**
- * @package WP Content Aware Engine
+ * @package wp-content-aware-engine
  * @author Joachim Jensen <joachim@dev.institute>
  * @license GPLv3
- * @copyright 2020 by Joachim Jensen
+ * @copyright 2021 by Joachim Jensen
  */
 
 defined('ABSPATH') || exit;
@@ -19,7 +19,6 @@ defined('ABSPATH') || exit;
  */
 class WPCAModule_bp_member extends WPCAModule_Base
 {
-
     /**
      * @var string
      */
@@ -31,20 +30,16 @@ class WPCAModule_bp_member extends WPCAModule_Base
      */
     protected $search_string;
 
-    /**
-     * Constructor
-     */
     public function __construct()
     {
         parent::__construct('bp_member', __('BuddyPress Profiles', WPCA_DOMAIN));
         $this->default_value = 0;
         $this->placeholder = __('All Sections', WPCA_DOMAIN);
-
         $this->query_name = 'cbp';
     }
 
     /**
-     * @return bool
+     * @inheritDoc
      */
     public function can_enable()
     {
@@ -52,10 +47,7 @@ class WPCAModule_bp_member extends WPCAModule_Base
     }
 
     /**
-     * Initiate module
-     *
-     * @since  2.0
-     * @return void
+     * @inheritDoc
      */
     public function initiate()
     {
@@ -67,12 +59,7 @@ class WPCAModule_bp_member extends WPCAModule_Base
     }
 
     /**
-     * Get content for sidebar editor
-     *
-     * @global  object    $bp
-     * @since   1.0
-     * @param   array     $args
-     * @return  array
+     * @inheritDoc
      */
     protected function _get_content($args = [])
     {
@@ -127,9 +114,7 @@ class WPCAModule_bp_member extends WPCAModule_Base
     }
 
     /**
-     * @global object  $bp
-     * @since  1.0
-     * @return boolean
+     * @inheritDoc
      */
     public function in_context()
     {
@@ -138,11 +123,7 @@ class WPCAModule_bp_member extends WPCAModule_Base
     }
 
     /**
-     * Get data from context
-     *
-     * @global object $bp
-     * @since  1.0
-     * @return array
+     * @inheritDoc
      */
     public function get_context_data()
     {

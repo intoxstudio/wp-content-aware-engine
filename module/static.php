@@ -1,9 +1,9 @@
 <?php
 /**
- * @package WP Content Aware Engine
+ * @package wp-content-aware-engine
  * @author Joachim Jensen <joachim@dev.institute>
  * @license GPLv3
- * @copyright 2020 by Joachim Jensen
+ * @copyright 2021 by Joachim Jensen
  */
 
 defined('ABSPATH') || exit;
@@ -27,22 +27,14 @@ class WPCAModule_static extends WPCAModule_Base
      */
     protected $search_string;
 
-    /**
-     * Constructor
-     */
     public function __construct()
     {
         parent::__construct('static', __('Special Pages', WPCA_DOMAIN));
-
         $this->query_name = 'cs';
     }
 
     /**
-     * Get static content
-     *
-     * @since  1.0
-     * @param  array $args
-     * @return array
+     * @inheritDoc
      */
     protected function _get_content($args = [])
     {
@@ -74,10 +66,7 @@ class WPCAModule_static extends WPCAModule_Base
     }
 
     /**
-     * Determine if content is relevant
-     *
-     * @since  1.0
-     * @return boolean
+     * @inheritDoc
      */
     public function in_context()
     {
@@ -85,10 +74,7 @@ class WPCAModule_static extends WPCAModule_Base
     }
 
     /**
-     * Get data from context
-     *
-     * @since  1.0
-     * @return array
+     * @inheritDoc
      */
     public function get_context_data()
     {

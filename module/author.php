@@ -1,9 +1,9 @@
 <?php
 /**
- * @package WP Content Aware Engine
+ * @package wp-content-aware-engine
  * @author Joachim Jensen <joachim@dev.institute>
  * @license GPLv3
- * @copyright 2020 by Joachim Jensen
+ * @copyright 2021 by Joachim Jensen
  */
 
 defined('ABSPATH') || exit;
@@ -19,10 +19,6 @@ defined('ABSPATH') || exit;
  */
 class WPCAModule_author extends WPCAModule_Base
 {
-
-    /**
-     * Constructor
-     */
     public function __construct()
     {
         parent::__construct('author', __('Authors', WPCA_DOMAIN));
@@ -32,10 +28,7 @@ class WPCAModule_author extends WPCAModule_Base
     }
 
     /**
-     * Determine if content is relevant
-     *
-     * @since  1.0
-     * @return boolean
+     * @inheritDoc
      */
     public function in_context()
     {
@@ -43,11 +36,7 @@ class WPCAModule_author extends WPCAModule_Base
     }
 
     /**
-     * Get data from context
-     *
-     * @global WP_Post $post
-     * @since  1.0
-     * @return array
+     * @inheritDoc
      */
     public function get_context_data()
     {
@@ -59,9 +48,7 @@ class WPCAModule_author extends WPCAModule_Base
     }
 
     /**
-     * @param array $args
-     *
-     * @return array
+     * @inheritDoc
      */
     protected function parse_query_args($args)
     {
@@ -89,11 +76,7 @@ class WPCAModule_author extends WPCAModule_Base
     }
 
     /**
-     * Get authors
-     *
-     * @since  1.0
-     * @param  array     $args
-     * @return array
+     * @inheritDoc
      */
     protected function _get_content($args = [])
     {

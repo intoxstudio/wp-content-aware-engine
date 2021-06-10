@@ -1,9 +1,9 @@
 <?php
 /**
- * @package WP Content Aware Engine
+ * @package wp-content-aware-engine
  * @author Joachim Jensen <joachim@dev.institute>
  * @license GPLv3
- * @copyright 2020 by Joachim Jensen
+ * @copyright 2021 by Joachim Jensen
  */
 
 defined('ABSPATH') || exit;
@@ -20,7 +20,6 @@ defined('ABSPATH') || exit;
  */
 class WPCAModule_post_type extends WPCAModule_Base
 {
-
     /**
      * @var string
      */
@@ -39,21 +38,14 @@ class WPCAModule_post_type extends WPCAModule_Base
      */
     private $_post_ancestor_conditions;
 
-    /**
-     * Constructor
-     */
     public function __construct()
     {
         parent::__construct('post_type', __('Post Types', WPCA_DOMAIN));
-
         $this->query_name = 'cp';
     }
 
     /**
-     * Initiate module
-     *
-     * @since  2.0
-     * @return void
+     * @inheritDoc
      */
     public function initiate()
     {
@@ -77,11 +69,7 @@ class WPCAModule_post_type extends WPCAModule_Base
     }
 
     /**
-     * Get content for sidebar editor
-     *
-     * @since  1.0
-     * @param  array $args
-     * @return array
+     * @inheritDoc
      */
     protected function _get_content($args = [])
     {
@@ -218,12 +206,7 @@ class WPCAModule_post_type extends WPCAModule_Base
     }
 
     /**
-     * Get data for condition group
-     *
-     * @since  2.0
-     * @param  array  $group_data
-     * @param  int    $post_id
-     * @return array
+     * @inheritDoc
      */
     public function get_group_data($group_data, $post_id)
     {
@@ -269,10 +252,7 @@ class WPCAModule_post_type extends WPCAModule_Base
     }
 
     /**
-     * Determine if content is relevant
-     *
-     * @since  1.0
-     * @return boolean
+     * @inheritDoc
      */
     public function in_context()
     {
@@ -280,10 +260,7 @@ class WPCAModule_post_type extends WPCAModule_Base
     }
 
     /**
-     * Get data from context
-     *
-     * @since  1.0
-     * @return array
+     * @inheritDoc
      */
     public function get_context_data()
     {
@@ -308,10 +285,8 @@ class WPCAModule_post_type extends WPCAModule_Base
     }
 
     /**
-    * @param array $args
-    *
-    * @return array
-    */
+     * @inheritDoc
+     */
     protected function parse_query_args($args)
     {
         if (isset($args['item_object'])) {
@@ -356,10 +331,7 @@ class WPCAModule_post_type extends WPCAModule_Base
     }
 
     /**
-     * @since  2.0
-     * @param  array  $list
-     *
-     * @return array
+     * @inheritDoc
      */
     public function list_module($list)
     {
@@ -439,11 +411,7 @@ class WPCAModule_post_type extends WPCAModule_Base
     }
 
     /**
-     * Save data on POST
-     *
-     * @since  1.0
-     * @param  int  $post_id
-     * @return void
+     * @inheritDoc
      */
     public function save_data($post_id)
     {

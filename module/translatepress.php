@@ -1,9 +1,9 @@
 <?php
 /**
- * @package WP Content Aware Engine
+ * @package wp-content-aware-engine
  * @author Joachim Jensen <joachim@dev.institute>
  * @license GPLv3
- * @copyright 2020 by Joachim Jensen
+ * @copyright 2021 by Joachim Jensen
  */
 
 defined('ABSPATH') || exit;
@@ -18,7 +18,6 @@ defined('ABSPATH') || exit;
  */
 class WPCAModule_translatepress extends WPCAModule_Base
 {
-
     /**
      * @var string
      */
@@ -27,13 +26,11 @@ class WPCAModule_translatepress extends WPCAModule_Base
     public function __construct()
     {
         parent::__construct('language', __('Languages', WPCA_DOMAIN));
-
         $this->query_name = 'cl';
     }
 
     /**
-     * @since  9.0
-     * @return boolean
+     * @inheritDoc
      */
     public function in_context()
     {
@@ -41,7 +38,7 @@ class WPCAModule_translatepress extends WPCAModule_Base
     }
 
     /**
-     * @return bool
+     * @inheritDoc
      */
     public function can_enable()
     {
@@ -50,10 +47,7 @@ class WPCAModule_translatepress extends WPCAModule_Base
     }
 
     /**
-     * Get data from context
-     *
-     * @since  9.0
-     * @return array
+     * @inheritDoc
      */
     public function get_context_data()
     {
@@ -66,11 +60,7 @@ class WPCAModule_translatepress extends WPCAModule_Base
     }
 
     /**
-     * Get languages
-     *
-     * @since  9.0
-     * @param  array $args
-     * @return array
+     * @inheritDoc
      */
     protected function _get_content($args = [])
     {

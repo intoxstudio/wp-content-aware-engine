@@ -1,9 +1,9 @@
 <?php
 /**
- * @package WP Content Aware Engine
+ * @package wp-content-aware-engine
  * @author Joachim Jensen <joachim@dev.institute>
  * @license GPLv3
- * @copyright 2020 by Joachim Jensen
+ * @copyright 2021 by Joachim Jensen
  */
 
 defined('ABSPATH') || exit;
@@ -19,22 +19,20 @@ defined('ABSPATH') || exit;
  */
 class WPCAModule_qtranslate extends WPCAModule_Base
 {
-
     /**
      * @var string
      */
     protected $category = 'plugins';
 
-    /**
-     * Constructor
-     */
     public function __construct()
     {
         parent::__construct('language', __('Languages', WPCA_DOMAIN));
-
         $this->query_name = 'cl';
     }
 
+    /**
+     * @inheritDoc
+     */
     public function initiate()
     {
         parent::initiate();
@@ -51,7 +49,7 @@ class WPCAModule_qtranslate extends WPCAModule_Base
     }
 
     /**
-     * @return bool
+     * @inheritDoc
      */
     public function can_enable()
     {
@@ -60,8 +58,7 @@ class WPCAModule_qtranslate extends WPCAModule_Base
     }
 
     /**
-     * @since  1.0
-     * @return boolean
+     * @inheritDoc
      */
     public function in_context()
     {
@@ -69,10 +66,7 @@ class WPCAModule_qtranslate extends WPCAModule_Base
     }
 
     /**
-     * Get data from context
-     *
-     * @since  1.0
-     * @return array
+     * @inheritDoc
      */
     public function get_context_data()
     {
@@ -82,12 +76,7 @@ class WPCAModule_qtranslate extends WPCAModule_Base
     }
 
     /**
-     * Get content for sidebar edit screen
-     *
-     * @global  array     $q_config
-     * @since   1.0
-     * @param   array     $args
-     * @return  array
+     * @inheritDoc
      */
     protected function _get_content($args = [])
     {

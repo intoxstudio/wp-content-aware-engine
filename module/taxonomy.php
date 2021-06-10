@@ -1,9 +1,9 @@
 <?php
 /**
- * @package WP Content Aware Engine
+ * @package wp-content-aware-engine
  * @author Joachim Jensen <joachim@dev.institute>
  * @license GPLv3
- * @copyright 2020 by Joachim Jensen
+ * @copyright 2021 by Joachim Jensen
  */
 
 defined('ABSPATH') || exit;
@@ -82,10 +82,7 @@ class WPCAModule_taxonomy extends WPCAModule_Base
     }
 
     /**
-     * Determine if content is relevant
-     *
-     * @since  1.0
-     * @return boolean
+     * @inheritDoc
      */
     public function in_context()
     {
@@ -94,10 +91,7 @@ class WPCAModule_taxonomy extends WPCAModule_Base
     }
 
     /**
-     * Get data from context
-     *
-     * @since  1.0
-     * @return array
+     * @inheritDoc
      */
     public function get_context_data()
     {
@@ -135,14 +129,8 @@ class WPCAModule_taxonomy extends WPCAModule_Base
     }
 
     /**
-    * Remove posts if they have data from
-    * other contexts (meaning conditions arent met)
-    *
-    * @since  3.2
-    * @param array $posts
-    * @param boolean $in_context
-    * @return array
-    */
+     * @inheritDoc
+     */
     public function filter_excluded_context($posts, $in_context = false)
     {
         $posts = parent::filter_excluded_context($posts, $in_context);
@@ -210,11 +198,7 @@ class WPCAModule_taxonomy extends WPCAModule_Base
     }
 
     /**
-     * Get content for sidebar editor
-     *
-     * @since  1.0
-     * @param  array $args
-     * @return array
+     * @inheritDoc
      */
     protected function _get_content($args = [])
     {
@@ -317,12 +301,7 @@ class WPCAModule_taxonomy extends WPCAModule_Base
     }
 
     /**
-     * Get data for condition group
-     *
-     * @since  2.0
-     * @param  array  $group_data
-     * @param  int    $post_id
-     * @return array
+     * @inheritDoc
      */
     public function get_group_data($group_data, $post_id)
     {
@@ -383,6 +362,9 @@ class WPCAModule_taxonomy extends WPCAModule_Base
         return $title_count;
     }
 
+    /**
+     * @inheritDoc
+     */
     protected function get_list_data($taxonomy, $title_count)
     {
         $placeholder = '/'.sprintf(__('%s Archives', WPCA_DOMAIN), $taxonomy->labels->singular_name);
@@ -402,10 +384,7 @@ class WPCAModule_taxonomy extends WPCAModule_Base
     }
 
     /**
-     * @since 2.0
-     * @param array $list
-     *
-     * @return array
+     * @inheritDoc
      */
     public function list_module($list)
     {
@@ -419,10 +398,8 @@ class WPCAModule_taxonomy extends WPCAModule_Base
     }
 
     /**
-    * @param array $args
-    *
-    * @return array
-    */
+     * @inheritDoc
+     */
     protected function parse_query_args($args)
     {
         if (isset($args['item_object'])) {
@@ -447,11 +424,7 @@ class WPCAModule_taxonomy extends WPCAModule_Base
     }
 
     /**
-     * Save data on POST
-     *
-     * @since   1.0
-     * @param   int    $post_id
-     * @return  void
+     * @inheritDoc
      */
     public function save_data($post_id)
     {
