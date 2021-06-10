@@ -445,7 +445,7 @@ GROUP BY p.post_type, m.meta_key
                     $join[$id] = $module->db_join();
                     $data = $module->get_context_data();
                     if (is_array($data)) {
-                        $data = "($name.meta_value IS NULL OR $name.meta_value IN ('".self::sql_prepare_in($data)."'))";
+                        $data = "($name.meta_value IS NULL OR $name.meta_value IN (".self::sql_prepare_in($data).'))';
                     }
                     $where[$id] = apply_filters("wpca/module/$id/db-where", $data);
                     self::$filtered_modules[$post_type][] = $module;
@@ -541,7 +541,7 @@ GROUP BY p.post_type, m.meta_key
             $excepted = [];
             foreach ($groups_in_context as $group_id => $group) {
                 if ($group->post_status == self::STATUS_EXCEPT) {
-                    $excepted[$group->parent_id] = 1;
+                    $excepted[$group->post_parent] = 1;
                 }
             }
 

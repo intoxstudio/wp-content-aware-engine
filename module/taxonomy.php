@@ -136,11 +136,15 @@ class WPCAModule_taxonomy extends WPCAModule_Base
         $posts = parent::filter_excluded_context($posts, $in_context);
         if ($in_context) {
             $post_terms_by_tax = [];
+            //@todo archive pages should be migrated to use AND as well, keep OR for now
+            $legacy_use_or = is_archive();
             foreach ($this->post_terms as $term) {
                 $post_terms_by_tax[$term->taxonomy][$term->term_taxonomy_id] = $term->term_taxonomy_id;
             }
 
             $check_terms = [];
+            $keep_archive = [];
+            $unset = [];
 
             //1. group's taxonomies must match all in post
             foreach ($posts as $condition_id => $condition_group) {
@@ -149,11 +153,16 @@ class WPCAModule_taxonomy extends WPCAModule_Base
                     //if value==-1, group has individual terms, so goto 2
                     if ($taxonomy == '-1') {
                         $check_terms[$condition_id] = $condition_group;
-                    }
-                    //if group has more taxonomies than post, unset
-                    elseif (!isset($post_terms_by_tax[$taxonomy])) {
-                        unset($posts[$condition_id]);
-                        break;
+                    } elseif (isset($post_terms_by_tax[$taxonomy])) {
+                        //if on archive page, bail after 1st match
+                        if ($legacy_use_or) {
+                            $keep_archive[$condition_id] = 1;
+                            break;
+                        }
+                    } else {
+                        //if group has more taxonomies than post, unset
+                        $unset[$condition_id] = 1;
+                        //break;
                     }
                 }
             }
@@ -161,7 +170,7 @@ class WPCAModule_taxonomy extends WPCAModule_Base
             //2. group's terms must match with minimum 1 in each taxonomy in post
             if (!empty($check_terms)) {
                 //eager load groups terms
-                $conditions_terms = wp_get_object_terms(array_keys($check_terms), array_keys($post_terms_by_tax), [
+                $conditions_terms = wp_get_object_terms(array_keys($check_terms), array_keys($this->_get_taxonomies()), [
                     'fields'                 => 'all_with_object_id',
                     'orderby'                => 'none',
                     'update_term_meta_cache' => false
@@ -172,24 +181,34 @@ class WPCAModule_taxonomy extends WPCAModule_Base
                     if (!isset($conditions_to_unset[$term->object_id][$term->taxonomy])) {
                         $conditions_to_unset[$term->object_id][$term->taxonomy] = 0;
                     }
-                    $conditions_to_unset[$term->object_id][$term->taxonomy] |= isset($post_terms_by_tax[$term->taxonomy][$term->term_taxonomy_id]);
+                    $has_tax_term = isset($post_terms_by_tax[$term->taxonomy][$term->term_taxonomy_id]);
+                    $conditions_to_unset[$term->object_id][$term->taxonomy] |= $has_tax_term;
+                    if ($legacy_use_or && $has_tax_term) {
+                        $keep_archive[$term->object_id] = 1;
+                    }
                 }
 
                 foreach ($check_terms as $condition_id => $condition_group) {
 
                     //if group has no terms in these taxonomies, it has terms in others, so unset
                     if (!isset($conditions_to_unset[$condition_id])) {
-                        unset($posts[$condition_id]);
+                        $unset[$condition_id] = 1;
                         continue;
                     }
 
                     foreach ($conditions_to_unset[$condition_id] as $taxonomy => $should_keep) {
                         //if group has a taxonomy with no term match, unset
                         if (!$should_keep) {
-                            unset($posts[$condition_id]);
+                            $unset[$condition_id] = 1;
                             break;
                         }
                     }
+                }
+            }
+
+            foreach ($unset as $id => $value) {
+                if (!isset($keep_archive[$id])) {
+                    unset($posts[$id]);
                 }
             }
         }
