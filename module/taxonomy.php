@@ -51,16 +51,15 @@ class WPCAModule_taxonomy extends WPCAModule_Base
      */
     private $post_taxonomies = [];
 
-    /**
-     * Constructor
-     */
     public function __construct()
     {
         parent::__construct('taxonomy', __('Taxonomies', WPCA_DOMAIN));
-
         $this->query_name = 'ct';
     }
 
+    /**
+     * @inheritDoc
+     */
     public function initiate()
     {
         parent::initiate();
