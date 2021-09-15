@@ -432,18 +432,27 @@ GROUP BY p.post_type, m.meta_key
             $in_context_by_module_id = [];
             foreach ($modules as $module) {
                 $id = $module->get_id();
-                $name = $module->get_query_name();
                 $in_context = apply_filters("wpca/module/$id/in-context", $module->in_context());
                 $in_context_by_module_id[$id] = $in_context;
-                if ($in_context) {
-                    $join[$id] = $module->db_join();
-                    $data = $module->get_context_data();
-                    if (is_array($data)) {
-                        $data = "($name.meta_value IS NULL OR $name.meta_value IN (".self::sql_prepare_in($data).'))';
-                    }
-                    $where[$id] = apply_filters("wpca/module/$id/db-where", $data);
-                    self::$filtered_modules[$post_type][] = $module;
+
+                if(!$in_context) {
+                    continue;
                 }
+
+                $data = $module->get_context_data();
+
+                if(empty($data)) {
+                    $in_context_by_module_id[$id] = false;
+                    continue;
+                }
+
+                if (is_array($data)) {
+                    $name = $module->get_query_name();
+                    $data = "($name.meta_value IS NULL OR $name.meta_value IN (".self::sql_prepare_in($data).'))';
+                }
+                $join[$id] = $module->db_join();
+                $where[$id] = apply_filters("wpca/module/$id/db-where", $data);
+                self::$filtered_modules[$post_type][] = $module;
             }
 
             $use_negated_conditions = self::get_option($post_type, 'legacy.negated_conditions', false);
