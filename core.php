@@ -117,12 +117,6 @@ if (!class_exists('WPCACore')) {
                     [__CLASS__,'sync_group_untrashed']
                 );
                 add_action(
-                    'add_meta_boxes',
-                    [__CLASS__,'add_group_meta_box'],
-                    10,
-                    2
-                );
-                add_action(
                     'wpca/modules/save-data',
                     [__CLASS__,'save_condition_options'],
                     10,
@@ -662,24 +656,9 @@ GROUP BY p.post_type, m.meta_key
             return self::$post_cache[$post_type];
         }
 
-        /**
-         * Add meta box to manage condition groups
-         *
-         * @since   1.0
-         * @param   string    $post_type
-         * @param   WP_Post   $post
-         */
-        public static function add_group_meta_box($post_type, $post)
-        {
-            if (is_null($post)) {
-                return;
-            }
-            self::render_group_meta_box($post, $post_type, 'normal', 'default');
-        }
-
         public static function render_group_meta_box($post, $screen, $context = 'normal', $priority = 'default')
         {
-            if (is_null($post) || !self::types()->has($post->post_type)) {
+            if (!($post instanceof WP_Post) || !self::types()->has($post->post_type)) {
                 return;
             }
 
