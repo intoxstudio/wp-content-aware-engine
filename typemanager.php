@@ -8,14 +8,12 @@
 
 defined('ABSPATH') || exit;
 
-
 if (!class_exists('WPCATypeManager')) {
     /**
      * Manage module objects
      */
     final class WPCATypeManager extends WPCAObjectManager
     {
-
         /**
          * Constructor
          */
@@ -65,11 +63,12 @@ if (!class_exists('WPCATypeManager')) {
                 'qtranslate',
                 'translatepress',
                 'transposh',
+                'weglot',
                 'wpml'
             ];
 
             foreach ($modules as $name) {
-                $class_name = WPCACore::CLASS_PREFIX.'Module_'.$name;
+                $class_name = WPCACore::CLASS_PREFIX . 'Module_' . $name;
 
                 if (!class_exists($class_name)) {
                     continue;
