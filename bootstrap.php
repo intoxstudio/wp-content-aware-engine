@@ -12,7 +12,7 @@ defined('ABSPATH') || exit;
  * Version of this WPCA
  * @var string
  */
-$this_wpca_version = '9.5a';
+$this_wpca_version = '9.6a';
 
 /**
  * Class to make sure the latest
@@ -23,7 +23,6 @@ $this_wpca_version = '9.5a';
 if (!class_exists('WPCALoader')) {
     class WPCALoader
     {
-
         /**
          * Absolute paths and versions
          * @var array
@@ -55,7 +54,6 @@ if (!class_exists('WPCALoader')) {
          */
         public static function load()
         {
-
             //legacy version present, cannot continue
             if (class_exists('WPCACore')) {
                 return;
@@ -63,9 +61,9 @@ if (!class_exists('WPCALoader')) {
 
             uasort(self::$_paths, 'version_compare');
             foreach (array_reverse(self::$_paths, true) as $path => $version) {
-                $file = $path.'core.php';
+                $file = $path . 'core.php';
                 if (file_exists($file)) {
-                    include($file);
+                    include $file;
                     define('WPCA_VERSION', $version);
                     WPCACore::init();
                     do_action('wpca/loaded');
