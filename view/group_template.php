@@ -3,7 +3,7 @@
  * @package wp-content-aware-engine
  * @author Joachim Jensen <joachim@dev.institute>
  * @license GPLv3
- * @copyright 2021 by Joachim Jensen
+ * @copyright 2022 by Joachim Jensen
  */
 ?>
 <script type="text/template" id="wpca-template-group">
