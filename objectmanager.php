@@ -14,7 +14,6 @@ if (!class_exists('WPCAObjectManager')) {
      */
     class WPCAObjectManager implements IteratorAggregate
     {
-
         /**
          * List of objects
          *
@@ -137,6 +136,7 @@ if (!class_exists('WPCAObjectManager')) {
          * @since  4.2
          * @return ArrayIterator
          */
+        #[ReturnTypeWillChange]
         public function getIterator()
         {
             return new ArrayIterator($this->objects);

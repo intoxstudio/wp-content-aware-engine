@@ -64,7 +64,6 @@ class WPCAModule_translatepress extends WPCAModule_Base
      */
     protected function _get_content($args = [])
     {
-        $langs = [];
         $trp_instance = TRP_Translate_Press::get_trp_instance();
         $langs = $trp_instance->get_component('languages')->get_language_names(
             $trp_instance->get_component('settings')->get_setting('publish-languages')

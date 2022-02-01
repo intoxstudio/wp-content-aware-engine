@@ -88,22 +88,11 @@ class WPCAModule_pods extends WPCAModule_Base
             $pods[$result['id']] = $result['name'];
         }
         if ($args['search']) {
-            $this->search_string = $args['search'];
-            $pods = array_filter($pods, [$this,'_filter_search']);
+            $pods = array_filter($pods, function ($pod) use ($args) {
+                return mb_stripos($pod, $args['search']) !== false;
+            });
         }
 
         return $pods;
-    }
-
-    /**
-     * Filter content based on search
-     *
-     * @since  2.0
-     * @param  string  $value
-     * @return boolean
-     */
-    protected function _filter_search($value)
-    {
-        return mb_stripos($value, $this->search_string) !== false;
     }
 }

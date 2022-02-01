@@ -30,13 +30,13 @@ if (!class_exists('WPCATypeManager')) {
         /**
          * Add module to manager
          *
-         * @since 1.0
-         * @param object  $class
-         * @param string  $name
+         * @param string $name
+         * @param string $arg
+         * @return WPCATypeManager
          */
         public function add($name, $arg = '')
         {
-            parent::add(new WPCAObjectManager(), $name);
+            return parent::add(new WPCAObjectManager(), $name);
         }
 
         /**

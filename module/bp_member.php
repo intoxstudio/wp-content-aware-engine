@@ -24,12 +24,6 @@ class WPCAModule_bp_member extends WPCAModule_Base
      */
     protected $category = 'plugins';
 
-    /**
-     * Cached search string
-     * @var string
-     */
-    protected $search_string;
-
     public function __construct()
     {
         parent::__construct('bp_member', __('BuddyPress Profiles', WPCA_DOMAIN));
@@ -81,9 +75,9 @@ class WPCAModule_bp_member extends WPCAModule_Base
                 if ($item->children) {
                     $level = $is_search ? 0 : 1;
                     foreach ($item->children as $child_item) {
-                        $content[$item->slug.'-'.$child_item->slug] = [
+                        $content[$item->slug . '-' . $child_item->slug] = [
                             'text'  => strip_tags($child_item->name),
-                            'id'    => $item->slug.'-'.$child_item->slug,
+                            'id'    => $item->slug . '-' . $child_item->slug,
                             'level' => $level
                         ];
                     }
@@ -94,23 +88,12 @@ class WPCAModule_bp_member extends WPCAModule_Base
         if (!empty($args['include'])) {
             $content = array_intersect_key($content, array_flip($args['include']));
         } elseif ($is_search) {
-            $this->search_string = $args['search'];
-            $content = array_filter($content, [$this,'_filter_search']);
+            $content = array_filter($content, function ($value) use ($args) {
+                return mb_stripos($value['text'], $args['search']) !== false;
+            });
         }
 
         return $content;
-    }
-
-    /**
-     * Filter content based on search
-     *
-     * @since  2.0
-     * @param  string  $value
-     * @return boolean
-     */
-    protected function _filter_search($value)
-    {
-        return mb_stripos($value['text'], $this->search_string) !== false;
     }
 
     /**
@@ -132,7 +115,7 @@ class WPCAModule_bp_member extends WPCAModule_Base
         if (isset($bp->current_component)) {
             $data[] = $bp->current_component;
             if (isset($bp->current_action)) {
-                $data[] = $bp->current_component.'-'.$bp->current_action;
+                $data[] = $bp->current_component . '-' . $bp->current_action;
             }
         }
         return $data;

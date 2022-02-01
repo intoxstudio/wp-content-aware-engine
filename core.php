@@ -18,7 +18,6 @@ if (!class_exists('WPCACore')) {
      */
     final class WPCACore
     {
-
         /**
          * Using class prefix instead of namespace
          * for PHP5.2 compatibility
@@ -71,7 +70,7 @@ if (!class_exists('WPCACore')) {
 
         /**
          * Post Types that use the engine
-         * @var WPCAPostTypeManager
+         * @var WPCATypeManager
          */
         private static $type_manager;
 
@@ -220,11 +219,11 @@ if (!class_exists('WPCACore')) {
 
             $query = '
 SELECT p.post_type, m.meta_key
-FROM '.$wpdb->posts.' p
-INNER JOIN '.$wpdb->posts.' c ON c.post_parent = p.ID
-INNER JOIN '.$wpdb->postmeta.' m ON m.post_id = c.ID
-WHERE p.post_type IN ('.self::sql_prepare_in(array_keys($modules_by_type)).')
-AND m.meta_key IN ('.self::sql_prepare_in($all_modules).')
+FROM ' . $wpdb->posts . ' p
+INNER JOIN ' . $wpdb->posts . ' c ON c.post_parent = p.ID
+INNER JOIN ' . $wpdb->postmeta . ' m ON m.post_id = c.ID
+WHERE p.post_type IN (' . self::sql_prepare_in(array_keys($modules_by_type)) . ')
+AND m.meta_key IN (' . self::sql_prepare_in($all_modules) . ')
 GROUP BY p.post_type, m.meta_key
 ';
 
@@ -435,20 +434,20 @@ GROUP BY p.post_type, m.meta_key
                 $in_context = apply_filters("wpca/module/$id/in-context", $module->in_context());
                 $in_context_by_module_id[$id] = $in_context;
 
-                if(!$in_context) {
+                if (!$in_context) {
                     continue;
                 }
 
                 $data = $module->get_context_data();
 
-                if(empty($data)) {
+                if (empty($data)) {
                     $in_context_by_module_id[$id] = false;
                     continue;
                 }
 
                 if (is_array($data)) {
                     $name = $module->get_query_name();
-                    $data = "($name.meta_value IS NULL OR $name.meta_value IN (".self::sql_prepare_in($data).'))';
+                    $data = "($name.meta_value IS NULL OR $name.meta_value IN (" . self::sql_prepare_in($data) . '))';
                 }
                 $join[$id] = $module->db_join();
                 $where[$id] = apply_filters("wpca/module/$id/db-where", $data);
@@ -469,13 +468,13 @@ GROUP BY p.post_type, m.meta_key
                 if ($use_negated_conditions) {
                     $post_status[] = self::STATUS_NEGATED;
                 }
-                
+
                 $chunk_size = count($join);
                 if (defined('WPCA_SQL_JOIN_SIZE') && is_integer(WPCA_SQL_JOIN_SIZE) && WPCA_SQL_JOIN_SIZE > 0) {
                     $chunk_size = WPCA_SQL_JOIN_SIZE;
                 } elseif (defined('WPCA_SQL_COMPATIBILITY_MODE') && WPCA_SQL_COMPATIBILITY_MODE === true) {
                     //Syntax changed in MySQL 5.5 and MariaDB 10.0 (reports as version 5.5)
-                    $wpdb->query('SET'.(version_compare($wpdb->db_version(), '5.5', '>=') ? ' SESSION' : ' OPTION').' SQL_BIG_SELECTS = 1');
+                    $wpdb->query('SET' . (version_compare($wpdb->db_version(), '5.5', '>=') ? ' SESSION' : ' OPTION') . ' SQL_BIG_SELECTS = 1');
                 }
 
                 $joins = array_chunk($join, $chunk_size);
@@ -485,32 +484,32 @@ GROUP BY p.post_type, m.meta_key
                 $groups_in_context = [];
 
                 $where2 = [];
-                $where2[] = "p.post_type = '".self::TYPE_CONDITION_GROUP."'";
-                $where2[] = "p.post_status IN ('".implode("','", $post_status)."')";
-                $where2[] = 'p.menu_order '.(is_archive() || is_home() ? '>=' : '<=').' 1';
+                $where2[] = "p.post_type = '" . self::TYPE_CONDITION_GROUP . "'";
+                $where2[] = "p.post_status IN ('" . implode("','", $post_status) . "')";
+                $where2[] = 'p.menu_order ' . (is_archive() || is_home() ? '>=' : '<=') . ' 1';
 
                 foreach ($joins as $i => $join) {
                     if ($i == $joins_max) {
                         $groups_in_context = $wpdb->get_results(
-                            'SELECT p.ID, p.post_parent, p.post_status '.
-                            "FROM $wpdb->posts p ".
-                            implode(' ', $join).'
+                            'SELECT p.ID, p.post_parent, p.post_status ' .
+                            "FROM $wpdb->posts p " .
+                            implode(' ', $join) . '
                             WHERE
-                            '.implode(' AND ', $wheres[$i]).'
-                            AND '.implode(' AND ', $where2).
-                            (!empty($group_ids) ? ' AND p.id IN ('.implode(',', $group_ids).')' : ''),
+                            ' . implode(' AND ', $wheres[$i]) . '
+                            AND ' . implode(' AND ', $where2) .
+                            (!empty($group_ids) ? ' AND p.id IN (' . implode(',', $group_ids) . ')' : ''),
                             OBJECT_K
                         );
                         break;
                     }
 
                     $group_ids = array_merge($group_ids, $wpdb->get_col(
-                        'SELECT p.ID '.
-                        "FROM $wpdb->posts p ".
-                        implode(' ', $join).'
+                        'SELECT p.ID ' .
+                        "FROM $wpdb->posts p " .
+                        implode(' ', $join) . '
                         WHERE
-                        '.implode(' AND ', $wheres[$i]).'
-                        AND '.implode(' AND ', $where2)
+                        ' . implode(' AND ', $wheres[$i]) . '
+                        AND ' . implode(' AND ', $where2)
                     ));
                 }
             }
@@ -518,9 +517,9 @@ GROUP BY p.post_type, m.meta_key
             $groups_negated = [];
             if ($use_negated_conditions) {
                 $groups_negated = $wpdb->get_results($wpdb->prepare(
-                    'SELECT p.ID, p.post_parent '.
-                    "FROM $wpdb->posts p ".
-                    "WHERE p.post_type = '%s' ".
+                    'SELECT p.ID, p.post_parent ' .
+                    "FROM $wpdb->posts p " .
+                    "WHERE p.post_type = '%s' " .
                     "AND p.post_status = '%s' ",
                     self::TYPE_CONDITION_GROUP,
                     self::STATUS_NEGATED
@@ -590,7 +589,7 @@ GROUP BY p.post_type, m.meta_key
          * Get filtered posts from a post type
          *
          * @since  1.0
-         * @return array
+         * @return array|bool
          */
         public static function get_posts($post_type)
         {
@@ -651,16 +650,16 @@ GROUP BY p.post_type, m.meta_key
 
             $results = array_reduce($results, function ($carry, $post) {
                 $carry[$post->ID] = (object)[
-                                    'ID'         => $post->ID,
-                                    'post_type'  => $post->post_type,
-                                    'handle'     => get_post_meta($post->ID, '_ca_handle', true),
-                                    'menu_order' => $post->menu_order,
-                                    'post_date'  => $post->post_date
-                                ];
+                    'ID'         => $post->ID,
+                    'post_type'  => $post->post_type,
+                    'handle'     => get_post_meta($post->ID, '_ca_handle', true),
+                    'menu_order' => $post->menu_order,
+                    'post_date'  => $post->post_date
+                ];
                 return $carry;
             }, []);
 
-            self::$post_cache[$post_type] = apply_filters("wpca/posts/{$post_type}", $results);
+            self::$post_cache[$post_type] = apply_filters("wpca/posts/$post_type", $results);
 
             return self::$post_cache[$post_type];
         }
@@ -692,7 +691,7 @@ GROUP BY p.post_type, m.meta_key
 
             $view = WPCAView::make('meta_box', [
                 'post_type' => $post->post_type,
-                'nonce'     => wp_nonce_field(self::PREFIX.$post->ID, self::NONCE, true, false),
+                'nonce'     => wp_nonce_field(self::PREFIX . $post->ID, self::NONCE, true, false),
             ]);
 
             $title = isset($post_type_obj->labels->ca_title) ? $post_type_obj->labels->ca_title : __('Conditional Logic', WPCA_DOMAIN);
@@ -711,9 +710,8 @@ GROUP BY p.post_type, m.meta_key
          * Insert new condition group for a post type
          * Uses current post per default
          *
-         * @since  1.0
-         * @param  WP_Post|int    $post
-         * @return int
+         * @param int|null $post_id
+         * @return int|WP_Error
          */
         public static function add_condition_group($post_id = null)
         {
@@ -772,14 +770,14 @@ GROUP BY p.post_type, m.meta_key
         public static function ajax_update_group()
         {
             if (!isset($_POST['current_id']) ||
-                !check_ajax_referer(self::PREFIX.$_POST['current_id'], 'token', false)) {
+                !check_ajax_referer(self::PREFIX . $_POST['current_id'], 'token', false)) {
                 wp_send_json_error(__('Unauthorized request', WPCA_DOMAIN), 403);
             }
 
             $parent_id = (int)$_POST['current_id'];
             $parent_type = get_post_type_object($_POST['post_type']);
 
-            if (! current_user_can($parent_type->cap->edit_post, $parent_id)) {
+            if (!current_user_can($parent_type->cap->edit_post, $parent_id)) {
                 wp_send_json_error(__('Unauthorized request', WPCA_DOMAIN), 403);
             }
 
@@ -869,7 +867,7 @@ GROUP BY p.post_type, m.meta_key
             $current_screen = get_current_screen();
 
             wp_register_style(
-                self::PREFIX.'condition-groups',
+                self::PREFIX . 'condition-groups',
                 plugins_url('/assets/css/condition_groups.css', __FILE__),
                 [],
                 WPCA_VERSION
@@ -900,8 +898,8 @@ GROUP BY p.post_type, m.meta_key
          * for post edit screen
          *
          * @since 1.0
-         * @param   string    $hook
-         * @return  void
+         *
+         * @param string $post_type
          */
         public static function enqueue_scripts_styles($post_type = '')
         {
@@ -1004,15 +1002,15 @@ GROUP BY p.post_type, m.meta_key
             );
 
             wp_register_script(
-                self::PREFIX.'condition-groups',
+                self::PREFIX . 'condition-groups',
                 $plugins_url . '/assets/js/condition_groups.min.js',
                 ['jquery','select2','backbone.trackit','backbone.epoxy'],
                 WPCA_VERSION,
                 true
             );
 
-            wp_enqueue_script(self::PREFIX.'condition-groups');
-            wp_localize_script(self::PREFIX.'condition-groups', 'WPCA', [
+            wp_enqueue_script(self::PREFIX . 'condition-groups');
+            wp_localize_script(self::PREFIX . 'condition-groups', 'WPCA', [
                 'searching'        => __('Searching', WPCA_DOMAIN),
                 'noResults'        => __('No results found.', WPCA_DOMAIN),
                 'loadingMore'      => __('Loading more results', WPCA_DOMAIN),
@@ -1028,7 +1026,7 @@ GROUP BY p.post_type, m.meta_key
                 'condition_or'     => __('Or', WPCA_DOMAIN),
                 'condition_except' => __('Except', WPCA_DOMAIN)
             ]);
-            wp_enqueue_style(self::PREFIX.'condition-groups');
+            wp_enqueue_style(self::PREFIX . 'condition-groups');
 
             //@todo remove when ultimate member includes fix
             wp_dequeue_style('um_styles');
@@ -1120,7 +1118,7 @@ GROUP BY p.post_type, m.meta_key
                 $class = strtolower($class);
                 $file = WPCA_PATH . $class . '.php';
                 if (file_exists($file)) {
-                    include($file);
+                    include $file;
                 }
             }
         }
@@ -1199,7 +1197,7 @@ GROUP BY p.post_type, m.meta_key
             }
 
             $value = get_option(self::OPTION_POST_TYPE_OPTIONS, []);
-            $levels = explode('.', $post_type.'.'.$name);
+            $levels = explode('.', $post_type . '.' . $name);
 
             foreach ($levels as $option_level) {
                 if (!is_array($value) || !isset($value[$option_level])) {
@@ -1224,7 +1222,7 @@ GROUP BY p.post_type, m.meta_key
             }
 
             $options = get_option(self::OPTION_POST_TYPE_OPTIONS, []);
-            $keys = explode('.', $post_type.'.'.$name);
+            $keys = explode('.', $post_type . '.' . $name);
             $array = &$options;
 
             foreach ($keys as $key) {

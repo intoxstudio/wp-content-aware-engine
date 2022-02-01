@@ -64,7 +64,6 @@ class WPCAModule_transposh extends WPCAModule_Base
      */
     protected function _get_content($args = [])
     {
-        global $my_transposh_plugin;
         $langs = [];
 
         /**

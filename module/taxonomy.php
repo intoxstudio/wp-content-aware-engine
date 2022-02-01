@@ -73,7 +73,7 @@ class WPCAModule_taxonomy extends WPCAModule_Base
         if (is_admin()) {
             foreach ($this->_get_taxonomies() as $taxonomy) {
                 add_action(
-                    'wp_ajax_wpca/module/'.$this->id.'-'.$taxonomy->name,
+                    'wp_ajax_wpca/module/' . $this->id . '-' . $taxonomy->name,
                     [$this,'ajax_print_content']
                 );
             }
@@ -106,7 +106,6 @@ class WPCAModule_taxonomy extends WPCAModule_Base
             foreach (get_object_taxonomies(get_post_type()) as $taxonomy) {
                 //Only want taxonomies selectable in admin
                 if (isset($tax[$taxonomy])) {
-
                     //Check term caches, Core most likely used it
                     $terms = get_object_term_cache(get_the_ID(), $taxonomy);
                     if ($terms === false) {
@@ -188,7 +187,6 @@ class WPCAModule_taxonomy extends WPCAModule_Base
                 }
 
                 foreach ($check_terms as $condition_id => $condition_group) {
-
                     //if group has no terms in these taxonomies, it has terms in others, so unset
                     if (!isset($conditions_to_unset[$condition_id])) {
                         $unset[$condition_id] = 1;
@@ -211,7 +209,7 @@ class WPCAModule_taxonomy extends WPCAModule_Base
                 }
             }
         }
-        
+
         return $posts;
     }
 
@@ -343,8 +341,8 @@ class WPCAModule_taxonomy extends WPCAModule_Base
             $posts = isset($terms_by_tax[$taxonomy->name]) ? $terms_by_tax[$taxonomy->name] : 0;
 
             if ($posts || isset($ids[$taxonomy->name])) {
-                $group_data[$this->id.'-'.$taxonomy->name] = $this->get_list_data($taxonomy, $title_count[$taxonomy->label]);
-                $group_data[$this->id.'-'.$taxonomy->name]['label'] = $group_data[$this->id.'-'.$taxonomy->name]['text'];
+                $group_data[$this->id . '-' . $taxonomy->name] = $this->get_list_data($taxonomy, $title_count[$taxonomy->label]);
+                $group_data[$this->id . '-' . $taxonomy->name]['label'] = $group_data[$this->id . '-' . $taxonomy->name]['text'];
 
                 if ($posts) {
                     $retval = [];
@@ -356,7 +354,7 @@ class WPCAModule_taxonomy extends WPCAModule_Base
                     foreach ($posts as $post) {
                         $retval[$post->$value_var] = $post->name;
                     }
-                    $group_data[$this->id.'-'.$taxonomy->name]['data'] = $retval;
+                    $group_data[$this->id . '-' . $taxonomy->name]['data'] = $retval;
                 }
             }
         }
@@ -381,12 +379,14 @@ class WPCAModule_taxonomy extends WPCAModule_Base
     }
 
     /**
-     * @inheritDoc
+     * @param WP_Taxonomy $taxonomy
+     * @param int $title_count
+     * @return array
      */
     protected function get_list_data($taxonomy, $title_count)
     {
-        $placeholder = '/'.sprintf(__('%s Archives', WPCA_DOMAIN), $taxonomy->labels->singular_name);
-        $placeholder = $taxonomy->labels->all_items.$placeholder;
+        $placeholder = '/' . sprintf(__('%s Archives', WPCA_DOMAIN), $taxonomy->labels->singular_name);
+        $placeholder = $taxonomy->labels->all_items . $placeholder;
         $label = $taxonomy->label;
 
         if (count($taxonomy->object_type) === 1 && $title_count > 1) {
@@ -409,7 +409,7 @@ class WPCAModule_taxonomy extends WPCAModule_Base
         $title_count = $this->get_title_count();
         foreach ($this->_get_taxonomies() as $taxonomy) {
             $data = $this->get_list_data($taxonomy, $title_count[$taxonomy->label]);
-            $data['id'] = $this->id.'-'.$taxonomy->name;
+            $data['id'] = $this->id . '-' . $taxonomy->name;
             $list[] = $data;
         }
         return $list;
@@ -455,15 +455,14 @@ class WPCAModule_taxonomy extends WPCAModule_Base
         //Save terms
         //Loop through each public taxonomy
         foreach ($this->_get_taxonomies() as $taxonomy) {
-
             //If no terms, maybe delete old ones
-            if (!isset($tax_input[$this->id.'-'.$taxonomy->name])) {
+            if (!isset($tax_input[$this->id . '-' . $taxonomy->name])) {
                 $terms = [];
                 if (isset($old[$taxonomy->name])) {
                     delete_post_meta($post_id, $meta_key, $taxonomy->name);
                 }
             } else {
-                $terms = $tax_input[$this->id.'-'.$taxonomy->name];
+                $terms = $tax_input[$this->id . '-' . $taxonomy->name];
 
                 $found_key = array_search($taxonomy->name, $terms);
                 //If meta key found maybe add it
@@ -537,7 +536,7 @@ class WPCAModule_taxonomy extends WPCAModule_Base
                     foreach ($query->posts as $post) {
                         wp_set_post_terms($post->ID, $term_id, $taxonomy, true);
                     }
-                    do_action('wpca/modules/auto-select/'.$this->category, $query->posts, $term);
+                    do_action('wpca/modules/auto-select/' . $this->category, $query->posts, $term);
                 }
             }
         }

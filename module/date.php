@@ -15,7 +15,6 @@ defined('ABSPATH') || exit;
  */
 class WPCAModule_date extends WPCAModule_Base
 {
-
     /**
      * Constructor
      */
@@ -42,11 +41,7 @@ class WPCAModule_date extends WPCAModule_Base
     }
 
     /**
-     * Get data from context
-     *
-     * @global object $wpdb
-     * @since  1.0
-     * @return array
+     * @inheritDoc
      */
     public function get_context_data()
     {
