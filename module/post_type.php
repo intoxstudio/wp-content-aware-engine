@@ -404,7 +404,7 @@ class WPCAModule_post_type extends WPCAModule_Base
         }
 
         $post_title = $post->post_title ? $post->post_title : __('(no title)');
-        $post_states = apply_filters('display_post_states', $post_states, $post);
+        //$post_states = apply_filters('display_post_states', $post_states, $post);
 
         return $post_title . ' ' . ($post_states ? ' (' . implode(', ', $post_states) . ')' : '');
     }
