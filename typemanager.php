@@ -12,7 +12,7 @@ if (!class_exists('WPCATypeManager')) {
     /**
      * Manage module objects
      */
-    final class WPCATypeManager extends WPCAObjectManager
+    final class WPCATypeManager extends WPCACollection
     {
         /**
          * Constructor
@@ -28,15 +28,12 @@ if (!class_exists('WPCATypeManager')) {
         }
 
         /**
-         * Add module to manager
-         *
          * @param string $name
-         * @param string $arg
-         * @return WPCATypeManager
+         * @return $this
          */
-        public function add($name, $arg = '')
+        public function add($name)
         {
-            return parent::add(new WPCAObjectManager(), $name);
+            return parent::put($name, new WPCACollection());
         }
 
         /**
@@ -80,8 +77,8 @@ if (!class_exists('WPCATypeManager')) {
                     continue;
                 }
 
-                foreach ($this->get_all() as $post_type) {
-                    $post_type->add($class, $name);
+                foreach ($this->all() as $post_type) {
+                    $post_type->put($name, $class);
                 }
             }
 
@@ -89,12 +86,12 @@ if (!class_exists('WPCATypeManager')) {
 
             //initiate all modules once with backwards compatibility on can_enable()
             $initiated = [];
-            foreach ($this->get_all() as $post_type_name => $post_type) {
+            foreach ($this->all() as $post_type_name => $post_type) {
                 if (!WPCACore::get_option($post_type_name, 'legacy.date_module', false)) {
                     $post_type->remove('date');
                 }
 
-                foreach ($post_type->get_all() as $key => $module) {
+                foreach ($post_type->all() as $key => $module) {
                     if (!isset($initiated[$key])) {
                         $initiated[$key] = 1;
                         $module->initiate();

@@ -148,22 +148,10 @@ if (!class_exists('WPCACore')) {
         }
 
         /**
-         * Get post type manager
-         *
-         * @deprecated 4.0
-         * @since   1.0
-         * @return  WPCAPostTypeManager
-         */
-        public static function post_types()
-        {
-            return self::types();
-        }
-
-        /**
          * Get type manager
          *
          * @since   4.0
-         * @return  WPCAPostTypeManager
+         * @return  WPCATypeManager
          */
         public static function types()
         {
@@ -413,7 +401,7 @@ GROUP BY p.post_type, m.meta_key
                 $post_type
             ];
 
-            $modules = self::types()->get($post_type)->get_all();
+            $modules = self::types()->get($post_type)->all();
             $modules = self::filter_condition_type_cache($post_type, $modules);
 
             //avoid combining as long as negated conditions are being deprecated
@@ -421,7 +409,7 @@ GROUP BY p.post_type, m.meta_key
             //     if ($other_type == $post_type) {
             //         continue;
             //     }
-            //     if (self::filter_condition_type_cache($other_type, $other_modules->get_all()) === $modules) {
+            //     if (self::filter_condition_type_cache($other_type, $other_modules->all()) === $modules) {
             //         $cache[] = $other_type;
             //     }
             // }
@@ -813,7 +801,7 @@ GROUP BY p.post_type, m.meta_key
             //Prune condition type cache, will rebuild within 24h
             update_option(self::OPTION_CONDITION_TYPE_CACHE, []);
 
-            foreach (self::types()->get($parent_type->name)->get_all() as $module) {
+            foreach (self::types()->get($parent_type->name)->all() as $module) {
                 //send $_POST here
                 $module->save_data($post_id);
             }
@@ -918,7 +906,7 @@ GROUP BY p.post_type, m.meta_key
                     'conditions' => []
                 ];
 
-                foreach (self::types()->get($post_type)->get_all() as $module) {
+                foreach (self::types()->get($post_type)->all() as $module) {
                     $data[$i]['conditions'] = $module->get_group_data($data[$i]['conditions'], $group->ID);
                 }
 
@@ -951,7 +939,7 @@ GROUP BY p.post_type, m.meta_key
                 ]
             ];
 
-            foreach (self::types()->get($post_type)->get_all() as $module) {
+            foreach (self::types()->get($post_type)->all() as $module) {
                 $category = $module->get_category();
                 if (!isset($conditions[$category])) {
                     $category = 'general';
