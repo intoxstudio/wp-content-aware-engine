@@ -19,7 +19,6 @@ defined('ABSPATH') || exit;
  */
 class WPCAModule_polylang extends WPCAModule_Base
 {
-
     /**
      * @var string
      */
@@ -31,6 +30,7 @@ class WPCAModule_polylang extends WPCAModule_Base
     public function __construct()
     {
         parent::__construct('language', __('Languages', WPCA_DOMAIN));
+        $this->icon = 'dashicons-translation';
         $this->query_name = 'cl';
     }
 

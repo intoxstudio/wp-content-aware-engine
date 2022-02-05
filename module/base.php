@@ -36,11 +36,14 @@ abstract class WPCAModule_Base
     protected $description;
 
     /**
-     * Placeholder label
-     *
      * @var string
      */
     protected $placeholder;
+
+    /**
+     * @var string
+     */
+    protected $icon;
 
     /**
      * Default condition value
@@ -79,7 +82,7 @@ abstract class WPCAModule_Base
     {
         if (is_admin()) {
             add_action(
-                'wp_ajax_wpca/module/'.$this->id,
+                'wp_ajax_wpca/module/' . $this->id,
                 [$this,'ajax_print_content']
             );
         }
@@ -106,6 +109,7 @@ abstract class WPCAModule_Base
         $list[] = [
             'id'            => $this->id,
             'text'          => $this->name,
+            'icon'          => $this->get_icon(),
             'placeholder'   => $this->placeholder,
             'default_value' => $this->default_value,
         ];
@@ -147,6 +151,14 @@ abstract class WPCAModule_Base
     final public function get_name()
     {
         return $this->name;
+    }
+
+    /**
+     * @return string
+     */
+    final public function get_icon()
+    {
+        return $this->icon;
     }
 
     /**
@@ -224,6 +236,7 @@ abstract class WPCAModule_Base
         if ($data) {
             $group_data[$this->id] = [
                 'label'         => $this->name,
+                'icon'          => $this->get_icon(),
                 'placeholder'   => $this->placeholder,
                 'data'          => $this->get_content(['include' => $data]),
                 'default_value' => $this->default_value
@@ -313,7 +326,7 @@ abstract class WPCAModule_Base
     final public function ajax_print_content()
     {
         if (!isset($_POST['sidebar_id']) ||
-            !check_ajax_referer(WPCACore::PREFIX.$_POST['sidebar_id'], 'nonce', false)) {
+            !check_ajax_referer(WPCACore::PREFIX . $_POST['sidebar_id'], 'nonce', false)) {
             wp_die();
         }
 
@@ -355,7 +368,7 @@ abstract class WPCAModule_Base
     {
         if (is_admin()) {
             remove_action(
-                'wp_ajax_wpca/module/'.$this->id,
+                'wp_ajax_wpca/module/' . $this->id,
                 [$this,'ajax_print_content']
             );
         }

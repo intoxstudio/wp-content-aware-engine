@@ -29,6 +29,7 @@ class WPCAModule_page_template extends WPCAModule_Base
     {
         parent::__construct('page_template', __('Page Templates', WPCA_DOMAIN));
         $this->placeholder = __('All Templates', WPCA_DOMAIN);
+        $this->icon = 'dashicons-media-code';
         $this->default_value = $this->id;
         $this->query_name = 'cpt';
     }

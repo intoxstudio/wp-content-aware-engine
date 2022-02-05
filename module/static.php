@@ -20,7 +20,6 @@ defined('ABSPATH') || exit;
  */
 class WPCAModule_static extends WPCAModule_Base
 {
-
     /**
      * Cached search string
      * @var string
@@ -30,6 +29,7 @@ class WPCAModule_static extends WPCAModule_Base
     public function __construct()
     {
         parent::__construct('static', __('Special Pages', WPCA_DOMAIN));
+        $this->icon = 'dashicons-layout';
         $this->query_name = 'cs';
     }
 

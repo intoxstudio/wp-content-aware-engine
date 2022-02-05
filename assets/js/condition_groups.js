@@ -7,7 +7,7 @@
 
 var CAE = CAE || {};
 
-(function($, CAE) {
+(function($, CAE, WPCA) {
 	"use strict";
 
 	CAE.settings = {
@@ -37,6 +37,7 @@ var CAE = CAE || {};
 		defaults : {
 			'module'       : null,
 			'label'        : '',
+			'icon'         : null,
 			'placeholder'  : '',
 			'values'       : [],
 			'default_value': null
@@ -164,6 +165,21 @@ var CAE = CAE || {};
 		templateName: '#wpca-template-condition',
 		events: {
 			"click .js-wpca-condition-remove": "removeModel"
+		},
+		computeds: {
+			getIcon: function() {
+				var icon = this.getBinding("icon");
+
+				if(typeof icon !== "string") {
+					return '';
+				}
+
+				if(icon.startsWith("dashi")) {
+					return '<span class="dashicons '+icon+'"></span>';
+				}
+
+				return '<img src="'+icon+'" />';
+			}
 		},
 		initialize: function() {
 			this.listenTo( this.model, 'destroy', this.remove );
@@ -373,6 +389,7 @@ var CAE = CAE || {};
 					var condition = new CAE.Models.Condition({
 						module: data.id,
 						label: data.text,
+						icon: data.icon,
 						placeholder: data.placeholder,
 						default_value: data.default_value
 					});
@@ -547,6 +564,7 @@ var CAE = CAE || {};
 				var condition = new CAE.Models.Condition({
 					module: data.id,
 					label: data.text,
+					icon: data.icon,
 					placeholder: data.placeholder,
 					default_value: data.default_value
 				});
@@ -579,6 +597,7 @@ var CAE = CAE || {};
 				var condition = new CAE.Models.Condition({
 					module: selected.id,
 					label: selected.text,
+					icon: selected.icon,
 					placeholder: selected.placeholder,
 					default_value: selected.default_value
 				});
@@ -787,4 +806,4 @@ var CAE = CAE || {};
 		wpca_admin.init();
 	});
 
-})(jQuery, CAE);
+})(jQuery, CAE, WPCA);

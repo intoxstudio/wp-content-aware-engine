@@ -237,6 +237,7 @@ class WPCAModule_post_type extends WPCAModule_Base
 
                     $group_data[$this->id . '-' . $post_type] = [
                         'label'         => $post_type_obj->label,
+                        'icon'          => $post_type_obj->menu_icon,
                         'placeholder'   => $placeholder,
                         'default_value' => $post_type
                     ];
@@ -358,6 +359,7 @@ class WPCAModule_post_type extends WPCAModule_Base
 
             $list[] = [
                 'id'            => $this->id . '-' . $post_type,
+                'icon'          => $post_type_obj->menu_icon,
                 'text'          => $name,
                 'placeholder'   => $placeholder,
                 'default_value' => $post_type

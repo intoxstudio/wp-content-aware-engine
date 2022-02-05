@@ -1136,7 +1136,7 @@ GROUP BY p.post_type, m.meta_key
          *
          * @return string
          */
-        private static function sql_prepare_in($input)
+        public static function sql_prepare_in($input)
         {
             $output = array_map(function ($value) {
                 return "'" . esc_sql($value) . "'";

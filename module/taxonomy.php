@@ -396,6 +396,7 @@ class WPCAModule_taxonomy extends WPCAModule_Base
 
         return [
             'text'          => $label,
+            'icon'          => $taxonomy->hierarchical ? 'dashicons-category' : 'dashicons-tag',
             'placeholder'   => $placeholder,
             'default_value' => $taxonomy->name
         ];

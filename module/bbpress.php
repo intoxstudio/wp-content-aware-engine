@@ -29,6 +29,7 @@ class WPCAModule_bbpress extends WPCAModule_author
         parent::__construct();
         $this->id = 'bb_profile';
         $this->name = __('bbPress User Profiles', WPCA_DOMAIN);
+        $this->icon = 'dashicons-buddicons-bbpress-logo';
         $this->placeholder = __('All Profiles', WPCA_DOMAIN);
         $this->default_value = $this->id;
         $this->query_name = 'cbb';
@@ -92,7 +93,7 @@ class WPCAModule_bbpress extends WPCAModule_author
                 'forum'
             ];
             $data[] = bbp_get_forum_id();
-            $where = "(cp.meta_value IS NULL OR cp.meta_value IN('".implode("','", $data)."'))";
+            $where = '(cp.meta_value IS NULL OR cp.meta_value IN(' . WPCACore::sql_prepare_in($data) . '))';
         }
         return $where;
     }

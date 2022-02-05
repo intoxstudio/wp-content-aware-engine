@@ -26,6 +26,7 @@ class WPCAModule_translatepress extends WPCAModule_Base
     public function __construct()
     {
         parent::__construct('language', __('Languages', WPCA_DOMAIN));
+        $this->icon = 'dashicons-translation';
         $this->query_name = 'cl';
     }
 

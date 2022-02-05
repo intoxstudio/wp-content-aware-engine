@@ -23,6 +23,7 @@ class WPCAModule_author extends WPCAModule_Base
     {
         parent::__construct('author', __('Authors', WPCA_DOMAIN));
         $this->placeholder = __('All Authors', WPCA_DOMAIN);
+        $this->icon = 'dashicons-admin-users';
         $this->default_value = $this->id;
         $this->query_name = 'ca';
     }
@@ -64,13 +65,13 @@ class WPCAModule_author extends WPCAModule_Base
         ];
         if ($new_args['search']) {
             if (false !== strpos($new_args['search'], '@')) {
-                $new_args['search_columns'] = [ 'user_email' ];
+                $new_args['search_columns'] = ['user_email'];
             } elseif (is_numeric($new_args['search'])) {
-                $new_args['search_columns'] = [ 'user_login', 'ID' ];
+                $new_args['search_columns'] = ['user_login', 'ID'];
             } else {
-                $new_args['search_columns'] = [ 'user_nicename', 'user_login', 'display_name' ];
+                $new_args['search_columns'] = ['user_nicename', 'user_login', 'display_name'];
             }
-            $new_args['search'] = '*'.$new_args['search'].'*';
+            $new_args['search'] = '*' . $new_args['search'] . '*';
         }
         return $new_args;
     }
