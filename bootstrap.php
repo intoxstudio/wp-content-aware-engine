@@ -12,7 +12,7 @@ defined('ABSPATH') || exit;
  * Version of this WPCA
  * @var string
  */
-$this_wpca_version = '9.7a';
+$this_wpca_version = '10.0';
 
 /**
  * Class to make sure the latest
