@@ -200,6 +200,7 @@ class WPCAModule_post_type extends WPCAModule_Base
             foreach (get_post_types(['public' => true], 'names') as $post_type) {
                 $this->_post_types[$post_type] = $post_type;
             }
+            unset($this->_post_types['guest-author']);
         }
         return $this->_post_types;
     }
