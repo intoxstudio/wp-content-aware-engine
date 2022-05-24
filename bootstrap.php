@@ -12,7 +12,7 @@ defined('ABSPATH') || exit;
  * Version of this WPCA
  * @var string
  */
-$this_wpca_version = '10.0';
+$this_wpca_version = '11.0';
 
 /**
  * Class to make sure the latest
@@ -23,26 +23,14 @@ $this_wpca_version = '10.0';
 if (!class_exists('WPCALoader')) {
     class WPCALoader
     {
-        /** @var string */
-        private static $last_loaded_plugin;
-
-        /** @var array */
-        private static $versions_by_path = [];
+        /**
+         * Absolute paths and versions
+         * @var array
+         */
+        private static $_paths = [];
 
         public function __construct()
         {
-        }
-
-        /**
-         * @return string
-         */
-        private static function get_last_loaded_plugin()
-        {
-            if (self::$last_loaded_plugin === null) {
-                $plugins = wp_get_active_and_valid_plugins();
-                self::$last_loaded_plugin = array_pop($plugins);
-            }
-            return self::$last_loaded_plugin;
         }
 
         /**
@@ -54,31 +42,25 @@ if (!class_exists('WPCALoader')) {
          */
         public static function add($path, $version)
         {
-            self::$versions_by_path[$path] = $version;
+            self::$_paths[$path] = $version;
         }
 
         /**
          * Load file for newest version
-         * and setup engine as early as possible,
-         * after all plugins are loaded
+         * and setup engine
          *
          * @since  3.0
          * @return void
          */
-        public static function load($path)
+        public static function load()
         {
             //legacy version present, cannot continue
             if (class_exists('WPCACore')) {
                 return;
             }
 
-            //not ready
-            if ($path !== self::get_last_loaded_plugin()) {
-                return;
-            }
-
-            uasort(self::$versions_by_path, 'version_compare');
-            foreach (array_reverse(self::$versions_by_path, true) as $path => $version) {
+            uasort(self::$_paths, 'version_compare');
+            foreach (array_reverse(self::$_paths, true) as $path => $version) {
                 $file = $path . 'core.php';
                 if (file_exists($file)) {
                     include $file;
@@ -99,9 +81,14 @@ if (!class_exists('WPCALoader')) {
          */
         public static function debug()
         {
-            return self::$versions_by_path;
+            return self::$_paths;
         }
     }
-    add_action('plugin_loaded', ['WPCALoader','load'], PHP_INT_MAX);
+    //Hook as early as possible after plugins are loaded
+    add_action(
+        'plugins_loaded',
+        ['WPCALoader','load'],
+        defined('PHP_INT_MIN') ? PHP_INT_MIN : ~PHP_INT_MAX
+    );
 }
 WPCALoader::add(plugin_dir_path(__FILE__), $this_wpca_version);
