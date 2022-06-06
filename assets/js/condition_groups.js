@@ -175,7 +175,9 @@ var CAE = CAE || {};
 				}
 
 				if(icon.startsWith("dashi")) {
-					return '<span class="dashicons '+icon+'"></span>';
+					var [htmlClass, color] = icon.split(':');
+					var style = typeof color === "string" ? ' style="color:'+color+'"' : '';
+					return '<span class="dashicons '+htmlClass+'"'+style+'></span>';
 				}
 
 				return '<img src="'+icon+'" />';
@@ -457,7 +459,7 @@ var CAE = CAE || {};
 			var data = _.clone(this.model.attributes);
 			data.action = "wpca/add-rule";
 			data.token = wpca_admin.nonce;
-			data.current_id = wpca_admin.sidebarID;
+			data.current_id = wpca_admin.postID;
 			data.post_type = WPCA.post_type;
 			data.conditions = {};
 
@@ -664,7 +666,8 @@ var CAE = CAE || {};
 							paged: page,
 							limit: 20,
 							action: "wpca/module/"+self.type,
-							sidebar_id: wpca_admin.sidebarID,
+							current_id: wpca_admin.postID,
+							post_type: WPCA.post_type,
 							nonce: wpca_admin.nonce
 						},
 						dataType: 'JSON',
@@ -785,7 +788,7 @@ var CAE = CAE || {};
 	var wpca_admin = {
 
 		nonce: $('#_ca_nonce').val(),
-		sidebarID: $('#post_ID').val(),
+		postID: $('#post_ID').val(),
 		alert: null,
 		wpcaDataAdapter:$.fn.select2.amd.require('select2/wpca/conditionData'),
 		wpcaModuleMatcher: $.fn.select2.amd.require('select2/wpca/moduleMatcher'),

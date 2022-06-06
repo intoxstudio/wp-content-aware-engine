@@ -325,12 +325,21 @@ abstract class WPCAModule_Base
      */
     final public function ajax_print_content()
     {
-        if (!isset($_POST['sidebar_id']) ||
-            !check_ajax_referer(WPCACore::PREFIX . $_POST['sidebar_id'], 'nonce', false)) {
+        if (!isset(
+            $_POST['current_id'],
+            $_POST['action'],
+            $_POST['paged'],
+            $_POST['post_type']
+        )) {
             wp_die();
         }
 
-        if (!isset($_POST['action'], $_POST['paged'])) {
+        if (!check_ajax_referer(WPCACore::PREFIX . $_POST['current_id'], 'nonce', false)) {
+            wp_die();
+        }
+
+        $parent_type = get_post_type_object($_POST['post_type']);
+        if (!current_user_can($parent_type->cap->edit_post, $_POST['current_id'])) {
             wp_die();
         }
 
