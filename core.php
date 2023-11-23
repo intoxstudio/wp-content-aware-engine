@@ -460,16 +460,12 @@ GROUP BY p.post_type, m.meta_key
                 $chunk_size = count($join);
                 if (defined('WPCA_SQL_JOIN_SIZE') && is_integer(WPCA_SQL_JOIN_SIZE) && WPCA_SQL_JOIN_SIZE > 0) {
                     $chunk_size = WPCA_SQL_JOIN_SIZE;
-                } elseif (defined('WPCA_SQL_COMPATIBILITY_MODE') && WPCA_SQL_COMPATIBILITY_MODE === true) {
-                    //Syntax changed in MySQL 5.5 and MariaDB 10.0 (reports as version 5.5)
-                    $wpdb->query('SET' . (version_compare($wpdb->db_version(), '5.5', '>=') ? ' SESSION' : ' OPTION') . ' SQL_BIG_SELECTS = 1');
                 }
 
                 $joins = array_chunk($join, $chunk_size);
                 $joins_max = count($joins) - 1;
                 $wheres = array_chunk($where, $chunk_size);
                 $group_ids = [];
-                $groups_in_context = [];
 
                 $where2 = [];
                 $where2[] = "p.post_type = '" . self::TYPE_CONDITION_GROUP . "'";
@@ -1010,7 +1006,7 @@ GROUP BY p.post_type, m.meta_key
                 'meta_default'     => $group_meta,
                 'post_type'        => $post_type,
                 'text_direction'   => is_rtl() ? 'rtl' : 'ltr',
-                'condition_not'    => __('Not', WPCA_DOMAIN),
+                'condition_not'    => __('Not', WPCA_DOMAIN) . ' (No longer supported)',
                 'condition_or'     => __('Or', WPCA_DOMAIN),
                 'condition_except' => __('Except', WPCA_DOMAIN)
             ]);

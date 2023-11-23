@@ -24,7 +24,7 @@
     <label class="cae-toggle">
         <input data-vm="checked:statusNegated" type="checkbox" />
         <div class="cae-toggle-bar wpca-pull-right"></div><?php _e('Negate conditions', WPCA_DOMAIN); ?>
-        (Legacy)
+        (No longer supported)
     </label>
 </li>
 <?php endif; ?>
