@@ -1,11 +1,3 @@
-<?php
-/**
- * @package wp-content-aware-engine
- * @author Joachim Jensen <joachim@dev.institute>
- * @license GPLv3
- * @copyright 2022 by Joachim Jensen
- */
-?>
 <script type="text/template" id="wpca-template-group">
     <div class="cas-group-sep" data-vm="classes:{'wpca-group-negate':any(statusExcept,statusNegated)}">
     <span data-vm="text:statusLabel"></span>
@@ -31,4 +23,12 @@
         <div class="cas-content" data-vm="collection:$collection"></div>
     </div>
 </div>
+<?php
+/**
+ * @package wp-content-aware-engine
+ * @author Joachim Jensen <joachim@dev.institute>
+ * @license GPLv3
+ * @copyright 2023 by Joachim Jensen
+ */
+?>
 </script>

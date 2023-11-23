@@ -1,3 +1,4 @@
 node_modules/
 *.less
 *.cache
+pnpm-lock.yaml
