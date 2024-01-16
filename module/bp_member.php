@@ -58,17 +58,18 @@ class WPCAModule_bp_member extends WPCAModule_Base
      */
     protected function _get_content($args = [])
     {
-        global $bp;
-
         if (isset($args['paged']) && $args['paged'] > 1) {
             return [];
         }
 
+        $bp = buddypress();
         $content = [];
         $is_search = isset($args['search']) && $args['search'];
+        $is_include = !empty($args['include']);
 
-        if (isset($bp->members->nav)) {
-            foreach ($bp->members->nav->get_item_nav() as $item) {
+        //BP <12.0 and Classic BP
+        if (isset($bp->members->nav) && $bp->members->nav->get_item_nav() !== false) {
+            foreach ((array) $bp->members->nav->get_item_nav() as $item) {
                 $content[$item->slug] = [
                     'id'   => $item->slug,
                     'text' => strip_tags($item->name)
@@ -84,9 +85,31 @@ class WPCAModule_bp_member extends WPCAModule_Base
                     }
                 }
             }
+        } elseif (function_exists('bp_get_component_navigations')) {
+            foreach (bp_get_component_navigations() as $navs) {
+                if (!isset($navs['main_nav']['rewrite_id']) || !$navs['main_nav']['rewrite_id']) {
+                    continue;
+                }
+                $content[$navs['main_nav']['slug']] = [
+                    'id'   => $navs['main_nav']['slug'],
+                    'text' => strip_tags($navs['main_nav']['name'])
+                ];
+                if (isset($navs['sub_nav'])) {
+                    $level = $is_search ? 0 : 1;
+                    foreach ($navs['sub_nav'] as $sub_nav) {
+                        $content[$sub_nav['parent_slug'] . '-' . $sub_nav['slug']] = [
+                            'text' => $is_search || $is_include
+                                ? strip_tags($navs['main_nav']['name'] . ': ' . $sub_nav['name'])
+                                : strip_tags($sub_nav['name']),
+                            'id'    => $sub_nav['parent_slug'] . '-' . $sub_nav['slug'],
+                            'level' => $level
+                        ];
+                    }
+                }
+            }
         }
 
-        if (!empty($args['include'])) {
+        if ($is_include) {
             $content = array_intersect_key($content, array_flip($args['include']));
         } elseif ($is_search) {
             $content = array_filter($content, function ($value) use ($args) {
@@ -102,7 +125,7 @@ class WPCAModule_bp_member extends WPCAModule_Base
      */
     public function in_context()
     {
-        global $bp;
+        $bp = buddypress();
         return isset($bp->displayed_user->domain) && $bp->displayed_user->domain;
     }
 
@@ -111,7 +134,7 @@ class WPCAModule_bp_member extends WPCAModule_Base
      */
     public function get_context_data()
     {
-        global $bp;
+        $bp = buddypress();
         $data = [$this->default_value];
         if (isset($bp->current_component)) {
             $data[] = $bp->current_component;
