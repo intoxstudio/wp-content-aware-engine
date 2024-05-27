@@ -429,6 +429,8 @@ class WPCAModule_taxonomy extends WPCAModule_Base
             $taxonomy_name = 'category';
         }
 
+        $this->remove_conflict_filters();
+
         return [
             'include'                => $args['include'],
             'taxonomy'               => $taxonomy_name,
@@ -488,7 +490,9 @@ class WPCAModule_taxonomy extends WPCAModule_Base
                 $has_select_terms = true;
             }
 
+            $this->remove_conflict_filters();
             wp_set_object_terms($post_id, $terms, $taxonomy->name);
+            $this->restore_conflict_filters();
         }
 
         if ($has_select_terms && !isset($old[self::VALUE_HAS_TERMS])) {
@@ -510,6 +514,7 @@ class WPCAModule_taxonomy extends WPCAModule_Base
     public function term_ancestry_check($term_id, $tt_id, $taxonomy)
     {
         if (is_taxonomy_hierarchical($taxonomy)) {
+            $this->remove_conflict_filters();
             $term = get_term($term_id, $taxonomy);
 
             if ($term->parent != '0') {
@@ -540,6 +545,27 @@ class WPCAModule_taxonomy extends WPCAModule_Base
                     do_action('wpca/modules/auto-select/' . $this->category, $query->posts, $term);
                 }
             }
+            $this->restore_conflict_filters();
+        }
+    }
+
+    private function remove_conflict_filters()
+    {
+        global $sitepress;
+        if(!empty($sitepress)) {
+            remove_filter('get_terms_args', [$sitepress, 'get_terms_args_filter']);
+            remove_filter('get_term', [$sitepress, 'get_term_adjust_id'], 1, 1);
+            remove_filter('terms_clauses', [$sitepress, 'terms_clauses']);
+        }
+    }
+
+    private function restore_conflict_filters()
+    {
+        global $sitepress;
+        if(!empty($sitepress)) {
+            add_filter('get_terms_args', [$sitepress, 'get_terms_args_filter'], 10 ,2);
+            add_filter('get_term', [$sitepress, 'get_term_adjust_id'], 1);
+            add_filter('terms_clauses', [$sitepress, 'terms_clauses'], 10, 3);
         }
     }
 }
