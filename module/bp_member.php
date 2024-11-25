@@ -26,7 +26,13 @@ class WPCAModule_bp_member extends WPCAModule_Base
 
     public function __construct()
     {
-        parent::__construct('bp_member', __('BuddyPress Profiles', WPCA_DOMAIN));
+        $label = sprintf(
+            __('%s Profile Sections'),
+            defined('BP_PLATFORM_VERSION')
+                ? __('BuddyBoss', 'buddyboss')
+                : __('BuddyPress', 'buddypress')
+        );
+        parent::__construct('bp_member', $label);
         $this->default_value = 0;
         $this->placeholder = __('All Sections', WPCA_DOMAIN);
         $this->icon = 'dashicons-buddicons-buddypress-logo:#d84800';
